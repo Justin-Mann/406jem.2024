@@ -1,0 +1,353 @@
+{
+  "id": "1",
+  "fname": "Justin",
+  "mname": "E",
+  "lname": "Mann",
+  "postition": "Computer Application Developer",
+  "subtitle": "C#, Azure, Domain Micro-Services, …",
+  "simplegoal": "To advance company business initiatives thru stable and robust system and application design and implementation.",
+  "logofile": "",
+  "contact": [
+    {
+      "type": "phone",
+      "displayvalue": "(1) 406.498.7390"
+    },
+    {
+      "type": "website",
+      "displayvalue": "406jem.us",
+      "url": "https://406jem.us"
+    },
+    {
+      "type": "website",
+      "displayvalue": "LinkedIn",
+      "url": "https://bit.ly/2SXOftm"
+    },
+    {
+      "type": "email",
+      "displayvalue": "justinmann.mail@gmail.com",
+      "mailto": "https://bit.ly/2SXOftm"
+    }
+  ],
+  "education": [
+    {
+      "name": "",
+      "degree": true,
+      "degreename": "",
+      "degreedate": "",
+      "areasofstudy": [
+        "Math Minor",
+        "Emphasis of Business Management"
+      ]
+    },
+    {
+      "name": "",
+      "degree": false,
+      "areasofstudy": [
+        "Transfer to Tech",
+        "4 Semesters CS",
+        "3 Semesters EE"
+      ]
+    }
+  ],
+  "workexperience": [
+    {
+      "companyname": "Location 3",
+      "position": "Web Application Developer",
+      "startdate": "06/2022",
+      "enddate": "06/2024",
+      "bulletlist": [
+        "TekSystems contract to hire",
+        "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
+        "C# .NET Framework 4.7, Core 3.1, Core 6.0, Core 7.0",
+        "ADO.NET, Mongo DB",
+        "Azure Functions, Azure App Services, Azure B2C, Azure Pipelines & Releases (Yaml & Classic)",
+        "IONIC, Capacitor, Angular 14"
+      ]
+    },
+    {
+      "companyname": "AXIS Capital",
+      "position": "Web Application Developer",
+      "startdate": "09/2021",
+      "enddate": "05/2022",
+      "bulletlist": [
+        "Beacon Hill Contract",
+        "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
+        "C# .NET Framework 4.6, 4.7",
+        "ADO.NET, Entity Framework",
+        "Data Modeling, SQL, SQL Server, SharePoint and SP lists/collections, Data Migration",
+        "React"
+      ]
+    },
+    {
+      "companyname": "THE MIL CORPORATION ",
+      "position": "Web Application Developer",
+      "startdate": "01/2020",
+      "enddate": "05/2021",
+      "bulletlist": [
+        "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review, Worked on several teams sometime concurrently",
+        "C# Core 3.x, C# Core 5.x",
+        "Data Modeling, SQL, SQL Server, Cosmos Db, SharePoint and SP lists/collections, Data Migration",
+        "Microservices, Docker, AKS, Open API",
+        "React, Svelte, SPFx, Sharepoint Team Site",
+        "React",
+        "ACR, Azure Storage Account, Key Vault, NGINX Ingress, API Gateway, Service Bus",
+        "AAD, AAD B2C, OAuth 2.0, OpenID, MSAL, Tokens and Custom Claims, Custom User Flows, B2C Identity Experience Framework"
+      ]
+    },
+    {
+      "companyname": "MWI ANIMAL HEALTH ",
+      "position": "Web Application Developer",
+      "startdate": "07/2019",
+      "enddate": "01/2020",
+      "bulletlist": [
+        "\tAgile, Standups, Sprint Creation and Review, Task Creation Assignment and Review ",
+        "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
+        "C# .NET Framework, C# Core 2.x, C# Core 3.x, C# Core Entity Framework",
+        "Modernization, Middleware Buildout",
+        "SQL Server, Dapper, SQL Stored Procedure modification and refactoring",
+        "Monolithic w/ Distributed Services",
+        "Angular 2",
+        "Consulted quite a bit on API endpoint structure and granularity"
+      ],
+      "note": "Extracted quite a bit of business logic from existing SPROCs, fracture the SPROCs and migrated as much business logic as I could to service I was working on or creating in the middleware layer."
+    },
+    {
+      "companyname": "MONTANA INTERACTIVE",
+      "position": "Web Application Developer",
+      "startdate": "11/2016",
+      "enddate": "02/2019",
+      "bulletlist": [
+        "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
+        "C# Framework, C# Core 2.x. .Net Core Entity Framework, Code First db approach (when possible)",
+        "Maintenance of a large collection of existing apps and services",
+        "Data Modeling, SQL Server, Oracle Db, SQL Stored Procedures, variety of webservice protocols (SOAP[xml], REST[mainly json]) from different state service integrations across products",
+        "MVC, C#, Razor, Ionic, Cordova, Angular 2, Xamarin, React, Javascript, jQuery"
+      ],
+      "note": "Worked on preexisting custom SSO management portal frontend and some of the services as needed for maintenance and usability."
+    },
+    {
+      "companyname": "IDAHO STATE CONTROLLER’S OFFICE ",
+      "position": "IT Analyst / Programmer",
+      "startdate": "08/2013",
+      "enddate": "08/2016",
+      "bulletlist": [
+        "Daily meetings, not really agile at the time.. they probably are now",
+        "Javascript, jQuery, jqWidgets, Modernizr, jQuery custom extensions, HTML5, CSS3",
+        "Point was that the HTML would all be HTML5 compliant, Javascript would all be modernized and optimized and CSS would be CSS3.. basically clean everything up as much as possible with the goal of hitting compliance points to certain modern standards.",
+        "Ensure cross browser and certain device functionality for all supported devices/clients",
+        "Identified and provided necessary shims to ensure device and  browser compatibility including some custom jQuery shims",
+        "Domino, Lotus Notes, C# .Net Framework",
+        "Researched and helped with necessary configuration changes to the Domino service environments"
+      ]
+    },
+    {
+      "companyname": "SIMPLEPLAN, LLC",
+      "position": "Owner / Developer / IT Tech",
+      "startdate": "05/2009",
+      "enddate": "05/2015",
+      "bulletlist": [
+        "Custom websites, static and dynamic",
+        "Business consulting services",
+        "IT work (small/medium business and home)",
+        "Application installs, networking, pc repair and troubleshooting services, backup systems, office equipment procurement and installation, whatever I found interesting and could help with really.. Lots of Quickbooks and Office equipment as well as custom website setup, CMS builds, etc… This was just a way for me to work with established businesses and maintain some scope of liability."
+      ]
+    },
+    {
+      "companyname": "INFOMINE OF THE ROCKIES",
+      "position": "IT Specialist",
+      "startdate": "09/2021",
+      "enddate": "05/2022",
+      "note": "My internship and first job afterwards as I stayed on for quite a while.. interesting small technology business with a variety of service contracts, infrastructure and data management contracts, etc. Really dynamic and great place to work with a ton of interesting projects to work on and unique datacenter asserts to get involved with."
+    }
+  ],
+  "customsections": [
+    {
+      "name": "Languages",
+      "items": [
+        {
+          "value": "C#, C++",
+          "type": "lang"
+        },
+        {
+          "value": "Javascript, Typescript",
+          "type": "lang"
+        },
+        {
+          "value": "SQL, T-SQL",
+          "type": "datalang"
+        }
+      ]
+    },
+    {
+      "name": "Tooling",
+      "items": [
+        {
+          "value": "Visual Studio, VSCode, Rider",
+          "type": "win"
+        },
+        {
+          "value": "Npm, node.js",
+          "type": "lang"
+        },
+        {
+          "value": "Postman, ADS, SSMS",
+          "type": "comp"
+        }
+      ]
+    },
+    {
+      "name": "Frameworks",
+      "items": [
+        {
+          "value": "Angular vX, VUE.js, Blazor",
+          "type": "lang"
+        },
+        {
+          "value": "DAPR (Service, Registry/Handler)",
+          "type": "lang"
+        },
+        {
+          "value": "Dapper (The ORM)",
+          "type": "lang"
+        },
+        {
+          "value": "Entity Framework, FLURL, Restsharp, POLLY",
+          "type": "lang"
+        },
+        {
+          "value": "SwashBuckle, Swagger, Swagger Gen",
+          "type": "lang"
+        },
+        {
+          "value": "SQL, ORACLE",
+          "type": "datalang"
+        },
+        {
+          "value": "COSMOS DB, MONGO",
+          "type": "lang"
+        },
+        {
+          "value": "IONIC, CAPACITOR, (little XAMARIN)",
+          "type": "lang"
+        }
+      ]
+    },
+    {
+      "name": "Cloud",
+      "items": [
+        "Azure",
+        "AAD/B2C",
+        "AKS, Azure Functions, App Services",
+        "… just familiar with lotsa Azure services and comfortable working within the infrastructure.",
+        "AWS LightSail"
+      ]
+    },
+    {
+      "name": "Data",
+      "items": [
+        "SQL, ORACLE",
+        "COSMOS DB, MONGO"
+      ]
+    }
+  ],
+  "skillassesments": [
+    {
+      "assessorname": "LinkedIn",
+      "skills": [
+        {
+          "name": "REST APIs",
+          "value": 70
+        },
+        {
+          "name": "C#",
+          "value": 85
+        },
+        {
+          "name": "JSON",
+          "value": 85
+        },
+        {
+          "name": "JQuery",
+          "value": 95
+        },
+        {
+          "name": "Javascript",
+          "value": 85
+        },
+        {
+          "name": "GIT",
+          "value": 95
+        },
+        {
+          "name": "CSS",
+          "value": 95
+        }
+      ]
+    },
+    {
+      "assessorname": "PluralSight",
+      "skills": [
+        {
+          "name": "JQuery",
+          "value": 78
+        },
+        {
+          "name": "Bootstrap",
+          "value": 76
+        },
+        {
+          "name": "RxJs",
+          "value": 79
+        },
+        {
+          "name": "ES6",
+          "value": 83
+        },
+        {
+          "name": "NPM",
+          "value": 80
+        },
+        {
+          "name": "TypeScript",
+          "value": 69
+        },
+        {
+          "name": "Javascript",
+          "value": 86
+        },
+        {
+          "name": "CSS",
+          "value": 84
+        },
+        {
+          "name": "HTML5",
+          "value": 85
+        },
+        {
+          "name": "T-SQL",
+          "value": 69
+        },
+        {
+          "name": "Data Modeling",
+          "value": 81
+        },
+        {
+          "name": "Entity",
+          "value": 82
+        },
+        {
+          "name": "ASP.NET MVC5",
+          "value": 79
+        },
+        {
+          "name": "ASP.NET CORE",
+          "value": 73
+        },
+        {
+          "name": "C#",
+          "value": 80
+        }
+      ]
+    }
+  ]
+}

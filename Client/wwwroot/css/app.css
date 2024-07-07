@@ -10,6 +10,12 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.top-menu a.active, .top-menu .active.btn-link {
+    color:#313662;
+    font-weight: 700;
+}
+
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -22,6 +28,19 @@ a, .btn-link {
 
 .content {
     padding-top: 1.1rem;
+}
+
+.fixed-row-bottom {
+    position: fixed;
+    bottom: 0;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
 }
 
 .valid.modified:not([type=checkbox]) {
