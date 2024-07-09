@@ -1,0 +1,35 @@
+﻿@using BlazorApp.Shared
+
+@if (@WorkExperienceInfo != null)
+{
+    <div class="sectionheader">Experience (XP)</div>
+
+    <div class="sectionbody">
+        <ul class="xpList">
+            @foreach (var item in WorkExperienceInfo)
+            {
+                <li class="workXpItem">
+                    <span class="companyName">@item.CompanyName</span> - <span class="position">@item.Position</span><br />
+                    <span class="timeFrame">@item.StartDate - @item.EndDate</span><br />
+                    @if(@item.BulletList is not null){
+                        <ul class="jobXpList">
+                        @foreach(var bli in @item.BulletList)
+                        {
+                            <li class="">@bli</li>
+			            }
+                        </ul>
+                    }
+                    @if (!string.IsNullOrEmpty(@item.Note))
+                    {
+                        <span class="note">@item.Note</span>
+                    }
+			    </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<WorkExperienceItem>? WorkExperienceInfo { get; set; }
+}

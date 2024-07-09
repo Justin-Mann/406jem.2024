@@ -1,17 +1,20 @@
 ﻿@inherits LayoutComponentBase
 <div class="page">
     <main>
-        <div class="top-row px-4">
+        <div class="top-row px-4 top-menu-row">
             <div class="top-menu">
                 <a href="/" class="@GetActive("*")">Home</a>
-                <a href="/resume" class="@GetActive("resume")">Digital Resume</a>
-                <a href="/projects" class="@GetActive("projects")">Current Project</a>
+                <a href="/digitalresume" class="@GetActive("digitalresume")">Digital Resume</a>
+                <a href="/projects" class="@GetActive("projects")">Current Project(s)</a>
             </div>
         </div>
 
         <article class="content px-4">
             @Body
         </article>
+        <div class="row fixed-row-bottom">
+            <img class="bojack-footer" src="img/bojack-samuri_bookends_780x100.png" />
+        </div>
     </main>
 </div>
 @code {

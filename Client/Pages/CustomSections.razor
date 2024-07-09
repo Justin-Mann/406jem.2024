@@ -1,0 +1,27 @@
+﻿@using BlazorApp.Shared
+
+@if (@CSections != null)
+{
+    @foreach(var csi in CSections)
+    {
+        @if ((!string.IsNullOrEmpty(@csi.Name)) && csi.CustomItems != null)
+        {
+        <div class="sectionheader">@csi.Name</div>
+        <div class="sectionbody">
+             <ul class="">
+                @foreach (var item in csi.CustomItems)
+                {
+                    <li class="">
+                        @item.Value
+                    </li>
+                }
+            </ul> 
+        </div> 
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<CustomSectionItem>? CSections { get; set; }
+}

@@ -1,0 +1,34 @@
+﻿@using BlazorApp.Shared
+
+@if (@EducationInfo != null)
+{
+    <div class="sectionheader">Education</div>
+
+    <div class="sectionbody">
+        <ul class="eduList">
+            @foreach (var item in EducationInfo)
+            {
+                <li class="eduListing">
+                    <span class="schoolName">@item.Name</span><br />
+                    @if(@item.Degree){
+                        <span class="degree"><img src="img/academic-degree-3-16.png" /> @item.DegreeName - @item.DegreeYear</span>
+
+                        <br />
+                    }
+                    @if (@item.AreasOfStudy != null)
+                    {
+                        @foreach (var areaOfStudy in @item.AreasOfStudy)
+                        {
+                            <span class="areaOfStudy">@areaOfStudy</span><br />
+                        }
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<EducationItem>? EducationInfo { get; set; }
+}

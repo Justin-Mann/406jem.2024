@@ -1,0 +1,59 @@
+﻿@page "/digitalresume"
+@using BlazorApp.Shared
+@inject HttpClient Http
+
+<PageTitle>Digital Resume</PageTitle>
+
+@if (myResume == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <a role="button" class="btn btn-secondary btn-lg btn-block" href="docs/jmResume.7.2024.pdf" target="_new">PDF Version</a><br/>
+            </div>
+        </div>
+        <div class="row header">
+            <div id="logo" class="col-2"><img src="@myResume.LogoFile" /></div>
+            <div class="col-6">
+                <span id="name" class="h1 text-uppercase">@myResume.FName @myResume.MName @myResume.LName</span><br />
+                <span id="position" class="h3 text-uppercase">@myResume.Position</span><br />
+                <span id="subtitle" class="text-uppercase">@myResume.Subtitle</span>
+                </div>
+            <div class="col-4"><p id="simplegoal">@myResume.SimpleGoal</p></div>
+        </div>
+        <div class="row">
+			 @* timeline here if I get bored *@
+		</div>
+        <div class="row">
+            <div class="col-8">
+                <GeneralSection SectionName="Profile" Items="@myResume.Profile"></GeneralSection>
+                <WorkExperienceSection WorkExperienceInfo="@myResume.WorkExperience"></WorkExperienceSection>
+            </div>
+            <div class="col-4">
+                <ContactSection ContactInfo="@myResume.Contact"></ContactSection>
+                <EducationSection EducationInfo="@myResume.Education"></EducationSection>
+                <CustomSections CSections="@myResume.CustomSections"></CustomSections>
+            </div>
+		</div>
+	</div>
+}
+
+@code {
+    private DigitalResumeModel myResume = new DigitalResumeModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/myResume") ?? new DigitalResumeModel();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+}

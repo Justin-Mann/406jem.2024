@@ -1,0 +1,49 @@
+﻿@using BlazorApp.Shared
+
+@if (@ContactInfo != null)
+{
+    <div class="sectionheader">Contact</div>
+
+    <div class="sectionbody">
+        <ul class="contactList">
+            @foreach (var contact in ContactInfo)
+            {
+                @if (@contact.Type != null)
+                {
+                    switch (@contact.Type)
+                    {
+                        case ContactTypeEnum.Phone:
+                            <li class="@contact.Type">
+                                <a href="tel:@contact.DisplayValue">@contact.DisplayValue</a>
+                            </li>
+                            break;
+                        case ContactTypeEnum.Website:
+                            <li class="@contact.Type">
+                                <a href="@contact.Url" target="_new" >@contact.DisplayValue</a>
+                            </li>
+                            break;
+                        case ContactTypeEnum.Email:
+                            <li class="@contact.Type">
+                                <a href="mailto:@contact.MailTo">@contact.DisplayValue</a>
+                            </li>
+                            break;
+                        default:
+                            <li class="@contact.Type">
+                                @contact.DisplayValue
+                            </li>
+                            break;
+                    }
+                } else {
+                    <li>
+                        @contact.DisplayValue
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<ContactItem>? ContactInfo { get; set; }
+}

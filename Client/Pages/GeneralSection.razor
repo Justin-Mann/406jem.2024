@@ -1,0 +1,35 @@
+﻿@using BlazorApp.Shared
+
+<style>
+    .fancyList {
+        display: list-item;
+        list-style-type: none;
+        padding-inline-start: 3ch;
+    }
+    .fancyList li {
+        list-style-type: '✓';
+        padding-left: 1em;
+    }
+</style>
+
+@if( (!string.IsNullOrEmpty(@SectionName)) && @Items != null){
+    <div class="sectionheader">@SectionName</div>
+
+    <div class="sectionbody">
+        <ul class="fancyList">
+            @foreach (var item in Items)
+            {
+                <li class="">
+                    @item
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? SectionName { get; set; }
+    [Parameter]
+    public IEnumerable<string>? Items { get; set; }
+}

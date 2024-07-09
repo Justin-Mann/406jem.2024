@@ -1,61 +1,74 @@
 {
-  "id": "1",
-  "fname": "Justin",
-  "mname": "E",
-  "lname": "Mann",
-  "postition": "Computer Application Developer",
-  "subtitle": "C#, Azure, Domain Micro-Services, …",
-  "simplegoal": "To advance company business initiatives thru stable and robust system and application design and implementation.",
-  "logofile": "",
-  "contact": [
+  "Id": "1",
+  "FName": "Justin",
+  "MName": "E",
+  "LName": "Mann",
+  "Position": "Computer Application Developer",
+  "Subtitle": "C#, Azure, Domain Micro-Services, …",
+  "SimpleGoal": "To advance company business initiatives through robust, stable system/application design and implementation.",
+  "LogoFile": "/img/bojack-samuri_82x100_fl.png",
+  "Profile": [
+    "C# Full Stack Web Application Developer",
+    "In-House and Cloud Server proficient",
+    "Interested in clean modern design",
+    "Love to solve problems and learn about new techniques and technologies",
+    "Sincere desire to know my work is helping to provide a useful service or solution",
+    "Prefer to work in an environment where employees collaborate and share knowledge",
+    "Consider myself Full-Stack within a Microsoft solution stack I work mostly in backend and middle-tier services",
+    "Looking for an environment where I can continue to work in Azure as a Cloud solution architect hosting containerized applications and services in Kubernetes (AKS)",
+    "Have an interest in Block-Chain technologies in relation to Smart Contracts",
+    "Love to work as part of a team to solve simple or complex problems, preferable providing or modernizing a complete solution",
+    "AGILE compliant. :)"
+  ],
+  "Contact": [
     {
-      "type": "phone",
-      "displayvalue": "(1) 406.498.7390"
+      "Type": 0,
+      "DisplayValue": "(1) 406.498.7390"
     },
     {
-      "type": "website",
-      "displayvalue": "406jem.us",
-      "url": "https://406jem.us"
+      "Type": 1,
+      "DisplayValue": "406jem.us",
+      "Url": "https://406jem.us"
     },
     {
-      "type": "website",
-      "displayvalue": "LinkedIn",
-      "url": "https://bit.ly/2SXOftm"
+      "Type": 1,
+      "DisplayValue": "LinkedIn",
+      "Url": "https://bit.ly/2SXOftm"
     },
     {
-      "type": "email",
-      "displayvalue": "justinmann.mail@gmail.com",
-      "mailto": "https://bit.ly/2SXOftm"
+      "Type": 2,
+      "DisplayValue": "justinmann.mail@gmail.com",
+      "MailTo": "justinmann.mail@gmail.com"
     }
   ],
-  "education": [
+  "Education": [
     {
-      "name": "",
-      "degree": true,
-      "degreename": "",
-      "degreedate": "",
-      "areasofstudy": [
+      "Name": "Montana Tech - U of M",
+      "Degree": true,
+      "DegreeName": "Computer Science (CS)",
+      "DegreeYear": "2008",
+      "AreasOfStudy": [
         "Math Minor",
         "Emphasis of Business Management"
       ]
     },
     {
-      "name": "",
-      "degree": false,
-      "areasofstudy": [
+      "Name": "MSU - Bozeman",
+      "Degree": false,
+      "AreasOfStudy": [
         "Transfer to Tech",
         "4 Semesters CS",
         "3 Semesters EE"
       ]
     }
   ],
-  "workexperience": [
+  "WorkExperience": [
     {
-      "companyname": "Location 3",
-      "position": "Web Application Developer",
-      "startdate": "06/2022",
-      "enddate": "06/2024",
-      "bulletlist": [
+      "CompanyName": "Location 3",
+      "Position": "Web Application Developer",
+      "StartDate": "06/2022",
+      "EndDate": "06/2024",
+      "BulletList": [
         "TekSystems contract to hire",
         "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
         "C# .NET Framework 4.7, Core 3.1, Core 6.0, Core 7.0",
@@ -65,11 +78,11 @@
       ]
     },
     {
-      "companyname": "AXIS Capital",
-      "position": "Web Application Developer",
-      "startdate": "09/2021",
-      "enddate": "05/2022",
-      "bulletlist": [
+      "CompanyName": "AXIS Capital",
+      "Position": "Web Application Developer",
+      "StartDate": "09/2021",
+      "EndDate": "05/2022",
+      "BulletList": [
         "Beacon Hill Contract",
         "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
         "C# .NET Framework 4.6, 4.7",
@@ -79,11 +92,11 @@
       ]
     },
     {
-      "companyname": "THE MIL CORPORATION ",
-      "position": "Web Application Developer",
-      "startdate": "01/2020",
-      "enddate": "05/2021",
-      "bulletlist": [
+      "CompanyName": "THE MIL CORPORATION ",
+      "Position": "Web Application Developer",
+      "StartDate": "01/2020",
+      "EndDate": "05/2021",
+      "BulletList": [
         "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review, Worked on several teams sometime concurrently",
         "C# Core 3.x, C# Core 5.x",
         "Data Modeling, SQL, SQL Server, Cosmos Db, SharePoint and SP lists/collections, Data Migration",
@@ -95,12 +108,11 @@
       ]
     },
     {
-      "companyname": "MWI ANIMAL HEALTH ",
-      "position": "Web Application Developer",
-      "startdate": "07/2019",
-      "enddate": "01/2020",
-      "bulletlist": [
-        "\tAgile, Standups, Sprint Creation and Review, Task Creation Assignment and Review ",
+      "CompanyName": "MWI ANIMAL HEALTH ",
+      "Position": "Web Application Developer",
+      "StartDate": "07/2019",
+      "EndDate": "01/2020",
+      "BulletList": [
         "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
         "C# .NET Framework, C# Core 2.x, C# Core 3.x, C# Core Entity Framework",
         "Modernization, Middleware Buildout",
@@ -109,28 +121,28 @@
         "Angular 2",
         "Consulted quite a bit on API endpoint structure and granularity"
       ],
-      "note": "Extracted quite a bit of business logic from existing SPROCs, fracture the SPROCs and migrated as much business logic as I could to service I was working on or creating in the middleware layer."
+      "Note": "Extracted quite a bit of business logic from existing SPROCs, fracture the SPROCs and migrated as much business logic as I could to service I was working on or creating in the middleware layer."
     },
     {
-      "companyname": "MONTANA INTERACTIVE",
-      "position": "Web Application Developer",
-      "startdate": "11/2016",
-      "enddate": "02/2019",
-      "bulletlist": [
+      "CompanyName": "MONTANA INTERACTIVE",
+      "Position": "Web Application Developer",
+      "StartDate": "11/2016",
+      "EndDate": "02/2019",
+      "BulletList": [
         "Agile, Standups, Sprint Creation and Review, Task Creation Assignment and Review",
         "C# Framework, C# Core 2.x. .Net Core Entity Framework, Code First db approach (when possible)",
         "Maintenance of a large collection of existing apps and services",
         "Data Modeling, SQL Server, Oracle Db, SQL Stored Procedures, variety of webservice protocols (SOAP[xml], REST[mainly json]) from different state service integrations across products",
         "MVC, C#, Razor, Ionic, Cordova, Angular 2, Xamarin, React, Javascript, jQuery"
       ],
-      "note": "Worked on preexisting custom SSO management portal frontend and some of the services as needed for maintenance and usability."
+      "Note": "Worked on preexisting custom SSO management portal frontend and some of the services as needed for maintenance and usability."
     },
     {
-      "companyname": "IDAHO STATE CONTROLLER’S OFFICE ",
-      "position": "IT Analyst / Programmer",
-      "startdate": "08/2013",
-      "enddate": "08/2016",
-      "bulletlist": [
+      "CompanyName": "IDAHO STATE CONTROLLER’S OFFICE ",
+      "Position": "IT Analyst / Programmer",
+      "StartDate": "08/2013",
+      "EndDate": "08/2016",
+      "BulletList": [
         "Daily meetings, not really agile at the time.. they probably are now",
         "Javascript, jQuery, jqWidgets, Modernizr, jQuery custom extensions, HTML5, CSS3",
         "Point was that the HTML would all be HTML5 compliant, Javascript would all be modernized and optimized and CSS would be CSS3.. basically clean everything up as much as possible with the goal of hitting compliance points to certain modern standards.",
@@ -141,11 +153,11 @@
       ]
     },
     {
-      "companyname": "SIMPLEPLAN, LLC",
-      "position": "Owner / Developer / IT Tech",
-      "startdate": "05/2009",
-      "enddate": "05/2015",
-      "bulletlist": [
+      "CompanyName": "SIMPLEPLAN, LLC",
+      "Position": "Owner / Developer / IT Tech",
+      "StartDate": "05/2009",
+      "EndDate": "05/2015",
+      "BulletList": [
         "Custom websites, static and dynamic",
         "Business consulting services",
         "IT work (small/medium business and home)",
@@ -153,201 +165,222 @@
       ]
     },
     {
-      "companyname": "INFOMINE OF THE ROCKIES",
-      "position": "IT Specialist",
-      "startdate": "09/2021",
-      "enddate": "05/2022",
-      "note": "My internship and first job afterwards as I stayed on for quite a while.. interesting small technology business with a variety of service contracts, infrastructure and data management contracts, etc. Really dynamic and great place to work with a ton of interesting projects to work on and unique datacenter asserts to get involved with."
+      "CompanyName": "INFOMINE OF THE ROCKIES",
+      "Position": "IT Specialist",
+      "StartDate": "09/2021",
+      "EndDate": "05/2022",
+      "Note": "My internship and first job afterwards as I stayed on for quite a while.. interesting small technology business with a variety of service contracts, infrastructure and data management contracts, etc. Really dynamic and great place to work with a ton of interesting projects to work on and unique datacenter asserts to get involved with."
     }
   ],
-  "customsections": [
+  "CustomSections": [
     {
-      "name": "Languages",
-      "items": [
+      "Name": "Languages",
+      "CustomItems": [
         {
-          "value": "C#, C++",
-          "type": "lang"
+          "Value": "C#, C++",
+          "Type": 0
         },
         {
-          "value": "Javascript, Typescript",
-          "type": "lang"
+          "Value": "Javascript, Typescript",
+          "Type": 0
         },
         {
-          "value": "SQL, T-SQL",
-          "type": "datalang"
+          "Value": "SQL, T-SQL",
+          "Type": 7
         }
       ]
     },
     {
-      "name": "Tooling",
-      "items": [
+      "Name": "Tooling",
+      "CustomItems": [
         {
-          "value": "Visual Studio, VSCode, Rider",
-          "type": "win"
+          "Value": "Visual Studio, VSCode, Rider",
+          "Type": 1
         },
         {
-          "value": "Npm, node.js",
-          "type": "lang"
+          "Value": "Npm, node.js",
+          "Type": 0
         },
         {
-          "value": "Postman, ADS, SSMS",
-          "type": "comp"
+          "Value": "Postman, ADS, SSMS",
+          "Type": 2
         }
       ]
     },
     {
-      "name": "Frameworks",
-      "items": [
+      "Name": "Frameworks",
+      "CustomItems": [
         {
-          "value": "Angular vX, VUE.js, Blazor",
-          "type": "lang"
+          "Value": "Angular vX, VUE.js, Blazor",
+          "Type": 0
         },
         {
-          "value": "DAPR (Service, Registry/Handler)",
-          "type": "lang"
+          "Value": "DAPR (Service, Registry/Handler)",
+          "Type": 0
         },
         {
-          "value": "Dapper (The ORM)",
-          "type": "lang"
+          "Value": "Dapper (The ORM)",
+          "Type": 0
         },
         {
-          "value": "Entity Framework, FLURL, Restsharp, POLLY",
-          "type": "lang"
+          "Value": "Entity Framework, FLURL, Restsharp, POLLY",
+          "Type": 0
         },
         {
-          "value": "SwashBuckle, Swagger, Swagger Gen",
-          "type": "lang"
+          "Value": "SwashBuckle, Swagger, Swagger Gen",
+          "Type": 0
         },
         {
-          "value": "SQL, ORACLE",
-          "type": "datalang"
+          "Value": "SQL, ORACLE",
+          "Type": 5
         },
         {
-          "value": "COSMOS DB, MONGO",
-          "type": "lang"
+          "Value": "COSMOS DB, MONGO",
+          "Type": 6
         },
         {
-          "value": "IONIC, CAPACITOR, (little XAMARIN)",
-          "type": "lang"
+          "Value": "IONIC, CAPACITOR, (little XAMARIN)",
+          "Type": 0
         }
       ]
     },
     {
-      "name": "Cloud",
-      "items": [
-        "Azure",
-        "AAD/B2C",
-        "AKS, Azure Functions, App Services",
-        "… just familiar with lotsa Azure services and comfortable working within the infrastructure.",
-        "AWS LightSail"
+      "Name": "Cloud",
+      "CustomItems": [
+        {
+          "Value": "Azure",
+          "Type": 4
+        },
+        {
+          "Value": "AAD/B2C",
+          "Type": 4
+        },
+        {
+          "Value": "AKS, Azure Functions, App Services",
+          "Type": 4
+        },
+        {
+          "Value": "… just familiar with lotsa Azure services and comfortable working within the infrastructure.",
+          "Type": 4
+        },
+        {
+          "Value": "AWS LightSail",
+          "Type": 4
+        }
       ]
     },
     {
-      "name": "Data",
-      "items": [
-        "SQL, ORACLE",
-        "COSMOS DB, MONGO"
+      "Name": "Data",
+      "CustomItems": [
+        {
+          "Value": "SQL, ORACLE",
+          "Type": 5
+        },
+        {
+          "Value": "COSMOS DB, MONGO",
+          "Type": 6
+        }
       ]
     }
   ],
-  "skillassesments": [
+  "SkillAssesments": [
     {
-      "assessorname": "LinkedIn",
-      "skills": [
+      "AssessorName": "LinkedIn",
+      "Skills": [
         {
-          "name": "REST APIs",
-          "value": 70
+          "Name": "REST APIs",
+          "Value": 70
         },
         {
-          "name": "C#",
-          "value": 85
+          "Name": "C#",
+          "Value": 85
         },
         {
-          "name": "JSON",
-          "value": 85
+          "Name": "JSON",
+          "Value": 85
         },
         {
-          "name": "JQuery",
-          "value": 95
+          "Name": "JQuery",
+          "Value": 95
         },
         {
-          "name": "Javascript",
-          "value": 85
+          "Name": "Javascript",
+          "Value": 85
         },
         {
-          "name": "GIT",
-          "value": 95
+          "Name": "GIT",
+          "Value": 95
         },
         {
-          "name": "CSS",
-          "value": 95
+          "Name": "CSS",
+          "Value": 95
         }
       ]
     },
     {
-      "assessorname": "PluralSight",
-      "skills": [
+      "AssessorName": "PluralSight",
+      "Skills": [
         {
-          "name": "JQuery",
-          "value": 78
+          "Name": "JQuery",
+          "Value": 78
         },
         {
-          "name": "Bootstrap",
-          "value": 76
+          "Name": "Bootstrap",
+          "Value": 76
         },
         {
-          "name": "RxJs",
-          "value": 79
+          "Name": "RxJs",
+          "Value": 79
         },
         {
-          "name": "ES6",
-          "value": 83
+          "Name": "ES6",
+          "Value": 83
         },
         {
-          "name": "NPM",
-          "value": 80
+          "Name": "NPM",
+          "Value": 80
         },
         {
-          "name": "TypeScript",
-          "value": 69
+          "Name": "TypeScript",
+          "Value": 69
         },
         {
-          "name": "Javascript",
-          "value": 86
+          "Name": "Javascript",
+          "Value": 86
         },
         {
-          "name": "CSS",
-          "value": 84
+          "Name": "CSS",
+          "Value": 84
         },
         {
-          "name": "HTML5",
-          "value": 85
+          "Name": "HTML5",
+          "Value": 85
         },
         {
-          "name": "T-SQL",
-          "value": 69
+          "Name": "T-SQL",
+          "Value": 69
         },
         {
-          "name": "Data Modeling",
-          "value": 81
+          "Name": "Data Modeling",
+          "Value": 81
         },
         {
-          "name": "Entity",
-          "value": 82
+          "Name": "Entity",
+          "Value": 82
         },
         {
-          "name": "ASP.NET MVC5",
-          "value": 79
+          "Name": "ASP.NET MVC5",
+          "Value": 79
         },
         {
-          "name": "ASP.NET CORE",
-          "value": 73
+          "Name": "ASP.NET CORE",
+          "Value": 73
         },
         {
-          "name": "C#",
-          "value": 80
+          "Name": "C#",
+          "Value": 80
         }
       ]
     }
-  ]
+]
 }
