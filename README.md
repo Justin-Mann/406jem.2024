@@ -1,3 +1,6 @@
+# 406JEM
+Obviously used a blazor template for VS to spin this up quickly.. below is the og readme.. kept the structure.. did not use a real data provider in the api.. wrote a few simple components, 'cause components.. used a blazor component library, 'cause blazor component. You get the idea.  I'll probably add more to the projects page once I get some urls wired up and working.
+
 # Blazor Starter Application
 
 This template contains an example .NET 8 [Blazor WebAssembly](https://docs.microsoft.com/aspnet/core/blazor/?view=aspnetcore-6.0#blazor-webassembly) client application, a .NET 8 C# [Azure Functions](https://docs.microsoft.com/azure/azure-functions/functions-overview), and a C# class library with shared code.
