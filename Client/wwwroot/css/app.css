@@ -65,6 +65,11 @@ a:hover {
 .jem-title-header h1 {
     font-size: 5rem;
 }
+@media screen and (max-width: 767px) {
+    .jem-title-header h1 {
+        font-size: 24px !important;
+    }
+}
 
 .jem-card {
     padding: 0px !important;
