@@ -26,6 +26,11 @@ a:hover {
     font-family: Arial;
     text-decoration: none;
 }
+    .project-menu-list-group ul li.list-group-item-description {
+        font-size: 0.6em;
+        text-align: left;
+    }
+
     .top-menu-row a {
         opacity: 0.4 !important;
         font-weight: 700;
@@ -33,6 +38,7 @@ a:hover {
     }
     .project-menu-list-group a {
         opacity: 0.8 !important;
+        text-decoration: none !important;
         font-weight: 700;
         color: #2f3e6f;
     }
