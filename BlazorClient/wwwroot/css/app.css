@@ -22,12 +22,21 @@ a:hover {
     font-family: Arial;
     text-decoration: none;
 }
+.project-menu-list-group {
+    font-family: Arial;
+    text-decoration: none;
+}
     .top-menu-row a {
         opacity: 0.4 !important;
         font-weight: 700;
         color: #2f3e6f;
     }
-    .top-menu-row a:hover {
+    .project-menu-list-group a {
+        opacity: 0.8 !important;
+        font-weight: 700;
+        color: #2f3e6f;
+    }
+    .top-menu-row a:hover, .project-menu-list-group a:hover {
         text-decoration: none !important;
         opacity: 1 !important;
         color: #245a8e;
