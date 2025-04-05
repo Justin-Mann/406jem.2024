@@ -48,6 +48,9 @@
     <Content Update="wwwroot\css\open-iconic\font\fonts\open-iconic.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\docs\jmResume.4.2025.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\docs\jmResume.7.2024.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

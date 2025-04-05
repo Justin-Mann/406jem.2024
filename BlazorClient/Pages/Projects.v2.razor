@@ -1,15 +1,47 @@
-﻿@page "/projects.v2"
+﻿@page "/projects"
 @using BlazorApp.Shared 
 @inject HttpClient Http
 
 <PageTitle>Projects</PageTitle>
 
-<h1>Projects</h1>
-
 <div class="container">
-
-    
-
+    <div class="row pretty-text text-center">
+        <p>This page has various resources related to my professional activities as well as side projects for reference and review.  Resources include my public GitHub and discussions of side projects w/ relevant urls.</p>
+    </div>
+    <div class="row"><br /><br /></div>
+    <div class="row">
+        <div class="col col-1"></div>
+        <div class="col card jem-card col-sm-4 col-12 text-center">
+            <div class="card-header">WWW Presence</div>
+            <div class="card-body">
+                <ul>
+                    <li><a href="https://www.linkedin.com/in/justin-mann-b3822075/" title="LinkedIn" target="_new">LinkedIn</a></li>
+                    <li><a href="https://github.com/Justin-Mann" title="My GitHub" target="_new">GitHub</a></li>
+                    <li><a href="https://406creatorcollections.com" title="My Shopify Store" target="_new">406CreatorCollections.com</a></li>
+                </ul>
+            </div>
+            <div class="card-footer">Last Updated 04/2025</div>
+        </div>
+        <div class="col col-2"></div>
+        <div class="col card jem-card col-sm-4 col-12 text-center">
+            <div class="card-header">Open Source & Tutorials</div>
+            <div class="card-body">
+                <ul>
+                    <li><a href="https://meshtastic.org/" title="Open Source Project: Meshtastic" target="_new">Meshtastic Project</a>
+                        <ul>
+                            <li>I made simple modifications to the <a href="https://github.com/meshtastic/firmware" title="Open Source Project: Meshtastic Frimware Repository" target="_new">firmware repository</a> in order to add support for the RAK12035 Soil Monitor.  As of today this is still a WIP, but I have functional prototypes.  Basically I have my water monitors working just fine, but need to loop back and update the code a little more and complete the submission.</li>
+                        </ul>
+                    </li>
+                    <!--
+                    <li><a href="/" title="Instructables: Flowerbed Irrigation Controller" target="_new">Flowerbed Soil Monitor &amp; Water Controller</a></li>
+                    <li><a href="/" title="Instructables: Meshtastic Based Long Range Water Monitor" target="_new">Meshtastic Based Long Range (Lorawan Radio Based) Water Monitor</a></li>
+                    -->
+                </ul>
+            </div>
+            <div class="card-footer">Last Updated 04/2025</div>
+        </div>
+        <div class="col col-1"></div>
+    </div>
 </div>
 
 
