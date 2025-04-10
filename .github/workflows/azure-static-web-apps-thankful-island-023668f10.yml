@@ -9,6 +9,14 @@ on:
     branches:
       - main
 
+env:
+  AZURE_FUNCTIONAPP_NAME: 406resumeapi
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: Api\published
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: Api
+  DOTNET_CORE_VERSION_INPROC: 6.0.x
+
 jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
