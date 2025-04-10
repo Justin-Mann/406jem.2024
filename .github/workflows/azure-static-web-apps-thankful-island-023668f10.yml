@@ -41,6 +41,7 @@ jobs:
           # Path to package or folder. *.zip or a folder to deploy
           package: 'Api'
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          include-hidden-files: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
