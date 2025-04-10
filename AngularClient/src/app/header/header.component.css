@@ -1,0 +1,83 @@
+header {
+    padding: 10px;
+  }
+  .jem_menu {
+    /*margin-top: 24px;*/
+  }
+  .jem_menu ul {
+    padding: 0;
+    margin: 0;
+  }
+  .jem_menu ul li {
+    list-style-type: none;
+    color: #2f3e6f;
+    opacity: 0.4 !important;
+    font-weight: 700;
+    padding-right: 10px;
+    display: inline-block;
+    font-size: 18px;
+  }
+  .jem_menu ul li:hover {
+    text-decoration: none !important;
+    opacity: 1 !important;
+    cursor: pointer;
+    color: #245a8e;
+    text-shadow: 0 0 5px #53f300b8;
+    transition: 0.3s ease-in-out;
+  }
+  .jem_menu ul li.active {
+    color: #245a8e;
+    font-weight: 1000;
+    opacity: 1 !important;
+    pointer-events: none;
+    cursor: default;
+  }
+  .menu-icon {
+    display: none;
+  }
+  .logo .jem-title-header .h1 {
+    font-size: 5rem !important;
+  }
+  .logo img.float-left {
+    float: left;
+  }
+  .logo img.float-right {
+    float: right;
+  }
+
+  @media screen and (max-width: 992px) {
+    .logo .jem-title-header .h1 {
+        font-size: 24px !important;
+    }
+  }
+
+  @media screen and (min-width: 128px) and (max-width: 900px) {
+    .jem_menu {
+      position: fixed !important;
+      right: -280px;
+      transition: 0.4s ease-in-out;
+      top: 64px;
+      border-left: 1px solid #02534d;
+      border-top: 3px solid #02534d;
+      background-color: #fff;
+      width: 280px;
+      height: 100%;
+    }
+    .jem_menu ul li {
+      display: block;
+      text-align: left;
+      margin: 0;
+      padding: 10px 0 10px 26px;
+      border-bottom: 1px solid grey;
+    }
+    .menu-icon {
+      display: block;
+      color: rgb(3, 0, 0);
+      font-size: 40px;
+      padding-top: 10px;
+    }
+    .mobile_menu {
+      right: 0;
+      transition: 0.4s ease-in-out;
+    }
+  }

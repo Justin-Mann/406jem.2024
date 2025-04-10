@@ -9,6 +9,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClient", "BlazorClient\BlazorClient.csproj", "{FF67CE65-B2B7-42BD-A043-28A72D1B6E34}"
 EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AngularClient", "AngularClient\", "{D0CF4FFB-AC2F-4181-B77A-14B2D859B8D7}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_50968"
+		Debug.AspNetCompiler.PhysicalPath = "AngularClient\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50968\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_50968"
+		Release.AspNetCompiler.PhysicalPath = "AngularClient\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50968\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "50968"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +47,10 @@ Global
 		{FF67CE65-B2B7-42BD-A043-28A72D1B6E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF67CE65-B2B7-42BD-A043-28A72D1B6E34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF67CE65-B2B7-42BD-A043-28A72D1B6E34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0CF4FFB-AC2F-4181-B77A-14B2D859B8D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0CF4FFB-AC2F-4181-B77A-14B2D859B8D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0CF4FFB-AC2F-4181-B77A-14B2D859B8D7}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0CF4FFB-AC2F-4181-B77A-14B2D859B8D7}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

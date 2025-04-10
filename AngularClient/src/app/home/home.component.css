@@ -1,0 +1,13 @@
+.home-page-text-block {
+    margin-top: 1%;
+    padding-top: 2%;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'caviar';
+}
+.home-page-text-block a {
+    opacity: 0.8 !important;
+    text-decoration: none !important;
+    font-weight: 700;
+    color: #2f3e6f;
+}

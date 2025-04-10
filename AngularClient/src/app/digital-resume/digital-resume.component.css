@@ -1,0 +1,181 @@
+.header {
+    border-bottom: 3px solid #000000;
+    position: relative;
+}
+
+    .header #logo {
+    }
+
+    .header #name {
+        text-transform: uppercase;
+    }
+
+    .header #position {
+        text-transform: uppercase;
+    }
+
+    .header #subtitle {
+    }
+
+    .header #simplegoal {
+        line-height: normal;
+        font-family: 'caviar';
+        position: absolute;
+        bottom: 0;
+    }
+
+.sectionheader {
+    border-bottom: 2px solid #000000;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sectionbody {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-family: Arial;
+    font-size: 16px;
+}
+
+.contactList {
+    display: list-item;
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+    .contactList a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+ul.contactList li.Phone:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e0a6";
+    padding-right: 10px;
+}
+
+ul.contactList li.Website:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e09e";
+    padding-right: 10px;
+}
+
+ul.contactList li.Email:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e05c";
+    padding-right: 10px;
+}
+
+.eduList {
+    display: list-item;
+    list-style-type: none;
+    padding-inline-start: 3ch;
+    line-height: normal;
+    margin-bottom: 8px;
+}
+
+    .eduList li {
+        padding-left: 1em;
+    }
+
+    .eduList .schoolName {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .eduList .degree {
+        font-weight: 700;
+    }
+
+    .eduList .areaOfStudy {
+        font-style: italic;
+    }
+
+    .eduList .degree, .eduList .areaOfStudy {
+        font-size: 14px;
+        margin-left: 15px;
+        display: inline-block;
+        height: 16px;
+    }
+
+        .eduList .degree img {
+            height: 100%;
+            filter: drop-shadow(0px 0px 4px green);
+        }
+
+ul.xpList, ul.jobXpList {
+    display: list-item;
+    list-style-type: none;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+    ul.xpList li.workXpItem {
+        padding: 10px;
+        margin: 10px 1% 25px 1%;
+        margin-bottom: 8px;
+        display: inline-block;
+        border-radius: 8px;
+        opacity: 0.8;
+        background-color: #f0f0f0;
+        box-shadow: 0 0 0px 0px #000;
+        width: 98%;
+        transition: all 1s;
+    }
+
+        ul.xpList li.workXpItem:hover {
+            box-shadow: 0 0 10px 5px #000;
+        }
+
+            ul.xpList li.workXpItem:hover ul.jobXpList li {
+                transition: all 1s;
+                font-size: 16px;
+                line-height: 2;
+            }
+
+        ul.xpList li.workXpItem .note {
+            padding: 5px;
+            font-size: 12px;
+            display: inline-block;
+            text-align: center;
+            margin: 4px;
+            border-radius: 4px;
+            background-color: #ced7eb;
+            font-weight: 700;
+            transition: all 1s;
+        }
+
+        ul.xpList li.workXpItem:hover .note {
+            transition: all 1s;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+    ul.xpList .companyName, ul.xpList .position {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    ul.xpList .position {
+        font-style: italic;
+    }
+
+    ul.xpList .timeFrame {
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    ul.jobXpList li {
+        font-style: italic;
+        font-size: 12px;
+        transition: all 1s;
+    }
+
+        ul.jobXpList li:before {
+            color: #000;
+            content: "\27bd \0020";
+        }

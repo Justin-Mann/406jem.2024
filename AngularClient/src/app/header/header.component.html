@@ -1,0 +1,47 @@
+<header>
+    <!-- <div class="top-row px-4 top-menu-row">
+        <div class="top-menu">
+            <a href="/">Home</a>
+            <a href="/digitalresume">Digital Resume</a>
+            <a href="/projects">Current Project(s)</a>
+        </div>
+    </div> -->
+    <div class="container">
+        <div class="row">
+
+            <div class="col-12 text-center">
+                <div class="menu-icon" (click)="openMenu()">
+                    <i class="{{menu_icon}}"></i>
+                </div>
+                <div class="jem_menu" [class.mobile_menu]="menuValue">
+                    <ul>
+                        <li [routerLink]="['/home']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                            Home
+                        </li>
+                        <li [routerLink]="['/digitalresume']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                            Digital Resume
+                        </li>
+                        <li [routerLink]="['/projects']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                            Current Projects
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="row logo">
+                    <div class="col-4">
+                        <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
+                    </div>
+                    <div class="col-4 text-capitalize text-center jem-title-header">
+                        <div class="h1">406JEM</div>
+                    </div>
+                    <div class="col-4">
+                        <img src="assets/img/bojack-samuri_82x100_fr.png" alt="" class="float-left">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
