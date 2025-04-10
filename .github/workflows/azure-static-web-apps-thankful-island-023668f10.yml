@@ -15,7 +15,7 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: Api
-  DOTNET_CORE_VERSION_INPROC: 6.0.x
+  DOTNET_CORE_VERSION_INPROC: 8.0.x
 
 jobs:
   build_and_deploy_job:
