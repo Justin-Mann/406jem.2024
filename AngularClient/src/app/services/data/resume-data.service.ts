@@ -9,17 +9,16 @@ import { ResumeData } from '../../interfaces/resume.interface';
 export class ResumeDataService {
   @Input() resumeId!: number;
   private http = inject(HttpClient);
+  private apiBaseUrl = 'https://406jem-resume-api.azurewebsites.net';
 
   constructor() { }
 
-  // TODO:: this is dumb write a real api that just serves up the resume data
-
   fetchResumesData(): Observable<ResumeData[]> {
-    return this.http.get<ResumeData[]>('assets/static_data/JustinMann_062024.json');
+    return this.http.get<ResumeData[]>('HttpContext.Response.Headers.Add("x-my-custom-header", "individual response");');
   }
 
   fetchResumeData(): Observable<ResumeData> {
-    var resumes = this.http.get<ResumeData[]>('assets/static_data/JustinMann_062024.json');
+    var resumes = this.http.get<ResumeData[]>(this.apiBaseUrl + '/api/myResume');
     return resumes.pipe(
       filter(resumes => resumes.length > 0),
       map(resumes => resumes[0])
