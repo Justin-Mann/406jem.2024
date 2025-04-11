@@ -49,7 +49,7 @@ else
     {
         try
         {
-            myResume = await Http.GetAsync<DigitalResumeModel>("https://406jem-resume-api.azurewebsites.net/api/myResume") ?? new DigitalResumeModel();
+            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/myResume");
         }
         catch (Exception ex)
         {
