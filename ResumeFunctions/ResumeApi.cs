@@ -25,6 +25,13 @@ namespace ResumeFunctions
             return new OkObjectResult(resumeJsonResponse ?? null);
         }
 
+        [Function("myResume")]
+        public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        {
+            var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
+            return new OkObjectResult(resumeJsonResponse.FirstOrDefault<DigitalResumeModel>());
+        }
+
         internal static class JsonFileReader
         {
             public static T Read<T>(string filePath)
