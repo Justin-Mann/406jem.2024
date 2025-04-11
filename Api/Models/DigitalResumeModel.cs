@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 
-namespace BlazorApp.Shared
+namespace Api.Models
 {
     public class DigitalResumeModel
     {
