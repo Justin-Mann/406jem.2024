@@ -42,47 +42,47 @@ jobs:
           ###### End of Repository/Build Configurations ######
 
 
-  build:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-        include-prerelease: True
-    - name: Restore
-      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
-    - name: Build
-      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
-    - name: Publish
-      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-    - name: Publish Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: functionapp
-        path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: functionapp
-        path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-    - name: Deploy to Azure Function App
-      uses: Azure/functions-action@v1
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        scm-do-build-during-deployment: false
-        enable-oryx-build: false
+  # build:
+  #   runs-on: windows-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Setup .NET SDK
+  #     uses: actions/setup-dotnet@v3
+  #     with:
+  #       dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+  #   - name: Setup .NET Core
+  #     uses: actions/setup-dotnet@v1
+  #     with:
+  #       dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+  #       include-prerelease: True
+  #   - name: Restore
+  #     run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+  #   - name: Build
+  #     run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+  #   - name: Publish
+  #     run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+  #   - name: Publish Artifacts
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: functionapp
+  #       path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+  # deploy:
+  #   runs-on: windows-latest
+  #   needs: build
+  #   steps:
+  #   - name: Download artifact from build job
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: functionapp
+  #       path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+  #   - name: Deploy to Azure Function App
+  #     uses: Azure/functions-action@v1
+  #     with:
+  #       app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+  #       publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+  #       package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+  #       scm-do-build-during-deployment: false
+  #       enable-oryx-build: false
 
 
 
