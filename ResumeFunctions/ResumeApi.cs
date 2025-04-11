@@ -2,8 +2,10 @@ using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using ResumeFunctions.Models;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 
@@ -28,6 +30,7 @@ namespace ResumeFunctions
         [Function("myResume")]
         public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
+
             var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
             return new OkObjectResult(resumeJsonResponse.FirstOrDefault<DigitalResumeModel>());
         }
