@@ -1,11 +1,4 @@
 <header>
-    <!-- <div class="top-row px-4 top-menu-row">
-        <div class="top-menu">
-            <a href="/">Home</a>
-            <a href="/digitalresume">Digital Resume</a>
-            <a href="/projects">Current Project(s)</a>
-        </div>
-    </div> -->
     <div class="container">
         <div class="row">
 
@@ -29,7 +22,7 @@
             </div>
 
             <div class="col-12">
-                <div class="row logo">
+                <div class="row logo" *ngIf="!isResumePage()">
                     <div class="col-4">
                         <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
                     </div>

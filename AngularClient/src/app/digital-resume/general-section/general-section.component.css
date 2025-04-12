@@ -1,0 +1,21 @@
+.sectionheader {
+    border-bottom: 2px solid #000000;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: 700;
+}
+.sectionbody {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-family: Arial;
+    font-size: 16px;
+}
+.fancyList {
+    display: list-item;
+    list-style-type: none;
+    padding-inline-start: 3ch;
+}
+.fancyList li {
+    list-style-type: '✓';
+    padding-left: 1em;
+}

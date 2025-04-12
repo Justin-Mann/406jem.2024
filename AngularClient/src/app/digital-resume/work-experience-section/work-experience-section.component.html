@@ -1,0 +1,18 @@
+<p>work-experience-section works!</p>
+
+<div *ngIf="xpItems">
+    <div class="sectionheader">Experience (XP)</div>
+    <div class="sectionbody">
+        <ul class="xpList">
+            <li *ngFor="let workItem of xpItems" class="workXpItem"><div>
+                <span class="companyName">{{workItem.companyName}}</span> - <span class="position">{{workItem.position}}</span><br />
+                <span class="timeFrame">{{workItem.startDate}} - {{workItem.endDate}}</span><br />
+                <ul class="jobXpList" *ngif="workItem.bulletList != null">
+                    <li *ngFor="let bli of workItem.bulletList" class="">{{bli}}</li>
+                </ul>
+                <span *ngIf="workItem.note != null" class="note">{{workItem.note}}</span>
+            </div>
+            </li>
+        </ul>
+    </div>
+</div>

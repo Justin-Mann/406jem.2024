@@ -8,20 +8,20 @@ export interface ResumeData {
     simpleGoal: string;
     logoFile: string;
     profile: string[];
-    Contact: ContactItem[];
-    Education: EducationItem[];
-    WorkExperience: WorkExperienceItem[];
-    CustomSections: CustomSections[];
+    contact: ContactItem[];
+    education: EducationItem[];
+    workExperience: WorkExperienceItem[];
+    customSections: CustomSections[];
   }
 
-interface ContactItem {
+export interface ContactItem {
     type: ContactTypeEnum;
     displayValue: string;
     url?: string;
     mailTo?: string;
   }
 
-interface EducationItem {
+export interface EducationItem {
     name: string;
     degree: boolean;
     degreeName?: string;
@@ -31,7 +31,7 @@ interface EducationItem {
     gpa?: number;
   }
 
-interface WorkExperienceItem {
+export interface WorkExperienceItem {
     companyName: string;
     position: string;
     startDate: string;
@@ -40,17 +40,17 @@ interface WorkExperienceItem {
     note?: string;
   }
 
-interface CustomSections {
+export interface CustomSections {
     name: string;
     customItems: CustomSectionItem[];
   }
 
-interface CustomSectionItem {
+export interface CustomSectionItem {
     value: string;
     type: CustomTypeEnum;
   }
 
-enum CustomTypeEnum {
+export enum CustomTypeEnum {
     Lang, 
     Win, 
     Comp, 
@@ -61,7 +61,7 @@ enum CustomTypeEnum {
     DataLang
   }
 
-enum ContactTypeEnum {
+export enum ContactTypeEnum {
     Phone, 
     Website, 
     Email

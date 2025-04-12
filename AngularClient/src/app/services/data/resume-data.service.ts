@@ -14,14 +14,10 @@ export class ResumeDataService {
   constructor() { }
 
   fetchResumesData(): Observable<ResumeData[]> {
-    return this.http.get<ResumeData[]>('HttpContext.Response.Headers.Add("x-my-custom-header", "individual response");');
+    return this.http.get<ResumeData[]>(this.apiBaseUrl + '/api/resumes');
   }
 
   fetchResumeData(): Observable<ResumeData> {
-    var resumes = this.http.get<ResumeData[]>(this.apiBaseUrl + '/api/myResume');
-    return resumes.pipe(
-      filter(resumes => resumes.length > 0),
-      map(resumes => resumes[0])
-    );
+    return this.http.get<ResumeData>(this.apiBaseUrl + '/api/myResume');
   }
 }

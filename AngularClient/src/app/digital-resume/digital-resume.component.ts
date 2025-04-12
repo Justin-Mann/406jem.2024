@@ -2,12 +2,25 @@ import { Component, inject, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
-import { ResumeData } from '../interfaces/resume.interface'; // Adjust the path as needed
+import { ResumeData, WorkExperienceItem } from '../interfaces/resume.interface'; // Adjust the path as needed
+import { ContactSectionComponent } from './contact-section/contact-section.component';
+import { EducationSectionComponent } from "./education-section/education-section.component";
+import { CustomSectionsComponent } from "./custom-sections/custom-sections.component";
+import { GeneralSectionComponent } from "./general-section/general-section.component";
+import { WorkExperienceSectionComponent } from "./work-experience-section/work-experience-section.component";
 
 @Component({
   selector: 'app-digital-resume',
   standalone: true,
-  imports: [SpinnerComponent, CommonModule],
+  imports: [
+    CommonModule,
+    SpinnerComponent,
+    ContactSectionComponent,
+    EducationSectionComponent,
+    CustomSectionsComponent,
+    GeneralSectionComponent,
+    WorkExperienceSectionComponent
+],
   templateUrl: './digital-resume.component.html',
   styleUrl: './digital-resume.component.css'
 })
@@ -16,6 +29,7 @@ export class DigitalResumeComponent implements AfterViewInit{
    _rDataService = inject(ResumeDataService);
    resumes: ResumeData[] | undefined;
    resumeData: ResumeData | undefined;
+   resumeLogoUrl = 'assets/img/bojack-samuri_82x100_fl.png';
    @ViewChild(SpinnerComponent) spinnerComponent?: SpinnerComponent;
 
   ngAfterViewInit(): void {
@@ -23,7 +37,6 @@ export class DigitalResumeComponent implements AfterViewInit{
     this._rDataService.fetchResumeData().subscribe(
       (data) => {
         this.resumeData = data;
-        alert('Data loaded successfully!');
         this.spinnerComponent?.showSpinner(false);
       }, 
       (error) => {

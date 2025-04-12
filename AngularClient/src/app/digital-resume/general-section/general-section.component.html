@@ -1,0 +1,11 @@
+<div *ngIf="profileItems && sectionName">
+    <div class="sectionheader">{{sectionName}}</div>
+
+    <div class="sectionbody">
+        <ul class="fancyList">
+            <li *ngFor="let profileItem of profileItems">
+                {{ profileItem }}
+            </li>
+        </ul>
+    </div>
+</div>

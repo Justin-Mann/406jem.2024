@@ -1,8 +1,8 @@
 .spinner-container {
     display: flex;
     justify-content: center;
-    align-items: baseline;
-    height: 100vh; /* Full height */
+    align-items: center;
+    height: 50vh; /* 50% height */
 }
 
 .spinner {
