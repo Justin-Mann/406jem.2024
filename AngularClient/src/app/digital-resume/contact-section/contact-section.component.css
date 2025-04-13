@@ -23,10 +23,10 @@
         color: inherit;
     }
 
-ul.contactList li.type-0:before {
+/* ul.contactList li.type-0:before {
     font-family: Icons !important;
     color: #000;
-    content: "\e0a6";
+    content: "\F4E7";
     padding-right: 10px;
 }
 
@@ -42,4 +42,4 @@ ul.contactList li.type-2:before {
     color: #000;
     content: "\e05c";
     padding-right: 10px;
-}
+} */

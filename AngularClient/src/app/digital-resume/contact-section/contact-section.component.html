@@ -4,9 +4,15 @@
     <div class="sectionbody">
         <ul class="contactList">
             <li *ngFor="let contact of contactItems" [class]="'type-'+contact.type.toString()">
-                <a *ngIf="contact.type === 0" [href]="'tel:' + contact.displayValue">{{contact.displayValue}}</a>
-                <a *ngIf="contact.type === 1" [href]="contact.url" target="_new">{{contact.displayValue}}</a>
-                <a *ngIf="contact.type === 2" [href]="'mailto:' + contact.mailTo">{{contact.displayValue}}</a>
+                <ng-container *ngIf="contact.type === 0">
+                    <i class="bi bi-phone"></i>&nbsp;<a [href]="'tel:' + contact.displayValue">{{contact.displayValue}}</a>
+                </ng-container>
+                <ng-container *ngIf="contact.type === 1">
+                    <i class="bi bi-display"></i>&nbsp;<a [href]="contact.url" target="_new">{{contact.displayValue}}</a>
+                </ng-container>
+                <ng-container *ngIf="contact.type === 2">
+                    <i class="bi bi-envelope-at"></i>&nbsp;<a [href]="'mailto:' + contact.mailTo">{{contact.displayValue}}</a>
+                </ng-container>
                 <span *ngIf="![0,1,2].includes(contact.type)">{{contact.displayValue}}</span>
             </li>
         </ul>

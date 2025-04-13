@@ -78,6 +78,8 @@ header {
     }
     .mobile_menu {
       right: 0;
+      z-index: 100;
       transition: 0.4s ease-in-out;
+      background-color: #fff;
     }
   }

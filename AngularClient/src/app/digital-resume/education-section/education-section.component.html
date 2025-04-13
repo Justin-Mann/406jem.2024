@@ -4,46 +4,10 @@
     <div class="sectionbody">
         <ul class="eduList">
             <li *ngFor="let item of eduItems" class="eduListing">
-                <span class="schoolName">{{item.name}}</span><br />
-                <span *ngIf="item.degree" class="degree"><img src="assets/img/academic-degree-3-16.png" /> {{item.degreeName}} - {{item.degreeYear}}</span><br />
-                <span *ngFor="let aos of item.areasOfStudy" class="areaOfStudy">{{aos}}</span><br />
+                <div class="schoolName">{{item.name}}</div>
+                <div *ngIf="item.degree" class="degree"><img src="assets/img/academic-degree-3-16.png" /> {{item.degreeName}} - {{item.degreeYear}}</div>
+                <div *ngFor="let aos of item.areasOfStudy" class="areaOfStudy">{{aos}}</div>
             </li>
         </ul>
     </div>
 </div>
-
-<!-- 
-@if (@EducationInfo != null)
-{
-    <div class="sectionheader">Education</div>
-
-    <div class="sectionbody">
-        <ul class="eduList">
-            @foreach (var item in EducationInfo)
-            {
-                <li class="eduListing">
-                    <span class="schoolName">@item.Name</span><br />
-                    @if(@item.Degree){
-                        <span class="degree"><img src="img/academic-degree-3-16.png" /> @item.DegreeName - @item.DegreeYear</span>
-
-                        <br />
-                    }
-                    @if (@item.AreasOfStudy != null)
-                    {
-                        @foreach (var areaOfStudy in @item.AreasOfStudy)
-                        {
-                            <span class="areaOfStudy">@areaOfStudy</span><br />
-                        }
-                    }
-                </li>
-            }
-        </ul>
-    </div>
-}
-
-@code {
-    [Parameter]
-    public IEnumerable<EducationItem>? EducationInfo { get; set; }
-}
-
--->

@@ -40,8 +40,7 @@
     .eduList .degree, .eduList .areaOfStudy {
         font-size: 14px;
         margin-left: 15px;
-        display: inline-block;
-        height: 16px;
+        display: block;
     }
 
         .eduList .degree img {

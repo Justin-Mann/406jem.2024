@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { ContactItem, ContactTypeEnum } from '../../interfaces/resume.interface';
 import { NgFor, NgIf } from '@angular/common';
+import { WorkExperienceSectionComponent } from "../work-experience-section/work-experience-section.component";
 
 @Component({
   selector: 'app-contact-section',
   standalone: true,
-  imports: [NgFor,NgIf],
+  imports: [NgFor, NgIf, WorkExperienceSectionComponent],
   templateUrl: './contact-section.component.html',
   styleUrl: './contact-section.component.css'
 })
