@@ -1,0 +1,45 @@
+.sectionheader {
+    border-bottom: 2px solid #000000;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sectionbody {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-family: Arial;
+    font-size: 16px;
+}
+
+.contactList {
+    display: list-item;
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+    .contactList a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+ul.contactList li.type-0:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e0a6";
+    padding-right: 10px;
+}
+
+ul.contactList li.type-1:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e09e";
+    padding-right: 10px;
+}
+
+ul.contactList li.type-2:before {
+    font-family: Icons !important;
+    color: #000;
+    content: "\e05c";
+    padding-right: 10px;
+}

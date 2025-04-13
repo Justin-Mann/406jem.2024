@@ -1,0 +1,87 @@
+.sectionheader {
+    border-bottom: 2px solid #000000;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sectionbody {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-family: Arial;
+    font-size: 16px;
+}
+
+ul.xpList, ul.jobXpList {
+    display: list-item;
+    list-style-type: none;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+    ul.xpList li.workXpItem {
+        padding: 10px;
+        margin: 10px 1% 25px 1%;
+        margin-bottom: 8px;
+        display: inline-block;
+        border-radius: 8px;
+        opacity: 0.8;
+        background-color: #f0f0f0;
+        box-shadow: 0 0 0px 0px #000;
+        width: 98%;
+        transition: all 1s;
+    }
+
+        ul.xpList li.workXpItem:hover {
+            box-shadow: 0 0 10px 5px #000;
+        }
+
+            ul.xpList li.workXpItem:hover ul.jobXpList li {
+                transition: all 1s;
+                font-size: 16px;
+                line-height: 2;
+            }
+
+        ul.xpList li.workXpItem .note {
+            padding: 5px;
+            font-size: 12px;
+            display: inline-block;
+            text-align: center;
+            margin: 4px;
+            border-radius: 4px;
+            background-color: #ced7eb;
+            font-weight: 700;
+            transition: all 1s;
+        }
+
+        ul.xpList li.workXpItem:hover .note {
+            transition: all 1s;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+    ul.xpList .companyName, ul.xpList .position {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    ul.xpList .position {
+        font-style: italic;
+    }
+
+    ul.xpList .timeFrame {
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    ul.jobXpList li {
+        font-style: italic;
+        font-size: 12px;
+        transition: all 1s;
+    }
+
+        ul.jobXpList li:before {
+            color: #000;
+            content: "\27bd \0020";
+        }
+

@@ -51,18 +51,18 @@ export interface CustomSectionItem {
   }
 
 export enum CustomTypeEnum {
-    Lang, 
-    Win, 
-    Comp, 
-    CompNetwork, 
-    Cloud, 
-    RDB, 
-    DDB, 
-    DataLang
+    Lang = 'lang', 
+    Win = 'win', 
+    Comp = 'comp', 
+    CompNetwork = 'compNetwork', 
+    Cloud = 'cloud', 
+    RDB = 'rdb', 
+    DDB = 'ddb', 
+    DataLang = 'dataLang',
   }
 
 export enum ContactTypeEnum {
-    Phone, 
-    Website, 
-    Email
+    Phone = 0, 
+    Website = 1, 
+    Email = 2,
   }

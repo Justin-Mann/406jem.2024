@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { EducationItem } from '../../interfaces/resume.interface';
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-education-section',
   standalone: true,
-  imports: [],
+  imports: [NgFor,NgIf],
   templateUrl: './education-section.component.html',
   styleUrl: './education-section.component.css'
 })

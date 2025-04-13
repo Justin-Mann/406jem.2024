@@ -1,1 +1,14 @@
-<p>contact-section works!</p>
+<div *ngIf="contactItems">
+    <div class="sectionheader">Contact</div>
+
+    <div class="sectionbody">
+        <ul class="contactList">
+            <li *ngFor="let contact of contactItems" [class]="'type-'+contact.type.toString()">
+                <a *ngIf="contact.type === 0" [href]="'tel:' + contact.displayValue">{{contact.displayValue}}</a>
+                <a *ngIf="contact.type === 1" [href]="contact.url" target="_new">{{contact.displayValue}}</a>
+                <a *ngIf="contact.type === 2" [href]="'mailto:' + contact.mailTo">{{contact.displayValue}}</a>
+                <span *ngIf="![0,1,2].includes(contact.type)">{{contact.displayValue}}</span>
+            </li>
+        </ul>
+    </div>
+</div>

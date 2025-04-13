@@ -1,14 +1,17 @@
 import { Component, Input } from '@angular/core';
-import { ContactItem } from '../../interfaces/resume.interface';
+import { ContactItem, ContactTypeEnum } from '../../interfaces/resume.interface';
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-contact-section',
   standalone: true,
-  imports: [],
+  imports: [NgFor,NgIf],
   templateUrl: './contact-section.component.html',
   styleUrl: './contact-section.component.css'
 })
 export class ContactSectionComponent {
+  contactItemData: ContactItem | undefined;
+
   @Input()
   get contactItems() {
     return this._contacts;

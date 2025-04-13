@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CustomSections } from '../../interfaces/resume.interface';
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-custom-sections',
   standalone: true,
-  imports: [],
+  imports: [NgFor,NgIf],
   templateUrl: './custom-sections.component.html',
   styleUrl: './custom-sections.component.css'
 })
