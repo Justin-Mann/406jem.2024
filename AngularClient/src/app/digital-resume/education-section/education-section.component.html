@@ -2,7 +2,13 @@
     <div class="sectionheader">Education</div>
 
     <div class="sectionbody">
-        <ul class="eduList"></ul>
+        <ul class="eduList">
+            <li *ngFor="let item of eduItems" class="eduListing">
+                <span class="schoolName">{{item.name}}</span><br />
+                <span *ngIf="item.degree" class="degree"><img src="assets/img/academic-degree-3-16.png" /> {{item.degreeName}} - {{item.degreeYear}}</span><br />
+                <span *ngFor="let aos of item.areasOfStudy" class="areaOfStudy">{{aos}}</span><br />
+            </li>
+        </ul>
     </div>
 </div>
 

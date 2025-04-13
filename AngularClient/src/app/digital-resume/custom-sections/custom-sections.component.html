@@ -1,38 +1,8 @@
-<!-- <div *ngIf="customItems"> -->
-    <ng-container *ngFor="let item of customItems">
-        <div class="sectionheader">{{item.name}}</div>
-        <div class="sectionbody">
-            <ul>
-                <li *ngFor="let citem of item.customItems">{{citem.value}}</li>
-            </ul>
-        </div>
-    </ng-container>
-<!-- </div> -->
-
-<!--  
-@if (@CSections != null)
-{
-    @foreach(var csi in CSections)
-    {
-        @if ((!string.IsNullOrEmpty(@csi.Name)) && csi.CustomItems != null)
-        {
-        <div class="sectionheader">@csi.Name</div>
-        <div class="sectionbody">
-             <ul class="">
-                @foreach (var item in csi.CustomItems)
-                {
-                    <li class="">
-                        @item.Value
-                    </li>
-                }
-            </ul> 
-        </div> 
-        }
-    }
-}
-
-@code {
-    [Parameter]
-    public IEnumerable<CustomSectionItem>? CSections { get; set; }
-}
--->
+<ng-container *ngFor="let item of customItems">
+    <div class="sectionheader">{{item.name}}</div>
+    <div class="sectionbody">
+        <ul>
+            <li *ngFor="let citem of item.customItems">{{citem.value}}</li>
+        </ul>
+    </div>
+</ng-container>
