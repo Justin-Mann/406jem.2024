@@ -60,6 +60,7 @@ else
             StateHasChanged();
             await Task.Delay(3000); // if this is still loading after 3 seconds, show a message
             loadingMessageShow = true;
+            StateHasChanged();
             await Task.Delay(1000);
             StateHasChanged();
         }
