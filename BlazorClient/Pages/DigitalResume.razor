@@ -55,8 +55,9 @@ else
     {
         try
         {
+            loadingMessageShow = false;
             myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/myResume");
-            await Task.Delay(5000); // if this is still loading after 10 seconds, show a message
+            await Task.Delay(5000); // if this is still loading after 5 seconds, show a message
 // await InvokeAsync(() => StateHasChanged());
             loadingMessageShow = true;
         }
