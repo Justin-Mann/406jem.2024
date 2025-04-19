@@ -7,6 +7,11 @@
 @if (myResume.Id == null)
 {
     <p class="text-center h1"><em>Loading...</em></p>
+
+    @if (loadingMessageShow == null)
+    {
+        <p class="text-center">It's Loading... The Azure Fxn had to cold start.</p>
+    }
 }
 else
 {
@@ -44,16 +49,20 @@ else
 
 @code {
     private DigitalResumeModel myResume = new DigitalResumeModel();
+    private bool loadingMessageShow = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/myResume");
+            await Task.Delay(5000); // if this is still loading after 10 seconds, show a message
+// await InvokeAsync(() => StateHasChanged());
+            loadingMessageShow = true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            Console.WriteLine(ex.Message);
         }
     }
 }
