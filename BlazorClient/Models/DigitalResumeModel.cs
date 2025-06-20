@@ -6,7 +6,7 @@ namespace BlazorApp.Models
 {
     public class DigitalResumeModel
     {
-        public string? Id { get; set; }
+        public int Id { get; set; }
         public string? FName { get; set; }
         public string? MName { get; set; }
         public string? LName { get; set; }
