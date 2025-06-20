@@ -1,4 +1,6 @@
 using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -20,6 +22,7 @@ namespace ResumeFunctions
         [Function("resumes")]
         public IActionResult GetAllResumes([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
+            _logger.Log(LogLevel.Information, "Getting all resumes...");
             var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
             return new OkObjectResult(resumeJsonResponse ?? null);
         }
@@ -27,6 +30,7 @@ namespace ResumeFunctions
         [Function("myResume")]
         public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
+            _logger.Log(LogLevel.Information, "Getting my resume...");
             var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
             return new OkObjectResult(resumeJsonResponse.FirstOrDefault<DigitalResumeModel>());
         }

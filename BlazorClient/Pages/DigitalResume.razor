@@ -1,5 +1,6 @@
 ﻿@page "/digitalresume"
 @using BlazorApp.Models
+@using System.Net.Http.Json
 @inject HttpClient Http
 
 <PageTitle>Digital Resume</PageTitle>
@@ -56,7 +57,7 @@ else
         try
         {
             loadingMessageShow = false;
-            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/myResume");
+            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/resumes/myresume");
             StateHasChanged();
             await Task.Delay(3000); // if this is still loading after 3 seconds, show a message
             loadingMessageShow = true;
