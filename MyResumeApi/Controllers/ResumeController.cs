@@ -15,6 +15,14 @@ namespace MyResumeApi.Controllers
             _logger = logger;
         }
 
+        [HttpGet(Name = "GetAllResumes")]
+        public IActionResult GetAllResumes()
+        {
+            _logger.Log(LogLevel.Information, "Getting all resumes...");
+            var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\ResumeDataFile\JustinMann_062024.json");
+            return new OkObjectResult(resumeJsonResponse);
+        }
+
         [HttpGet(Name = "GetMyResume")]
         [Route("myresume")]
         public IActionResult Get()

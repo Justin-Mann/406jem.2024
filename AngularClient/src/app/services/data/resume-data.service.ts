@@ -9,15 +9,14 @@ import { ResumeData } from '../../interfaces/resume.interface';
 export class ResumeDataService {
   @Input() resumeId!: number;
   private http = inject(HttpClient);
-  private apiBaseUrl = 'https://406jem-resume-api.azurewebsites.net';
-
+  private apiBaseUrl = 'https://myresumeapi20250620071718.azurewebsites.net';
   constructor() { }
 
   fetchResumesData(): Observable<ResumeData[]> {
-    return this.http.get<ResumeData[]>(this.apiBaseUrl + '/api/resumes');
+    return this.http.get<ResumeData[]>(this.apiBaseUrl + '/resumes/:resumeId');
   }
 
   fetchResumeData(): Observable<ResumeData> {
-    return this.http.get<ResumeData>(this.apiBaseUrl + '/api/myResume');
+    return this.http.get<ResumeData>(this.apiBaseUrl + '/resumes/myresume');
   }
 }
