@@ -7,56 +7,57 @@
 
 @if (myResume.Id == null)
 {
-    <p class="text-center h1"><em>Loading...</em></p>
 
-    @if (loadingMessageShow)
-    {
-        <p class="text-center">It's Loading... The Azure Fxn had to cold start.</p>
-    }
 }
 else
 {
-    <div class="container">
-        <div class="row">
-            <div class="col col-sm-6 col-12 offset-sm-3 text-center">
-                <a role="button" class="btn btn-secondary btn-sm btn-block" href="docs/jmResume.4.2025.pdf" target="_new">PDF V2 (ATS Friendly)</a><br/>
-            </div>
-        </div>
-        <div class="row header">
-            <div id="logo" class="col col-2"><img src="@myResume.LogoFile" /></div>
-            <div class="col col-6">
-                <span id="name" class="h1 text-uppercase">@myResume.FName @myResume.MName @myResume.LName</span><br />
-                <span id="position" class="h3 text-uppercase">@myResume.Position</span><br />
-                <span id="subtitle" class="text-uppercase">@myResume.Subtitle</span>
+    @if (loadingMessageShow)
+    {
+        <p class="text-center"><h2>The API had to cold start.</p>
+    } else {
+        <div class="container">
+            <div class="row">
+                <div class="col col-sm-6 col-12 offset-sm-3 text-center">
+                    <a role="button" class="btn btn-secondary btn-sm btn-block" href="docs/jmResume.4.2025.pdf" target="_new">PDF V2 (ATS Friendly)</a><br/>
                 </div>
-            <div class="col col-4"><p id="simplegoal">@myResume.SimpleGoal</p></div>
+            </div>
+            <div class="row header">
+                <div id="logo" class="col col-2"><img src="@myResume.LogoFile" /></div>
+                <div class="col col-6">
+                    <span id="name" class="h1 text-uppercase">@myResume.FName @myResume.MName @myResume.LName</span><br />
+                    <span id="position" class="h3 text-uppercase">@myResume.Position</span><br />
+                    <span id="subtitle" class="text-uppercase">@myResume.Subtitle</span>
+                    </div>
+                <div class="col col-4"><p id="simplegoal">@myResume.SimpleGoal</p></div>
+            </div>
+            <div class="row">
+                @* timeline here if I get bored *@
+            </div>
+            <div class="row">
+                <div class="col col-sm-8 col-12">
+                    <GeneralSection SectionName="Profile" Items="@myResume.Profile"></GeneralSection>
+                    <WorkExperienceSection WorkExperienceInfo="@myResume.WorkExperience"></WorkExperienceSection>
+                </div>
+                <div class="col col-sm-4 col-12">
+                    <ContactSection ContactInfo="@myResume.Contact"></ContactSection>
+                    <EducationSection EducationInfo="@myResume.Education"></EducationSection>
+                    <CustomSections CSections="@myResume.CustomSections"></CustomSections>
+                </div>
+            </div>
         </div>
-        <div class="row">
-			 @* timeline here if I get bored *@
-		</div>
-        <div class="row">
-            <div class="col col-sm-8 col-12">
-                <GeneralSection SectionName="Profile" Items="@myResume.Profile"></GeneralSection>
-                <WorkExperienceSection WorkExperienceInfo="@myResume.WorkExperience"></WorkExperienceSection>
-            </div>
-            <div class="col col-sm-4 col-12">
-                <ContactSection ContactInfo="@myResume.Contact"></ContactSection>
-                <EducationSection EducationInfo="@myResume.Education"></EducationSection>
-                <CustomSections CSections="@myResume.CustomSections"></CustomSections>
-            </div>
-		</div>
-	</div>
+    }
 }
 
 @code {
     private DigitalResumeModel myResume = new DigitalResumeModel();
-    private bool loadingMessageShow = false;
+    private bool loadingMessageShow = true;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/resumes/myresume");
+            loadingMessageShow = false;
             StateHasChanged();
         }
         catch (Exception ex)
