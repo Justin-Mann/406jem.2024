@@ -7,13 +7,13 @@
 
 @if (myResume.Id == null)
 {
-
+    <h2><p class="text-center">No Resume Records Found.</p></h2>
 }
 else
 {
     @if (loadingMessageShow)
     {
-        <h2><p class="text-center">The API had to cold start.</p></h2>
+        <h2 class="resume-loading-message"><p class="text-center">The API had to cold start.</p></h2>
     } else {
         <div class="container">
             <div class="row">
