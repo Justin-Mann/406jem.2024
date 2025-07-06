@@ -86,7 +86,6 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/MyResumeApiRelease
-          working-directory: ./MyResumeApi
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
