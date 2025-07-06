@@ -62,7 +62,7 @@ jobs:
         working-directory: ./MyResumeApi
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/MyResumeApi.csproj
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/MyResumeApi
         working-directory: ./MyResumeApi
 
       - name: Upload artifact for deployment job
