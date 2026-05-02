@@ -19,7 +19,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          direct_prompt: |
             You are Stage 1 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
             A new feature request has been submitted (Issue #${{ github.event.issue.number }}):

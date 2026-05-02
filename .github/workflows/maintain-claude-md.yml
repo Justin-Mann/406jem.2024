@@ -8,7 +8,6 @@ on:
 
 jobs:
   update-claude-md:
-    # Run on every PR, or when a 'claude' label is added to an issue
     if: |
       github.event_name == 'pull_request' ||
       (github.event_name == 'issues' && github.event.label.name == 'claude')
@@ -16,6 +15,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +37,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          direct_prompt: |
             Your job is to keep the CLAUDE.md file at the root of this repository accurate and current.
 
             CLAUDE.md is a living codebase guide for AI agents and developers. It should contain:

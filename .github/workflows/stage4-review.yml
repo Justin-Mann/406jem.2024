@@ -22,7 +22,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          direct_prompt: |
             You are Stage 4 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
             You are an independent code reviewer — you did NOT write this code.
 
