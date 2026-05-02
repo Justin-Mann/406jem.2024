@@ -1,0 +1,93 @@
+name: Stage 5 - Iterate on Review Feedback
+
+on:
+  issues:
+    types: [labeled]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  iterate-on-label:
+    if: github.event_name == 'issues' && github.event.label.name == 'needs-revision'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Claude - Address Review Feedback
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+
+            Issue #${{ github.event.issue.number }} received review feedback that requires changes.
+
+            Your job:
+            1. Find the PR associated with issue #${{ github.event.issue.number }}.
+            2. Read all review comments, requested changes, and inline feedback on the PR.
+            3. Check out the feature branch and implement all requested changes.
+            4. Build and verify the solution still compiles.
+            5. Commit and push the changes.
+            6. Reply to each review comment confirming it was addressed.
+            7. Remove the "needs-revision" label and add "ready-for-review" to trigger Stage 4 again.
+            8. Post a comment summarizing what was changed in response to the review.
+
+  iterate-on-review:
+    if: github.event_name == 'pull_request_review' && github.event.review.state == 'changes_requested'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Claude - Address PR Review Comments
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+
+            A reviewer has requested changes on PR #${{ github.event.pull_request.number }}.
+
+            Reviewer: ${{ github.event.review.user.login }}
+            Review body: ${{ github.event.review.body }}
+
+            Your job:
+            1. Read all review comments on this PR carefully.
+            2. Check out the PR branch and implement all requested changes.
+            3. Build and verify the solution compiles.
+            4. Commit and push the changes.
+            5. Reply to each review thread confirming it was addressed.
+            6. Post a summary comment on the PR.

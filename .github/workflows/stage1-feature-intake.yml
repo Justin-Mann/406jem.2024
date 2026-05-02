@@ -1,0 +1,38 @@
+name: Stage 1 - Feature Request Intake
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  intake:
+    if: github.event.label.name == 'claude'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude - Analyze Feature Request
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 1 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+
+            A new feature request has been submitted (Issue #${{ github.event.issue.number }}):
+
+            Title: ${{ github.event.issue.title }}
+            Body:
+            ${{ github.event.issue.body }}
+
+            Your job:
+            1. Analyze the feature request for completeness and clarity.
+            2. Break it down into concrete implementation tasks.
+            3. Identify which parts of the codebase will be affected (Blazor client, Angular client, backend APIs, shared libraries).
+            4. Post a comment on the issue summarizing your analysis and the implementation plan.
+            5. Add the label "ready-for-branch" to signal Stage 2 to proceed.
+
+            Be specific and technical. The downstream agents (branch creation, coding, review) will use your analysis.

@@ -1,0 +1,58 @@
+name: Stage 3 - Implement Code
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  implement:
+    if: github.event.label.name == 'ready-for-coding'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Claude - Implement Feature
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 3 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+
+            Issue #${{ github.event.issue.number }} has a branch and draft PR ready. Now implement the feature.
+
+            Title: ${{ github.event.issue.title }}
+            Body:
+            ${{ github.event.issue.body }}
+
+            Repository context:
+            - Blazor client: modernize UI components, update NuGet packages, ensure .NET 8-10 consistency
+            - Angular client: update npm packages, modernize components, align visually with Blazor client
+            - Backend APIs: update as needed to support frontend changes, keep consistent with chosen .NET version
+            - Both frontend clients must be visually and functionally in sync
+
+            Your job:
+            1. Check out the feature branch created in Stage 2 (feature/issue-${{ github.event.issue.number }}-*).
+            2. Read the existing codebase to understand the current structure.
+            3. Implement all changes described in the issue, following existing conventions.
+            4. Build and verify the solution compiles (dotnet build, npm install && ng build).
+            5. Commit your changes with a clear commit message referencing the issue.
+            6. Push the branch.
+            7. Add the label "ready-for-review" to the issue to trigger Stage 4.
+            8. Post a comment summarizing what was changed.

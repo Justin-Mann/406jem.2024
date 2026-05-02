@@ -1,0 +1,39 @@
+name: Stage 2 - Create Branch and PR
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  create-branch-pr:
+    if: github.event.label.name == 'ready-for-branch'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude - Create Branch and Draft PR
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 2 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+
+            Issue #${{ github.event.issue.number }} has been analyzed and is ready for implementation.
+
+            Title: ${{ github.event.issue.title }}
+
+            Your job:
+            1. Create a new git branch named: feature/issue-${{ github.event.issue.number }}-<short-slug-from-title>
+            2. Create a draft pull request from that branch targeting main.
+            3. Write a clear PR description referencing the issue and outlining what will be implemented.
+            4. Add the label "ready-for-coding" to the issue to trigger Stage 3.
+            5. Post a comment on the issue with the PR link.
+
+            Use the GitHub CLI (gh) or GitHub API via the provided token.

@@ -1,0 +1,46 @@
+name: Stage 4 - Code Review
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  review:
+    if: github.event.label.name == 'ready-for-review'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude - Review Code
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are Stage 4 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+            You are an independent code reviewer — you did NOT write this code.
+
+            Issue #${{ github.event.issue.number }} has been implemented. Review the PR associated with this issue.
+
+            Review criteria:
+            - Correctness: Does the implementation fulfill the feature request?
+            - Code quality: Clean, maintainable, follows existing patterns?
+            - Visual consistency: Are the Blazor and Angular clients visually and functionally in sync?
+            - .NET version consistency: Is the chosen .NET version (8-10) applied consistently?
+            - No regressions: Are existing features preserved?
+            - Security: No obvious vulnerabilities introduced?
+            - Build: Does it build cleanly?
+
+            Your job:
+            1. Find the PR associated with issue #${{ github.event.issue.number }}.
+            2. Review all changed files thoroughly.
+            3. Post a detailed review on the PR with specific inline comments where applicable.
+            4. If the code is acceptable: approve the PR, add label "review-approved", and mark the PR ready for review (undraft).
+            5. If changes are needed: request changes on the PR, add label "needs-revision" to the issue to trigger Stage 5.
+            6. Post a summary comment on the issue with your verdict.
