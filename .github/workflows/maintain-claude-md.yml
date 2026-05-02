@@ -1,0 +1,60 @@
+name: Maintain CLAUDE.md
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issues:
+    types: [labeled]
+
+jobs:
+  update-claude-md:
+    # Run on every PR, or when a 'claude' label is added to an issue
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issues' && github.event.label.name == 'claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Claude - Update CLAUDE.md
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Your job is to keep the CLAUDE.md file at the root of this repository accurate and current.
+
+            CLAUDE.md is a living codebase guide for AI agents and developers. It should contain:
+            - Repository overview and purpose
+            - Solution structure: every project, its role, and its tech stack
+            - .NET version(s) in use and any version constraints
+            - Frontend clients (Blazor, Angular) — their structure, conventions, and interdependencies
+            - Backend APIs — endpoints, patterns, shared libraries
+            - Build and run instructions
+            - Key conventions (naming, file organization, testing approach)
+            - Any known constraints or decisions (e.g., "must stay .NET 8–10 consistent")
+
+            Steps:
+            1. Read the current CLAUDE.md (if it exists).
+            2. Scan the repository structure: solution files, projects, package.json files, angular.json, etc.
+            3. Identify anything that has changed or is missing from CLAUDE.md.
+            4. Rewrite or update CLAUDE.md to reflect the current state of the codebase accurately.
+            5. Commit the updated CLAUDE.md to the current branch with message: "docs: update CLAUDE.md [automated]"
+
+            Be thorough but concise. Every agent that touches this repo will read this file first.
