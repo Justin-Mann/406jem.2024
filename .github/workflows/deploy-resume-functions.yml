@@ -1,28 +1,29 @@
-name: Deploy – MyResumeApi (Azure App Service)
+name: Deploy – ResumeFunctions (Azure Functions)
 
-# Fires only when MyResumeApi source changes.
-# Required secret: AZURE_MYRESUME_WEBAPP_PUBLISH_PROFILE
+# Fires only when ResumeFunctions source changes.
+# Required secret: AZURE_RESUMEFUNCTIONS_PUBLISH_PROFILE
+# Azure Functions App name: 406resumeapi
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'MyResumeApi/**'
-      - '.github/workflows/azure-webapps-dotnet-resumeapi-core.yml'
+      - 'ResumeFunctions/**'
+      - '.github/workflows/deploy-resume-functions.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 env:
-  AZURE_WEBAPP_NAME: MyResumeApi20250620071718
+  AZURE_FUNCTIONAPP_NAME: 406resumeapi
   DOTNET_VERSION: '9.x'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build MyResumeApi
+    name: Build ResumeFunctions
 
     steps:
       - uses: actions/checkout@v4
@@ -36,47 +37,43 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('MyResumeApi/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('ResumeFunctions/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ./MyResumeApi
+        working-directory: ./ResumeFunctions
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        working-directory: ./MyResumeApi
+        working-directory: ./ResumeFunctions
 
       - name: Publish
         run: dotnet publish --configuration Release --no-build --output ./publish
-        working-directory: ./MyResumeApi
+        working-directory: ./ResumeFunctions
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: myresumeapi-app
-          path: ./MyResumeApi/publish
+          name: resumefunctions-app
+          path: ./ResumeFunctions/publish
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    name: Deploy MyResumeApi
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.webapp-url }}
+    name: Deploy ResumeFunctions
 
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: myresumeapi-app
+          name: resumefunctions-app
           path: ./publish
 
-      - name: Deploy to Azure Web App
-        id: deploy
-        uses: azure/webapps-deploy@v3
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_MYRESUME_WEBAPP_PUBLISH_PROFILE }}
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_RESUMEFUNCTIONS_PUBLISH_PROFILE }}
           package: ./publish

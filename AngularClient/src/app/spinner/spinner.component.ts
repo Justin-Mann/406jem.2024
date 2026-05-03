@@ -1,17 +1,16 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-spinner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './spinner.component.html',
   styleUrl: './spinner.component.css'
 })
 export class SpinnerComponent {
-  isLoading = false;
+  isLoading = signal(false);
 
   showSpinner(loading: boolean) {
-    this.isLoading = loading;
+    this.isLoading.set(loading);
   }
 }

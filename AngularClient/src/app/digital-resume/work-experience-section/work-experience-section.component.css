@@ -1,87 +1,99 @@
 .sectionheader {
-    border-bottom: 2px solid #000000;
-    font-family: Arial;
-    font-size: 22px;
-    font-weight: 700;
+  border-bottom: 2px solid var(--jem-navy, #1e2d5a);
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .sectionbody {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-family: Arial;
-    font-size: 16px;
+  padding: 4px 0;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
 }
 
-ul.xpList, ul.jobXpList {
-    display: list-item;
-    list-style-type: none;
-    line-height: 1.4;
-    margin-bottom: 8px;
+ul.xpList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-    ul.xpList li.workXpItem {
-        padding: 10px;
-        margin: 10px 1% 25px 1%;
-        margin-bottom: 8px;
-        display: inline-block;
-        border-radius: 8px;
-        opacity: 0.8;
-        background-color: #f0f0f0;
-        box-shadow: 0 0 0px 0px #000;
-        width: 98%;
-        transition: all 1s;
-    }
+ul.xpList li.workXpItem {
+  padding: 12px 14px;
+  margin: 6px 0 16px;
+  border-radius: var(--jem-radius, 8px);
+  background-color: var(--jem-card-bg, #fff);
+  border: 1px solid var(--jem-border, #d0d8ea);
+  box-shadow: var(--jem-shadow, 0 2px 8px rgba(30,45,90,0.10));
+  width: 100%;
+  opacity: 0.92;
+  transition: box-shadow 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
 
-        ul.xpList li.workXpItem:hover {
-            box-shadow: 0 0 10px 5px #000;
-        }
+ul.xpList li.workXpItem:hover {
+  box-shadow: var(--jem-shadow-hover, 0 6px 24px rgba(30,45,90,0.18));
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
-            ul.xpList li.workXpItem:hover ul.jobXpList li {
-                transition: all 1s;
-                font-size: 16px;
-                line-height: 2;
-            }
+ul.xpList li.workXpItem:hover ul.jobXpList li {
+  font-size: 14px;
+  line-height: 1.9;
+}
 
-        ul.xpList li.workXpItem .note {
-            padding: 5px;
-            font-size: 12px;
-            display: inline-block;
-            text-align: center;
-            margin: 4px;
-            border-radius: 4px;
-            background-color: #ced7eb;
-            font-weight: 700;
-            transition: all 1s;
-        }
+ul.xpList .companyName {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+}
 
-        ul.xpList li.workXpItem:hover .note {
-            transition: all 1s;
-            font-size: 16px;
-            font-weight: 600;
-        }
+ul.xpList .position {
+  font-size: 16px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--jem-blue, #245a8e);
+}
 
-    ul.xpList .companyName, ul.xpList .position {
-        font-size: 18px;
-        font-weight: 700;
-    }
+ul.xpList .timeFrame {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jem-text-muted, #5a6070);
+}
 
-    ul.xpList .position {
-        font-style: italic;
-    }
+ul.jobXpList {
+  list-style: none;
+  padding: 0 0 0 4px;
+  margin: 6px 0 4px;
+}
 
-    ul.xpList .timeFrame {
-        font-weight: 700;
-        font-size: 14px;
-    }
+ul.jobXpList li {
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--jem-text-muted, #5a6070);
+  transition: font-size 0.3s ease, line-height 0.3s ease;
+}
 
-    ul.jobXpList li {
-        font-style: italic;
-        font-size: 12px;
-        transition: all 1s;
-    }
+ul.jobXpList li::before {
+  content: "\27bd\0020";
+  color: var(--jem-blue-light, #4a90c4);
+}
 
-        ul.jobXpList li:before {
-            color: #000;
-            content: "\27bd \0020";
-        }
+ul.xpList li.workXpItem .note {
+  display: inline-block;
+  padding: 3px 10px;
+  margin-top: 6px;
+  border-radius: 4px;
+  background-color: var(--jem-note-bg, #e8edf7);
+  border: 1px solid var(--jem-border, #d0d8ea);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  transition: font-size 0.3s ease;
+}
 
+ul.xpList li.workXpItem:hover .note {
+  font-size: 13px;
+}

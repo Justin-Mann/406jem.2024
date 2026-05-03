@@ -3,10 +3,10 @@
         <div class="row">
 
             <div class="col-12 text-center">
-                <div class="menu-icon" (click)="openMenu()">
-                    <i class="{{menu_icon}}"></i>
+                <div class="menu-icon" (click)="toggleMenu()">
+                    <i [class]="menuIcon()"></i>
                 </div>
-                <div class="jem_menu" [class.mobile_menu]="menuValue">
+                <div class="jem_menu" [class.mobile_menu]="menuOpen()">
                     <ul>
                         <li [routerLink]="['/home']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
                             Home
@@ -22,17 +22,19 @@
             </div>
 
             <div class="col-12">
-                <div class="row logo" *ngIf="!isResumePage()">
-                    <div class="col-4">
-                        <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
+                @if (!isResumePage()) {
+                    <div class="row logo">
+                        <div class="col-4">
+                            <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
+                        </div>
+                        <div class="col-4 text-capitalize text-center jem-title-header">
+                            <div class="h1">406JEM</div>
+                        </div>
+                        <div class="col-4">
+                            <img src="assets/img/bojack-samuri_82x100_fr.png" alt="" class="float-left">
+                        </div>
                     </div>
-                    <div class="col-4 text-capitalize text-center jem-title-header">
-                        <div class="h1">406JEM</div>
-                    </div>
-                    <div class="col-4">
-                        <img src="assets/img/bojack-samuri_82x100_fr.png" alt="" class="float-left">
-                    </div>
-                </div>
+                }
             </div>
 
         </div>

@@ -22,12 +22,12 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Claude - Address Review Feedback
         uses: anthropics/claude-code-action@beta
@@ -43,7 +43,7 @@ jobs:
             1. Find the PR associated with issue #${{ github.event.issue.number }}.
             2. Read all review comments, requested changes, and inline feedback on the PR.
             3. Check out the feature branch and implement all requested changes.
-            4. Build and verify the solution still compiles.
+            4. Build and verify the solution still compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient).
             5. Commit and push the changes.
             6. Reply to each review comment confirming it was addressed.
             7. Remove the "needs-revision" label and add "ready-for-review" to trigger Stage 4 again.
@@ -64,12 +64,12 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Claude - Address PR Review Comments
         uses: anthropics/claude-code-action@beta
@@ -87,7 +87,7 @@ jobs:
             Your job:
             1. Read all review comments on this PR carefully.
             2. Check out the PR branch and implement all requested changes.
-            3. Build and verify the solution compiles.
+            3. Build and verify the solution compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient).
             4. Commit and push the changes.
             5. Reply to each review thread confirming it was addressed.
             6. Post a summary comment on the PR.

@@ -1,8 +1,7 @@
-import { Component, inject, AfterViewInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
-import { ResumeData, WorkExperienceItem } from '../interfaces/resume.interface'; // Adjust the path as needed
+import { ResumeData } from '../interfaces/resume.interface';
 import { ContactSectionComponent } from './contact-section/contact-section.component';
 import { EducationSectionComponent } from "./education-section/education-section.component";
 import { CustomSectionsComponent } from "./custom-sections/custom-sections.component";
@@ -13,36 +12,33 @@ import { WorkExperienceSectionComponent } from "./work-experience-section/work-e
   selector: 'app-digital-resume',
   standalone: true,
   imports: [
-    CommonModule,
     SpinnerComponent,
     ContactSectionComponent,
     EducationSectionComponent,
     CustomSectionsComponent,
     GeneralSectionComponent,
     WorkExperienceSectionComponent
-],
+  ],
   templateUrl: './digital-resume.component.html',
   styleUrl: './digital-resume.component.css'
 })
-export class DigitalResumeComponent implements AfterViewInit{
-  title = 'Digital Resume - 406JEM Angular Client';
-   _rDataService = inject(ResumeDataService);
-   resumes: ResumeData[] | undefined;
-   resumeData: ResumeData | undefined;
-   resumeLogoUrl = 'assets/img/bojack-samuri_82x100_fl.png';
-   @ViewChild(SpinnerComponent) spinnerComponent?: SpinnerComponent;
+export class DigitalResumeComponent implements OnInit {
+  private dataService = inject(ResumeDataService);
 
-  ngAfterViewInit(): void {
-    this.spinnerComponent?.showSpinner(true);
-    this._rDataService.fetchResumeData().subscribe(
-      (data) => {
-        this.resumeData = data;
-        this.spinnerComponent?.showSpinner(false);
-      }, 
-      (error) => {
-        console.error('Error fetching resume data:', error);
-        this.spinnerComponent?.showSpinner(false);
+  resumeData = signal<ResumeData | null>(null);
+  isLoading = signal(true);
+  readonly logoUrl = 'assets/img/bojack-samuri_82x100_fl.png';
+
+  ngOnInit(): void {
+    this.dataService.fetchResumeData().subscribe({
+      next: (data) => {
+        this.resumeData.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching resume data:', err);
+        this.isLoading.set(false);
       }
-    );
+    });
   }
 }

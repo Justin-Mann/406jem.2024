@@ -1,13 +1,20 @@
-<div *ngIf="eduItems">
-    <div class="sectionheader">Education</div>
-
-    <div class="sectionbody">
-        <ul class="eduList">
-            <li *ngFor="let item of eduItems" class="eduListing">
-                <div class="schoolName">{{item.name}}</div>
-                <div *ngIf="item.degree" class="degree"><img src="assets/img/academic-degree-3-16.png" /> {{item.degreeName}} - {{item.degreeYear}}</div>
-                <div *ngFor="let aos of item.areasOfStudy" class="areaOfStudy">{{aos}}</div>
-            </li>
-        </ul>
-    </div>
-</div>
+@if (eduItems()) {
+  <div class="sectionheader">Education</div>
+  <div class="sectionbody">
+    <ul class="eduList">
+      @for (item of eduItems()!; track item.name) {
+        <li class="eduListing">
+          <div class="schoolName">{{ item.name }}</div>
+          @if (item.degree) {
+            <div class="degree">
+              <img src="assets/img/academic-degree-3-16.png" alt="Degree" /> {{ item.degreeName }} – {{ item.degreeYear }}
+            </div>
+          }
+          @for (aos of (item.areasOfStudy ?? []); track aos) {
+            <div class="areaOfStudy">{{ aos }}</div>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+}
