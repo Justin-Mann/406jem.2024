@@ -1,4 +1,4 @@
-﻿@using BlazorApp.Models
+@using BlazorApp.Models
 
 @if (@ContactInfo != null)
 {
@@ -13,30 +13,31 @@
                     switch (@contact.Type)
                     {
                         case ContactTypeEnum.Phone:
-                            <li class="@contact.Type">
+                            <li>
+                                <i class="fa-solid fa-phone"></i>
                                 <a href="tel:@contact.DisplayValue">@contact.DisplayValue</a>
                             </li>
                             break;
                         case ContactTypeEnum.Website:
-                            <li class="@contact.Type">
-                                <a href="@contact.Url" target="_new" >@contact.DisplayValue</a>
+                            <li>
+                                <i class="fa-solid fa-globe"></i>
+                                <a href="@contact.Url" target="_new">@contact.DisplayValue</a>
                             </li>
                             break;
                         case ContactTypeEnum.Email:
-                            <li class="@contact.Type">
+                            <li>
+                                <i class="fa-solid fa-envelope"></i>
                                 <a href="mailto:@contact.MailTo">@contact.DisplayValue</a>
                             </li>
                             break;
                         default:
-                            <li class="@contact.Type">
-                                @contact.DisplayValue
-                            </li>
+                            <li>@contact.DisplayValue</li>
                             break;
                     }
-                } else {
-                    <li>
-                        @contact.DisplayValue
-                    </li>
+                }
+                else
+                {
+                    <li>@contact.DisplayValue</li>
                 }
             }
         </ul>

@@ -1,49 +1,53 @@
 .sectionheader {
-    border-bottom: 2px solid #000000;
-    font-family: Arial;
-    font-size: 22px;
-    font-weight: 700;
+  border-bottom: 2px solid var(--jem-navy, #1e2d5a);
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .sectionbody {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-family: Arial;
-    font-size: 16px;
+  padding: 4px 0;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
 }
 
 .eduList {
-    display: list-item;
-    list-style-type: none;
-    padding-inline-start: 3ch;
-    line-height: normal;
-    margin-bottom: 8px;
+  list-style: none;
+  padding: 0 0 0 4px;
+  line-height: 1.5;
+  margin-bottom: 8px;
 }
 
-    .eduList li {
-        padding-left: 1em;
-    }
+.eduList li {
+  padding: 4px 0;
+}
 
-    .eduList .schoolName {
-        font-size: 18px;
-        font-weight: 700;
-    }
+.eduList .schoolName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+}
 
-    .eduList .degree {
-        font-weight: 700;
-    }
+.eduList .degree {
+  font-size: 13px;
+  font-weight: 700;
+  margin-left: 12px;
+  display: block;
+  color: var(--jem-blue, #245a8e);
+}
 
-    .eduList .areaOfStudy {
-        font-style: italic;
-    }
+.eduList .degree img {
+  height: 14px;
+  filter: drop-shadow(0 0 3px rgba(0, 160, 0, 0.7));
+}
 
-    .eduList .degree, .eduList .areaOfStudy {
-        font-size: 14px;
-        margin-left: 15px;
-        display: block;
-    }
-
-        .eduList .degree img {
-            height: 100%;
-            filter: drop-shadow(0px 0px 4px green);
-        }
+.eduList .areaOfStudy {
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 12px;
+  display: block;
+  color: var(--jem-text-muted, #5a6070);
+}

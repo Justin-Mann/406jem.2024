@@ -1,26 +1,32 @@
 .header {
-    border-bottom: 3px solid #000000;
-    position: relative;
-    margin: 10px 0px 20px 0px;
+  border-bottom: 3px solid var(--jem-navy, #1e2d5a);
+  position: relative;
+  margin: 12px 0 20px;
+  padding-bottom: 12px;
 }
 
-    .header #logo {
-    }
+.header #name {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
 
-    .header #name {
-        text-transform: uppercase;
-    }
+.header #position {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  color: var(--jem-blue, #245a8e);
+}
 
-    .header #position {
-        text-transform: uppercase;
-    }
+.header #subtitle {
+  color: var(--jem-text-muted, #5a6070);
+  font-size: 0.9rem;
+}
 
-    .header #subtitle {
-    }
-
-    .header #simplegoal {
-        line-height: normal;
-        font-family: 'caviar';
-        position: absolute;
-        bottom: 0;
-    }
+.header #simplegoal {
+  line-height: 1.5;
+  font-family: caviar, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  color: var(--jem-text-muted, #5a6070);
+  position: absolute;
+  bottom: 12px;
+}

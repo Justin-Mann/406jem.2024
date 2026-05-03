@@ -1,27 +1,14 @@
-﻿@using BlazorApp.Models
+@using BlazorApp.Models
 
-<style>
-    .fancyList {
-        display: list-item;
-        list-style-type: none;
-        padding-inline-start: 3ch;
-    }
-    .fancyList li {
-        list-style-type: '✓';
-        padding-left: 1em;
-    }
-</style>
-
-@if( (!string.IsNullOrEmpty(@SectionName)) && @Items != null){
+@if ((!string.IsNullOrEmpty(@SectionName)) && @Items != null)
+{
     <div class="sectionheader">@SectionName</div>
 
     <div class="sectionbody">
         <ul class="fancyList">
             @foreach (var item in Items)
             {
-                <li class="">
-                    @item
-                </li>
+                <li>@item</li>
             }
         </ul>
     </div>
