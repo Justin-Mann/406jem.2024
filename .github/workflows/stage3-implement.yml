@@ -28,9 +28,9 @@ jobs:
           node-version: '22'
 
       - name: Claude - Implement Feature
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             You are Stage 3 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
@@ -42,10 +42,9 @@ jobs:
             ${{ github.event.issue.body }}
 
             Repository context:
-            - Blazor client (BlazorClient/): Blazor WASM on .NET 9, Blazorise Bootstrap5 + FontAwesome
-            - Angular client (AngularClient/): Angular 19, standalone components, signal-based inputs, @if/@for control flow
-            - MyResumeApi (MyResumeApi/): ASP.NET Core Web API on .NET 9, deploys to Azure App Service
-            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 9
+            - Blazor client (BlazorClient/): Blazor WASM on .NET 9, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
+            - Angular client (AngularClient/): Angular 19, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
+            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 9; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
             - Both frontend clients must be visually and functionally in sync
             - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
 
