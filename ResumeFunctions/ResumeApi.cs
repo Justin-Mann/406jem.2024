@@ -28,7 +28,7 @@ namespace ResumeFunctions
         }
 
         [Function("myResume")]
-        public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resumes/myresume")] HttpRequest req)
         {
             _logger.Log(LogLevel.Information, "Getting my resume...");
             var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");

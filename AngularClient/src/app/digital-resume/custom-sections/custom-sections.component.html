@@ -1,8 +1,10 @@
-<ng-container *ngFor="let item of customItems">
-    <div class="sectionheader">{{item.name}}</div>
-    <div class="sectionbody">
-        <ul>
-            <li *ngFor="let citem of item.customItems">{{citem.value}}</li>
-        </ul>
-    </div>
-</ng-container>
+@for (item of (customItems() ?? []); track item.name) {
+  <div class="sectionheader">{{ item.name }}</div>
+  <div class="sectionbody">
+    <ul>
+      @for (citem of item.customItems; track citem.value) {
+        <li>{{ citem.value }}</li>
+      }
+    </ul>
+  </div>
+}

@@ -1,6 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BlazorApp.Models
 {
@@ -50,7 +49,7 @@ namespace BlazorApp.Models
         public CustomTypeEmun? Type { get; set; }
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum CustomTypeEmun
     {
         Lang, Win, Comp, CompNetwork, Cloud, RDB, DDB, DataLang
@@ -83,7 +82,7 @@ namespace BlazorApp.Models
         public string? MailTo { get; set; }
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ContactTypeEnum { 
         Phone, Website, Email
     }

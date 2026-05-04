@@ -1,21 +1,28 @@
 .sectionheader {
-    border-bottom: 2px solid #000000;
-    font-family: Arial;
-    font-size: 22px;
-    font-weight: 700;
+  border-bottom: 2px solid var(--jem-navy, #1e2d5a);
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
 }
+
 .sectionbody {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-family: Arial;
-    font-size: 16px;
+  padding: 4px 0;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
 }
+
 .fancyList {
-    display: list-item;
-    list-style-type: none;
-    padding-inline-start: 3ch;
+  list-style: none;
+  padding: 0 0 0 4px;
+  margin: 0;
 }
+
 .fancyList li {
-    list-style-type: '✓';
-    padding-left: 1em;
+  list-style-type: '✓ ';
+  padding-left: 0.75em;
+  line-height: 1.9;
+  color: var(--jem-text, #1a1a2e);
 }

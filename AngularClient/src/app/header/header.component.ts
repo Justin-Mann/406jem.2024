@@ -1,27 +1,35 @@
-import { NgIf } from '@angular/common';
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal, computed } from '@angular/core';
+import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NgIf],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
- menuValue : boolean = false;
- menu_icon : string ='bi bi-list';
+  private router = inject(Router);
 
- openMenu(){
-    this.menuValue =! this.menuValue ;
-    this.menu_icon = this.menuValue ? 'bi bi-x' : 'bi bi-list';
+  menuOpen = signal(false);
+  menuIcon = computed(() => this.menuOpen() ? 'bi bi-x' : 'bi bi-list');
+
+  private navEnd = toSignal(
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+  );
+
+  isResumePage = computed(() => {
+    this.navEnd();
+    return this.router.url.includes('/digitalresume');
+  });
+
+  toggleMenu() {
+    this.menuOpen.update(v => !v);
   }
- closeMenu() {
-    this.menuValue = false;
-    this.menu_icon = 'bi bi-list';
-  }
-  isResumePage(): boolean {
-    return window.location.pathname.endsWith('/digitalresume');
+
+  closeMenu() {
+    this.menuOpen.set(false);
   }
 }

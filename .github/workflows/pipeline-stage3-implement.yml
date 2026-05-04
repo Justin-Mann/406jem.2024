@@ -20,19 +20,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Claude - Implement Feature
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          direct_prompt: |
+          prompt: |
             You are Stage 3 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
             Issue #${{ github.event.issue.number }} has a branch and draft PR ready. Now implement the feature.
@@ -42,16 +42,17 @@ jobs:
             ${{ github.event.issue.body }}
 
             Repository context:
-            - Blazor client: modernize UI components, update NuGet packages, ensure .NET 8-10 consistency
-            - Angular client: update npm packages, modernize components, align visually with Blazor client
-            - Backend APIs: update as needed to support frontend changes, keep consistent with chosen .NET version
+            - Blazor client (BlazorClient/): Blazor WASM on .NET 9, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
+            - Angular client (AngularClient/): Angular 19, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
+            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 9; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
             - Both frontend clients must be visually and functionally in sync
+            - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
 
             Your job:
             1. Check out the feature branch created in Stage 2 (feature/issue-${{ github.event.issue.number }}-*).
-            2. Read the existing codebase to understand the current structure.
+            2. Read the existing codebase (especially CLAUDE.md) to understand the current structure.
             3. Implement all changes described in the issue, following existing conventions.
-            4. Build and verify the solution compiles (dotnet build, npm install && ng build).
+            4. Build and verify the solution compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient).
             5. Commit your changes with a clear commit message referencing the issue.
             6. Push the branch.
             7. Add the label "ready-for-review" to the issue to trigger Stage 4.

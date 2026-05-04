@@ -18,11 +18,11 @@ jobs:
           fetch-depth: 0
 
       - name: Claude - Review Code
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          direct_prompt: |
+          prompt: |
             You are Stage 4 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
             You are an independent code reviewer — you did NOT write this code.
 
@@ -32,7 +32,7 @@ jobs:
             - Correctness: Does the implementation fulfill the feature request?
             - Code quality: Clean, maintainable, follows existing patterns?
             - Visual consistency: Are the Blazor and Angular clients visually and functionally in sync?
-            - .NET version consistency: Is the chosen .NET version (8-10) applied consistently?
+            - .NET 9 consistency: All projects target net9.0; no drift to older frameworks
             - No regressions: Are existing features preserved?
             - Security: No obvious vulnerabilities introduced?
             - Build: Does it build cleanly?

@@ -1,22 +1,20 @@
-﻿@using BlazorApp.Models
+@using BlazorApp.Models
 
 @if (@CSections != null)
 {
-    @foreach(var csi in CSections)
+    @foreach (var csi in CSections)
     {
         @if ((!string.IsNullOrEmpty(@csi.Name)) && csi.CustomItems != null)
         {
-        <div class="sectionheader">@csi.Name</div>
-        <div class="sectionbody">
-             <ul class="">
-                @foreach (var item in csi.CustomItems)
-                {
-                    <li class="">
-                        @item.Value
-                    </li>
-                }
-            </ul> 
-        </div> 
+            <div class="sectionheader">@csi.Name</div>
+            <div class="sectionbody">
+                <ul class="customList">
+                    @foreach (var item in csi.CustomItems)
+                    {
+                        <li>@item.Value</li>
+                    }
+                </ul>
+            </div>
         }
     }
 }

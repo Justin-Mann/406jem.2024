@@ -1,120 +1,175 @@
-@font-face {
-    font-family: caviar;
-    src: url(./assets/font/CaviarDreams.ttf);
+/* ── Design tokens ──────────────────────────────────────────── */
+:root {
+  --jem-navy:        #1e2d5a;
+  --jem-blue:        #245a8e;
+  --jem-blue-hover:  #1a4a7a;
+  --jem-blue-light:  #4a90c4;
+  --jem-bg:          #f4f6fb;
+  --jem-card-bg:     #ffffff;
+  --jem-note-bg:     #e8edf7;
+  --jem-border:      #d0d8ea;
+  --jem-text:        #1a1a2e;
+  --jem-text-muted:  #5a6070;
+  --jem-glow:        rgba(83, 243, 0, 0.72);
+  --jem-radius:      8px;
+  --jem-shadow:      0 2px 8px rgba(30, 45, 90, 0.10);
+  --jem-shadow-hover:0 6px 24px rgba(30, 45, 90, 0.18);
+  --jem-transition:  0.25s ease;
 }
 
+/* ── Custom fonts ───────────────────────────────────────────── */
 @font-face {
-    font-family: caviar-bold;
-    src: url(./assets/font/Caviar_Dreams_Bold.ttf);
+  font-family: caviar;
+  src: url(./assets/font/CaviarDreams.ttf);
+  font-display: swap;
+}
+@font-face {
+  font-family: caviar-bold;
+  src: url(./assets/font/Caviar_Dreams_Bold.ttf);
+  font-display: swap;
+}
+@font-face {
+  font-family: caviar-italic;
+  src: url(./assets/font/CaviarDreams_BoldItalic.ttf);
+  font-display: swap;
+}
+@font-face {
+  font-family: caviar-bold-italic;
+  src: url(./assets/font/CaviarDreams_Italic.ttf);
+  font-display: swap;
 }
 
-@font-face {
-    font-family: caviar-italic;
-    src: url(./assets/font/CaviarDreams_BoldItalic.ttf);
+/* ── Base ───────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--jem-bg);
+  color: var(--jem-text);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-@font-face {
-    font-family: caviar-bold-italic;
-    src: url(./assets/font/CaviarDreams_Italic.ttf);
+h1:focus { outline: none; }
+
+a, .btn-link {
+  color: var(--jem-blue);
+  text-decoration: none;
+  transition: color var(--jem-transition), text-shadow var(--jem-transition);
+}
+a:hover {
+  color: var(--jem-blue-hover);
+  text-shadow: 0 0 6px var(--jem-glow);
 }
 
-html, body { 
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-    height: 100%; 
-}
-body { 
-    margin: 0; 
-    font-family: Roboto, "Helvetica Neue", sans-serif; 
-}
-body .jem-card {
-    font-family: 'caviar';
+/* ── Utility classes ────────────────────────────────────────── */
+.pretty-text {
+  font-family: caviar, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
 }
 
 .page-note {
-    display: inline-block;
-    text-align: center;
-    margin: 10px 5% 10px 5%;
-    padding: 8px;
-    border-radius: 4px;
-    background-color: #ced7eb;
-    width: 90% !important;
+  display: inline-block;
+  text-align: center;
+  margin: 12px 5%;
+  padding: 14px 20px;
+  border-radius: var(--jem-radius);
+  background-color: var(--jem-note-bg);
+  border: 1px solid var(--jem-border);
+  width: 90% !important;
+  font-size: 15px;
+  line-height: 1.7;
 }
 
-h1:focus {
-    outline: none;
+/* ── Cards ──────────────────────────────────────────────────── */
+.jem-card {
+  padding: 0 !important;
+  border: 1px solid var(--jem-border) !important;
+  border-radius: var(--jem-radius) !important;
+  box-shadow: var(--jem-shadow);
+  transition: box-shadow var(--jem-transition), transform var(--jem-transition);
+  background-color: var(--jem-card-bg);
+}
+.jem-card:hover {
+  box-shadow: var(--jem-shadow-hover);
+  transform: translateY(-2px);
+}
+.jem-card .card-header {
+  font-family: caviar, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  background-color: var(--jem-note-bg);
+  border-bottom: 1px solid var(--jem-border);
+  border-radius: var(--jem-radius) var(--jem-radius) 0 0 !important;
+  padding: 12px 16px;
+}
+.jem-card .card-header a {
+  color: var(--jem-navy);
+  text-decoration: none;
+}
+.jem-card .card-header a:hover {
+  color: var(--jem-blue);
+  text-shadow: none;
+}
+.jem-card .card-body {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 16px;
+  color: var(--jem-text);
+}
+.jem-card .card-footer {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--jem-text-muted);
+  background-color: transparent;
+  border-top: 1px solid var(--jem-border);
+  padding: 8px 16px;
 }
 
-a, .btn-link {
-    color: #0071c1;
+/* ── Project list groups ────────────────────────────────────── */
+.project-menu-list-group {
+  font-family: Arial, sans-serif;
+}
+.project-menu-list-group a {
+  font-weight: 600;
+  color: var(--jem-navy);
+  opacity: 0.85;
+  transition: opacity var(--jem-transition), color var(--jem-transition);
+}
+.project-menu-list-group a:hover {
+  opacity: 1;
+  color: var(--jem-blue);
+  text-shadow: none;
+}
+.project-menu-list-group ul li.list-group-item-description {
+  font-size: 0.65em;
+  text-align: left;
+  color: var(--jem-text-muted);
 }
 
-a:hover {
-    text-shadow: 0 0 5px #53f300b8;
-}
-
+/* ── Buttons ────────────────────────────────────────────────── */
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+  color: #fff;
+  background-color: var(--jem-blue);
+  border-color: var(--jem-blue-hover);
+}
+.btn:focus, .btn:active:focus,
+.form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem #fff, 0 0 0 0.25rem var(--jem-blue-light);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-.pretty-text {
-    font-weight: 16px;
-    font-weight: 700;
-    font-family: 'caviar';
-}
-
+/* ── Footer watermark ───────────────────────────────────────── */
 .fixed-row-bottom {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    z-index: -1;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  z-index: -1;
+  pointer-events: none;
 }
 .fixed-row-bottom .bojack-footer {
-    width: 75%;
-    opacity: 0.15;
-    margin-left: auto; 
-    margin-right: auto;
+  width: 75%;
+  opacity: 0.12;
+  margin: 0 auto;
+  display: block;
 }
-
-.jem-card {
-    padding: 0px !important;
-}
-    .jem-card .card-body {
-        font-size: 16px;
-        font-weight: 600;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    .jem-card .card-footer {
-        font-size: 12px;
-        font-weight: 500;
-        text-align: left;
-    }
-    .jem-card .card-header {
-        font-weight: 700;
-        font-size: 22px;
-    }
-    .jem-card .card-header a {
-        text-decoration: none;
-        color: inherit;
-    }
-    .jem-card .card-header a:hover {
-        color: #245a8e;
-    }
-
-
-
-
-
-
-
-

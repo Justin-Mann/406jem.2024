@@ -1,13 +1,21 @@
 .home-page-text-block {
-    margin-top: 1%;
-    padding-top: 2%;
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'caviar';
+  margin-top: 5%;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: caviar, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.8;
 }
+
 .home-page-text-block a {
-    opacity: 0.8 !important;
-    text-decoration: none !important;
-    font-weight: 700;
-    color: #2f3e6f;
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.home-page-text-block a:hover {
+  opacity: 1;
+  color: var(--jem-blue, #245a8e);
+  text-shadow: none;
 }
