@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run *)",
+      "Bash(npm install *)",
+      "Bash(Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue)",
+      "Bash(npm run *)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" status)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" add AngularClient/package.json AngularClient/package-lock.json)",
+      "Bash(git -C c:/Users/justi/Repos/406jem.2024 commit -m ' *)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" push)",
+      "Bash(dotnet --version)",
+      "Bash(npm --version)",
+      "Bash(dotnet build *)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" add MyResumeApi/Program.cs BlazorClient/wwwroot/appsettings.Development.json AngularClient/src/environments/environment.ts AngularClient/src/environments/environment.prod.ts AngularClient/src/app/services/data/resume-data.service.ts AngularClient/angular.json)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2024\\\\.github\\\\workflows\\\\azure-webapps-dotnet-resumeapi-core.yml\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(gh api *)",
+      "Bash(git fetch *)",
+      "Bash(python3 -c \"import sys,json,base64; print\\(base64.b64decode\\(json.load\\(sys.stdin\\)['content']\\).decode\\(\\)\\)\")",
+      "Bash(node -e \"const chunks=[]; process.stdin.on\\('data',c=>chunks.push\\(c\\)\\); process.stdin.on\\('end',\\(\\)=>process.stdout.write\\(Buffer.from\\(chunks.join\\(''\\).replace\\(/\\\\n/g,''\\),'base64'\\).toString\\(\\)\\)\\)\")",
+      "Bash(git merge *)",
+      "Bash(gh workflow *)"
+    ]
+  }
+}
