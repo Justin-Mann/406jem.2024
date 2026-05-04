@@ -34,7 +34,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          direct_prompt: |
             You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
             Issue #${{ github.event.issue.number }} received review feedback that requires changes.
@@ -76,7 +76,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          direct_prompt: |
             You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
             A reviewer has requested changes on PR #${{ github.event.pull_request.number }}.
