@@ -56,7 +56,7 @@ else
     {
         try
         {
-            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/resumes/myresume");
+            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/resumes/myresume");
             loadingMessageShow = false;
             StateHasChanged();
         }

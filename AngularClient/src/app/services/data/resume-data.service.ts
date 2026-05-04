@@ -12,6 +12,6 @@ export class ResumeDataService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
 
   fetchResumeData(): Observable<ResumeData> {
-    return this.http.get<ResumeData>(`${this.apiBaseUrl}/resumes/myresume`);
+    return this.http.get<ResumeData>(`${this.apiBaseUrl}/api/resumes/myresume`);
   }
 }
