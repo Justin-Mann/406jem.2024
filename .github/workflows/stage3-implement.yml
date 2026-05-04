@@ -32,7 +32,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          direct_prompt: |
+          prompt: |
             You are Stage 3 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
             Issue #${{ github.event.issue.number }} has a branch and draft PR ready. Now implement the feature.
