@@ -3,7 +3,7 @@
 ## Solution Overview
 
 **File:** `406JemWebApps.sln`  
-A personal portfolio/resume showcase with two frontend clients (Blazor WASM + Angular SPA), a REST API, and an Azure Functions API. Both frontends render the same digital resume data from the same backend.
+A personal portfolio/resume showcase with two frontend clients (Blazor WASM + Angular SPA) and an Azure Functions REST API. Both frontends render the same digital resume data from the same backend.
 
 ---
 
@@ -13,7 +13,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Type:** Blazor WebAssembly (static SPA)
 - **Framework:** .NET 9 / `Microsoft.NET.Sdk.BlazorWebAssembly`
 - **Root namespace:** `BlazorApp.BlazorClient`
-- **Deploy:** Azure Static Web Apps (workflow: `azure-static-web-apps-thankful-island-023668f10.yml`)
+- **Deploy:** Azure Static Web Apps (workflow: `deploy-blazor.yml`)
 - **Live URL:** https://406jem.com
 - **Key packages:** Blazorise 1.7.x (Bootstrap5 + FontAwesome), System.Text.Json (built-in)
 - **Entry:** `Program.cs` → `App.razor` → `Layout/MainLayout.razor`
@@ -29,12 +29,14 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat)
 - **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs, favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
+- **Backend URL:** `https://406resumeapi.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
+- **API call:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`
 
 ### AngularClient (`AngularClient/`)
 - **Type:** Angular SPA (standalone components, no NgModules)
 - **Framework:** Angular 19 / TypeScript 5.6
 - **Build:** `@angular/build:application`
-- **Deploy:** Azure Static Web Apps (workflow: `azure-static-web-apps-brave-bush-0375f9910.yml`)
+- **Deploy:** Azure Static Web Apps (workflow: `deploy-angular.yml`)
 - **Live URL:** https://angular.406jem.com
 - **Key packages:** Angular Material 19, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 17
 - **Entry:** `src/main.ts` → `src/app/app.component.ts`
@@ -50,32 +52,35 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
     - `work-experience-section/` — job cards with hover effects
     - `custom-sections/` — tech/skills lists
   - `app/spinner/` — loading overlay
-- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls `MyResumeApi`
+- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls ResumeFunctions API
 - **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models
 - **Styles:** `src/styles.css` — global; each component has its own `.css`
 - **Config:** `angular.json`, `tsconfig.json`
-
-### MyResumeApi (`MyResumeApi/`)
-- **Type:** ASP.NET Core Web API
-- **Framework:** .NET 9 / `Microsoft.NET.Sdk.Web`
-- **Deploy:** Azure App Service (workflow: `azure-webapps-dotnet-resumeapi-core.yml`)
-- **Live URL:** https://myresumeapi20250620071718.azurewebsites.net
-- **Key packages:** Swashbuckle.AspNetCore (Swagger UI)
-- **Controllers:** `Controllers/ResumeController.cs` — returns `DigitalResumeModel` from a static JSON file
-- **Data:** `ResumeDataFile/JustinMann_062024.json` — the resume JSON source of truth
-- **Models:** `Models/DigitalResumeModel.cs` — shared model with BlazorClient
-- **Swagger:** enabled in development; endpoint `GET /resumes/myresume`
+- **Backend URL:** `https://406resumeapi.azurewebsites.net` (in `src/environments/environment.prod.ts`)
+- **API call:** `GET /api/resumes/myresume` in `resume-data.service.ts`
 
 ### ResumeFunctions (`ResumeFunctions/`)
-- **Type:** Azure Functions v4 (isolated worker)
+- **Type:** Azure Functions v4 (isolated worker, ASP.NET Core integration)
 - **Framework:** .NET 9 / `Microsoft.NET.Sdk`
-- **Deploy:** Azure Functions (workflow: `azure-webapps-dotnet-core.yml`)
-- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.x, `Azure.Storage.Blobs`, Newtonsoft.Json
-- **Data:** `StaticData/Resumes/JustinMann_062024.json`
-- **Note:** Separate HTTP-trigger implementation of the same resume API; Azure blob storage integration stubbed in
+- **Azure app name:** `406resumeapi`
+- **Deploy:** Azure Functions App Service (workflow: `deploy-functions.yml`)
+- **Live URL:** https://406resumeapi.azurewebsites.net
+- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.0.0, `Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore` 2.0.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.0, Newtonsoft.Json 13.0.3
+- **Entry:** `Program.cs` — `FunctionsApplication.CreateBuilder` + `ConfigureFunctionsWebApplication()`
+- **Functions:** `ResumeApi.cs`
+  - `myResume` — `GET /api/resumes/myresume` (Anonymous auth) — **primary endpoint used by both clients**
+  - `resumes` — `GET /api/resumes` (Function auth) — returns full array
+- **Data:** `StaticData/Resumes/JustinMann_062024.json` — resume JSON source of truth (copied to output on build)
+- **CORS:** `builder.Services.AddCors()` is configured but `app.UseCors()` is **not called** — CORS middleware is not active. This needs to be fixed if browser clients start hitting CORS errors.
+- **Default route prefix:** `api` (Azure Functions default for isolated worker — no `routePrefix` override in `host.json`)
+
+### MyResumeApi (`MyResumeApi/`)
+- **Status: DEPRECATED / NOT IN USE**
+- This was the original ASP.NET Core Web API backend. It has been replaced by ResumeFunctions as part of the Azure account migration. The project still exists in the repo but is not deployed and has no active workflow.
+- **Do not use or deploy this project.** Both clients now point to `406resumeapi.azurewebsites.net` (the Azure Functions app).
 
 ### Client (`Client/`)
-- **Type:** Legacy stub — only contains `Pages/Home.razor`; appears to be a leftover from initial scaffolding
+- **Type:** Legacy stub — only contains `Pages/Home.razor`; leftover from initial scaffolding
 - **Not part of active builds**
 
 ---
@@ -95,12 +100,12 @@ Both frontend clients maintain visual/functional parity:
 ## Data Flow
 
 ```
-Static JSON files  →  ResumeFunctions (Azure Fn) or MyResumeApi (ASP.NET)
-                                    ↓
-                   GET /resumes/myresume
-                                    ↓
-                  BlazorClient  |  AngularClient
-                    (WASM)      |     (SPA)
+StaticData/Resumes/JustinMann_062024.json
+            ↓
+  ResumeFunctions (Azure Functions, isolated worker)
+  GET https://406resumeapi.azurewebsites.net/api/resumes/myresume
+            ↓
+  BlazorClient (https://406jem.com)  |  AngularClient (https://angular.406jem.com)
 ```
 
 ---
@@ -109,12 +114,44 @@ Static JSON files  →  ResumeFunctions (Azure Fn) or MyResumeApi (ASP.NET)
 
 | File | Trigger | Target |
 |------|---------|--------|
-| `azure-static-web-apps-thankful-island-023668f10.yml` | push/PR to `main` | Blazor → Azure SWA |
-| `azure-static-web-apps-brave-bush-0375f9910.yml` | push/PR to `main` | Angular → Azure SWA |
-| `azure-webapps-dotnet-resumeapi-core.yml` | push/PR to `main` | MyResumeApi → Azure App Service |
-| `azure-webapps-dotnet-core.yml` | push/PR to `main` | ResumeFunctions → Azure Functions |
-| `claude.yml` | PR events | Claude Code PR review/assistance |
-| `stage1-5-*.yml` | Manual / PR | Multi-agent CI/CD pipeline |
+| `deploy-blazor.yml` | push to `main` (BlazorClient/** paths) | Blazor → Azure SWA |
+| `deploy-angular.yml` | push to `main` (AngularClient/** paths) | Angular → Azure SWA |
+| `deploy-functions.yml` | push to `main` (ResumeFunctions/** paths) | ResumeFunctions → Azure Functions |
+| `claude-code.yml` | PR events | Claude Code PR review/assistance |
+| `claude-review.yml` | PR events | Claude automated review |
+| `claude-maintain-md.yml` | push to `main` | Auto-update CLAUDE.md via Claude |
+| `pipeline-stage1-intake.yml` | Manual / PR | Multi-agent CI/CD pipeline — intake |
+| `pipeline-stage2-branch.yml` | Triggered by stage 1 | Multi-agent CI/CD pipeline — branch |
+| `pipeline-stage3-implement.yml` | Triggered by stage 2 | Multi-agent CI/CD pipeline — implement |
+| `pipeline-stage4-review.yml` | Triggered by stage 3 | Multi-agent CI/CD pipeline — review |
+| `pipeline-stage5-iterate.yml` | Triggered by stage 4 | Multi-agent CI/CD pipeline — iterate |
+
+---
+
+## Azure Resources (Current Account)
+
+| Resource | Type | Name / URL |
+|----------|------|-----------|
+| Blazor frontend | Azure Static Web App | https://406jem.com |
+| Angular frontend | Azure Static Web App | https://angular.406jem.com |
+| Resume API | Azure Functions App | `406resumeapi` → https://406resumeapi.azurewebsites.net |
+
+**Secrets required in GitHub repo:**
+- `AZURE_STATIC_WEB_APPS_API_TOKEN_*` — SWA deploy tokens (one per SWA, auto-named by Azure)
+- `AZURE_RESUMEFUNCTIONS_PUBLISH_PROFILE` — publish profile for `406resumeapi` Functions App
+  - SCM Basic Auth must be **enabled** on the Functions App (Azure Portal → Configuration → General settings → SCM Basic Auth Publishing Credentials → On)
+
+---
+
+## Known Issues / In-Progress Work
+
+### ResumeFunctions — functions not loading (being fixed)
+- **Symptom:** Azure portal shows no functions listed; log stream shows `0 functions found (Custom)` on startup.
+- **Root cause:** The CI workflow used `dotnet publish --no-build` after a separate `dotnet build`. The Azure Functions Worker SDK generates `functions.metadata` during MSBuild publish targets — the `--no-build` flag skipped that step, so no metadata was deployed and the runtime found nothing to load.
+- **Fix applied:** `deploy-functions.yml` updated at commit `18403f6` to use `dotnet publish --configuration Release --output ./publish` (single step, no `--no-build`). Deploy pending verification.
+
+### ResumeFunctions — CORS middleware not wired up
+- `ResumeFunctions/Program.cs` calls `builder.Services.AddCors(...)` but never calls `app.UseCors("AllowOrigin")` after `builder.Build()`. CORS policy is registered but not applied. This won't cause failures while both SWA clients are on the same Azure origin setup, but should be fixed if cross-origin errors appear. Fix: add `var app = builder.Build(); app.UseCors("AllowOrigin"); app.Run();`
 
 ---
 
@@ -123,5 +160,6 @@ Static JSON files  →  ResumeFunctions (Azure Fn) or MyResumeApi (ASP.NET)
 - **Blazor:** Razor components in `Pages/` (not using the standard `Components/` structure); no code-behind files; styles scoped inline or in `app.css`
 - **Angular:** Standalone components only — no `NgModule`; `inject()` pattern preferred over constructor injection; new `@if`/`@for` control flow (not `*ngIf`/`*ngFor`); signal-based `input()` where feasible
 - **.NET version:** .NET 9 across all C# projects
-- **Serialization:** System.Text.Json for Blazor and API; Newtonsoft.Json only in ResumeFunctions (Azure SDK compat)
+- **Serialization:** System.Text.Json for Blazor; Newtonsoft.Json in ResumeFunctions (Azure SDK compat)
 - **No unit tests** currently in C# projects; Angular has Karma/Jasmine spec files (mostly scaffolded stubs)
+- **Azure Functions deploy:** Always use `dotnet publish` in a single step — never split `dotnet build` + `dotnet publish --no-build`, as this prevents `functions.metadata` from being generated
