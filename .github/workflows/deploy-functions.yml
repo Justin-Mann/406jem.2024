@@ -10,7 +10,7 @@ on:
       - main
     paths:
       - 'ResumeFunctions/**'
-      - '.github/workflows/deploy-resume-functions.yml'
+      - '.github/workflows/deploy-functions.yml'
   workflow_dispatch:
 
 permissions:

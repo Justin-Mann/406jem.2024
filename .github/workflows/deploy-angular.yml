@@ -6,14 +6,14 @@ on:
       - main
     paths:
       - 'AngularClient/**'
-      - '.github/workflows/azure-static-web-apps-gentle-cliff-07e56211e.yml'
+      - '.github/workflows/deploy-angular.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
     paths:
       - 'AngularClient/**'
-      - '.github/workflows/azure-static-web-apps-gentle-cliff-07e56211e.yml'
+      - '.github/workflows/deploy-angular.yml'
   workflow_dispatch:
 
 jobs:
