@@ -1,14 +1,63 @@
-# 406JEM
-To get started I used a blazor template for VS to spin this up quickly.. I wrote a few simple components, 'cause components.. used a blazor component library, 'cause blazor component. You get the idea.  I'll probably add more to the projects page once I get some urls wired up and working.
+# 406JEM Web Apps
 
-# API (Azure Function with an Http Trigger)
-Code for this is contained to the 'ResumeFunctions' Project in the solution and the 'ResumeFunctions' folder in the solution folder. I started using a simple static asset and parsing to json to emulate an api, since I have written a simple Azure function (http trigger) to do this.  It still suses a static file to resolve my resume data, but probably will never promote this to an actual Azure service such as a relational or document db.  If I do I will probably just use cosmos to show the full integration.
+A personal portfolio and digital resume showcase with two frontend clients and a shared backend API.
 
-# BLAZOR CLIENT
-Code for this is contained to the 'BlazorClient' Project in the solution and the 'BlazorClient' folder in the solution folder. This was build off the VS Blazor template for static web assets.. umm.. it's written in Blazor and not exactly a complex webapp.. just a simple proof of ability. :)
+**Live sites:**
+- Blazor client — https://406jem.com
+- Angular client — https://angular.406jem.com
+- API — https://406resumeapi.azurewebsites.net/resumes/myresume
 
-# ANGULAR CLIENT
-Code for this is contained to the 'AngularClient' Project in the solution and the 'AngularClient' folder in the solution folder. I built this with angular 17 after the fact just to POC my ability to work with Angular. It was build using angular 17 and I use the cli to generate the app, components, interfaces, everything I needed to the client app.
+---
 
-# CI/CD
-the yaml for my github deploys are in the .github/workflows folder and I could the triggers or organize the actual yaml files differently and probably would on a more involved project.  Why I would organize it differently.. what I have here is not really optimized at all to limit build cycles.. I push new code.. it builds all the projects.. this could very easily be much more granular, but this is simply a POC as to the ability to leverage yaml for build/release activities.
+## Projects
+
+### BlazorClient
+Blazor WebAssembly SPA on .NET 9. Uses Blazorise (Bootstrap5 + FontAwesome) for UI components. Deployed to Azure Static Web Apps.
+
+### AngularClient
+Angular 19 SPA with standalone components, Angular Material, and Bootstrap 5. Built with the Angular CLI using signal-based inputs and the `@if`/`@for` control flow syntax. Deployed to Azure Static Web Apps.
+
+### ResumeFunctions
+Azure Functions v4 isolated worker on .NET 9. The sole backend — serves the resume data from a static JSON file at `GET /resumes/myresume`. Deployed to Azure Functions (Consumption plan).
+
+---
+
+## Architecture
+
+```
+StaticData/JustinMann_062024.json
+            ↓
+   ResumeFunctions (Azure Functions)
+   GET /resumes/myresume
+            ↓
+  BlazorClient   |   AngularClient
+  (Azure SWA)    |   (Azure SWA)
+```
+
+---
+
+## CI/CD
+
+Workflows in `.github/workflows/` are path-isolated — each only triggers when its own source files change:
+
+| Workflow | Trigger path | Target |
+|----------|-------------|--------|
+| `deploy-angular.yml` | `AngularClient/**` | Azure SWA |
+| `deploy-blazor.yml` | `BlazorClient/**` | Azure SWA |
+| `deploy-functions.yml` | `ResumeFunctions/**` | Azure Functions |
+| `claude-review.yml` | PR opened/updated | Auto code review |
+| `claude-maintain-md.yml` | PR opened/updated | Keeps CLAUDE.md current |
+| `claude-code.yml` | `@claude` in issues/PRs | Interactive Claude assistance |
+| `pipeline-stage1-5-*.yml` | Issue labels | Multi-agent feature pipeline |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend (Blazor) | .NET 9, Blazor WASM, Blazorise |
+| Frontend (Angular) | Angular 19, TypeScript 5.6, Angular Material |
+| Backend | Azure Functions v4, .NET 9 |
+| Hosting | Azure Static Web Apps (×2), Azure Functions Consumption |
+| CI/CD | GitHub Actions, Claude Code Actions |
