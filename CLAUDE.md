@@ -29,7 +29,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat)
 - **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs, favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
-- **Backend URL:** `https://406resumeapi.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
+- **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
 - **API call:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`
 
 ### AngularClient (`AngularClient/`)
@@ -56,7 +56,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models
 - **Styles:** `src/styles.css` — global; each component has its own `.css`
 - **Config:** `angular.json`, `tsconfig.json`
-- **Backend URL:** `https://406resumeapi.azurewebsites.net` (in `src/environments/environment.prod.ts`)
+- **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (in `src/environments/environment.prod.ts`)
 - **API call:** `GET /api/resumes/myresume` in `resume-data.service.ts`
 
 ### ResumeFunctions (`ResumeFunctions/`)
@@ -64,7 +64,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Framework:** .NET 9 / `Microsoft.NET.Sdk`
 - **Azure app name:** `406resumeapi`
 - **Deploy:** Azure Functions App Service (workflow: `deploy-functions.yml`)
-- **Live URL:** https://406resumeapi.azurewebsites.net
+- **Live URL:** https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net
 - **Key packages:** `Microsoft.Azure.Functions.Worker` 2.0.0, `Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore` 2.0.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.0, Newtonsoft.Json 13.0.3
 - **Entry:** `Program.cs` — `FunctionsApplication.CreateBuilder` + `ConfigureFunctionsWebApplication()`
 - **Functions:** `ResumeApi.cs`
@@ -103,7 +103,7 @@ Both frontend clients maintain visual/functional parity:
 StaticData/Resumes/JustinMann_062024.json
             ↓
   ResumeFunctions (Azure Functions, isolated worker)
-  GET https://406resumeapi.azurewebsites.net/api/resumes/myresume
+  GET https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net/api/resumes/myresume
             ↓
   BlazorClient (https://406jem.com)  |  AngularClient (https://angular.406jem.com)
 ```
@@ -134,7 +134,7 @@ StaticData/Resumes/JustinMann_062024.json
 |----------|------|-----------|
 | Blazor frontend | Azure Static Web App | https://406jem.com |
 | Angular frontend | Azure Static Web App | https://angular.406jem.com |
-| Resume API | Azure Functions App | `406resumeapi` → https://406resumeapi.azurewebsites.net |
+| Resume API | Azure Functions App | `406resumeapi` → https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net |
 
 **Secrets required in GitHub repo:**
 - `AZURE_STATIC_WEB_APPS_API_TOKEN_*` — SWA deploy tokens (one per SWA, auto-named by Azure)
