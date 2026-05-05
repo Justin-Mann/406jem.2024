@@ -145,10 +145,17 @@ StaticData/Resumes/JustinMann_062024.json
 
 ## Known Issues / In-Progress Work
 
-### ResumeFunctions — functions not loading (being fixed)
+### ResumeFunctions — functions not loading (root cause identified, fix pending)
 - **Symptom:** Azure portal shows no functions listed; log stream shows `0 functions found (Custom)` on startup.
-- **Root cause:** The CI workflow used `dotnet publish --no-build` after a separate `dotnet build`. The Azure Functions Worker SDK generates `functions.metadata` during MSBuild publish targets — the `--no-build` flag skipped that step, so no metadata was deployed and the runtime found nothing to load.
-- **Fix applied:** `deploy-functions.yml` updated at commit `18403f6` to use `dotnet publish --configuration Release --output ./publish` (single step, no `--no-build`). Deploy pending verification.
+- **What we know:**
+  - Local `dotnet publish --configuration Release --output ./publish` generates a correct `functions.metadata` with both `resumes` and `myResume` entries. The build is fine.
+  - The `--no-build` split was fixed (commit `18403f6`) but didn't resolve the issue — so the problem is in the deployment, not the build.
+  - Azure app settings include `WEBSITE_CONTENTAZUREFILECONNECTIONSTRING` — this is a **Windows consumption plan**, which stores function content in Azure Files. Zip deploy sometimes fails silently to update certain files (including `functions.metadata`) due to Azure Files locking/caching.
+- **Most likely root cause:** Azure Files share is either caching old (empty) deployment content, or zip deploy is not fully overwriting it on a Windows consumption plan.
+- **Next steps to try (in order):**
+  1. **Check Kudu file system** — go to `https://406resumeapi.scm.azurewebsites.net/DebugConsole`, navigate to `D:\home\site\wwwroot\`, and verify whether `functions.metadata` is present and non-empty. This confirms whether the deploy is actually writing the file.
+  2. **Set `WEBSITE_RUN_FROM_PACKAGE=1`** in Azure Portal → Configuration → App Settings. This tells Azure to mount and run directly from the zip file instead of extracting to Azure Files — bypasses the Azure Files locking issue entirely. After setting this, redeploy.
+  3. **Recreate Function App as Linux** — The Windows consumption plan + Azure Files combination is the most likely cause. A Linux Consumption or Flex Consumption plan is more reliable for .NET 9 isolated worker deploys. This would require re-creating the Function App resource and updating the publish profile secret.
 
 ### ResumeFunctions — CORS middleware not wired up
 - `ResumeFunctions/Program.cs` calls `builder.Services.AddCors(...)` but never calls `app.UseCors("AllowOrigin")` after `builder.Build()`. CORS policy is registered but not applied. This won't cause failures while both SWA clients are on the same Azure origin setup, but should be fixed if cross-origin errors appear. Fix: add `var app = builder.Build(); app.UseCors("AllowOrigin"); app.Run();`
