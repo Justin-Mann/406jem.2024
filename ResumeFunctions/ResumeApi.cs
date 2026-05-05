@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using ResumeFunctions.Models;
+using System.Net;
 using System.Text.Json;
 
 namespace ResumeFunctions
@@ -17,24 +17,30 @@ namespace ResumeFunctions
         }
 
         [Function("resumes")]
-        public IActionResult GetAllResumes([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+        public async Task<HttpResponseData> GetAllResumes(
+            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
-            _logger.Log(LogLevel.Information, "Getting all resumes...");
-            var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
-            return new OkObjectResult(resumeJsonResponse ?? null);
+            _logger.LogInformation("Getting all resumes...");
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(data);
+            return response;
         }
 
         [Function("myResume")]
-        public IActionResult GetResume([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resumes/myresume")] HttpRequest req)
+        public async Task<HttpResponseData> GetResume(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resumes/myresume")] HttpRequestData req)
         {
-            _logger.Log(LogLevel.Information, "Getting my resume...");
-            var resumeJsonResponse = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
-            return new OkObjectResult(resumeJsonResponse.FirstOrDefault<DigitalResumeModel>());
+            _logger.LogInformation("Getting my resume...");
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(data?.FirstOrDefault());
+            return response;
         }
 
         internal static class JsonFileReader
         {
-            public static T Read<T>(string filePath)
+            public static T? Read<T>(string filePath)
             {
                 using FileStream stream = File.OpenRead(filePath);
                 return JsonSerializer.Deserialize<T>(stream);
