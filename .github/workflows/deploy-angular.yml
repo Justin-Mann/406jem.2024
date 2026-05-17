@@ -25,9 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Angular Client
     permissions:
-      contents: write
-      pull-requests: write
-      actions: read
+      contents: read
+      issues: write
 
     steps:
       - uses: actions/checkout@v4
@@ -47,22 +46,25 @@ jobs:
         run: npx ng test --watch=false --no-progress --browsers=ChromeHeadless
         working-directory: ./AngularClient
 
-      - name: Invoke Claude to fix failures
+      - name: Notify Claude of test failures
         if: failure()
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          additional_permissions: |
-            actions: read
-          prompt: |
-            Unit tests failed in the **${{ github.workflow }}** pipeline.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_URL=$(gh issue create \
+            --title "Test failures blocked Angular Client deploy (${{ github.sha }})" \
+            --body "Automated: unit tests failed in the deploy pipeline.")
+          ISSUE_NUMBER=$(basename "$ISSUE_URL")
+          gh issue comment "$ISSUE_NUMBER" --body "@claude
 
-            - Commit: `${{ github.sha }}`
-            - Branch: `${{ github.ref_name }}`
-            - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
 
-            Read the test failure output from the CI run above, find the root cause in the
-            AngularClient code or tests, fix it, and open a pull request.
+          - Commit: \`${{ github.sha }}\`
+          - Branch: \`${{ github.ref_name }}\`
+          - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Please read the test failure output from the CI run above, find the root cause
+          in the AngularClient code or tests, fix it, and open a pull request."
 
   build_and_deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
