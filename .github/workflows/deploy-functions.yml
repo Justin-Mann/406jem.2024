@@ -68,7 +68,7 @@ jobs:
       - name: Report failures to Claude
         if: failure()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh issue create \
             --title "Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
@@ -185,7 +185,7 @@ jobs:
       - name: Report integration test failures to Claude
         if: failure()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh issue create \
             --title "Integration test failures blocked ResumeFunctions promote (${{ github.sha }})" \
