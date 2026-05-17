@@ -18,6 +18,7 @@ namespace ResumeFunctions.Models
         public string? Subtitle { get; set; }
         public string? SimpleGoal { get; set; }
         public string? LogoFile { get; set; }
+        
 
         public IEnumerable<WorkExperienceItem>? WorkExperience { get; set; }
 
