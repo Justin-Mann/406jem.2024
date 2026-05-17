@@ -25,8 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Angular Client
     permissions:
-      contents: read
-      issues: write
+      contents: write
+      pull-requests: write
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -46,22 +47,22 @@ jobs:
         run: npx ng test --watch=false --no-progress --browsers=ChromeHeadless
         working-directory: ./AngularClient
 
-      - name: Report failures to Claude
+      - name: Invoke Claude to fix failures
         if: failure()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          gh issue create \
-            --title "Test failures blocked Angular Client deploy (${{ github.sha }})" \
-            --body "@claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          prompt: |
+            Unit tests failed in the **${{ github.workflow }}** pipeline.
 
-          Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
+            - Commit: `${{ github.sha }}`
+            - Branch: `${{ github.ref_name }}`
+            - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          - **Commit:** \`${{ github.sha }}\`
-          - **Branch:** \`${{ github.ref_name }}\`
-          - **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-          Please review the test failures in the run linked above, fix the failing tests, and push a corrected commit."
+            Read the test failure output from the CI run above, find the root cause in the
+            AngularClient code or tests, fix it, and open a pull request.
 
   build_and_deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')

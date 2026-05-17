@@ -3,6 +3,7 @@ name: Deploy – ResumeFunctions (Azure Functions)
 # Fires only when ResumeFunctions source changes.
 #
 # Required GitHub secrets:
+#   CLAUDE_CODE_OAUTH_TOKEN                        — Claude Code OAuth token
 #   AZURE_RESUMEFUNCTIONS_STAGING_PUBLISH_PROFILE  — publish profile for the staging slot
 #   AZURE_CREDENTIALS                              — service principal JSON for slot swap
 #
@@ -34,8 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Unit Tests
     permissions:
-      contents: read
-      issues: write
+      contents: write
+      pull-requests: write
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -65,22 +67,22 @@ jobs:
           --logger "console;verbosity=normal"
         working-directory: ./ResumeFunctions
 
-      - name: Report failures to Claude
+      - name: Invoke Claude to fix failures
         if: failure()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          gh issue create \
-            --title "Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
-            --body "@claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          prompt: |
+            Unit tests failed in the **${{ github.workflow }}** pipeline.
 
-          Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
+            - Commit: `${{ github.sha }}`
+            - Branch: `${{ github.ref_name }}`
+            - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          - **Commit:** \`${{ github.sha }}\`
-          - **Branch:** \`${{ github.ref_name }}\`
-          - **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-          Please review the test failures in the run linked above, fix the failing tests, and push a corrected commit."
+            Read the test failure output from the CI run above, find the root cause in the
+            ResumeFunctions code or tests, fix it, and open a pull request.
 
   # ── 2. Build & package ─────────────────────────────────────────────────────
   build:
@@ -146,8 +148,9 @@ jobs:
     needs: deploy-staging
     name: Integration Tests (Staging)
     permissions:
-      contents: read
-      issues: write
+      contents: write
+      pull-requests: write
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -182,24 +185,24 @@ jobs:
         env:
           FUNCTIONS_STAGING_URL: ${{ vars.AZURE_FUNCTIONS_STAGING_URL }}
 
-      - name: Report integration test failures to Claude
+      - name: Invoke Claude to fix failures
         if: failure()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          gh issue create \
-            --title "Integration test failures blocked ResumeFunctions promote (${{ github.sha }})" \
-            --body "@claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          prompt: |
+            Integration tests against the staging slot failed and blocked promotion to production.
 
-          Integration tests against the staging slot failed and blocked promotion to production.
+            - Staging URL: ${{ vars.AZURE_FUNCTIONS_STAGING_URL }}
+            - Commit: `${{ github.sha }}`
+            - Branch: `${{ github.ref_name }}`
+            - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          - **Staging URL:** ${{ vars.AZURE_FUNCTIONS_STAGING_URL }}
-          - **Commit:** \`${{ github.sha }}\`
-          - **Branch:** \`${{ github.ref_name }}\`
-          - **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-          The staging slot at the URL above is still running this build — you can hit it directly
-          to investigate. Please fix the issue and push a corrected commit."
+            The staging slot is still running this build — you can call it directly at the URL above.
+            Read the integration test failure output from the CI run, find the root cause in the
+            ResumeFunctions code or tests, fix it, and open a pull request.
 
   # ── 5. Promote staging → production ───────────────────────────────────────
   promote:
