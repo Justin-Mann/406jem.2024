@@ -6,9 +6,6 @@ on:
   issues:
     types: [labeled]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 jobs:
   update-claude-md:
     if: |
@@ -26,12 +23,12 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 

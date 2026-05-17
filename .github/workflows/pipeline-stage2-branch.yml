@@ -4,9 +4,6 @@ on:
   issues:
     types: [labeled]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 jobs:
   create-branch-pr:
     if: github.event.label.name == 'ready-for-branch'

@@ -27,7 +27,6 @@ permissions:
 env:
   AZURE_FUNCTIONAPP_NAME: 406resumeapi
   DOTNET_VERSION: '10.x'
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   # ── 1. Unit tests ──────────────────────────────────────────────────────────
@@ -42,12 +41,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('ResumeFunctions/**/*.csproj') }}
@@ -69,7 +68,7 @@ jobs:
       - name: Notify Claude of unit test failures
         if: failure()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.CLAUDE_NOTIFY_PAT }}
         run: |
           ISSUE_URL=$(gh issue create \
             --title "Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
@@ -96,12 +95,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('ResumeFunctions/**/*.csproj') }}
@@ -117,7 +116,7 @@ jobs:
         working-directory: ./ResumeFunctions
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: resumefunctions-app
           path: ./ResumeFunctions/publish
@@ -131,7 +130,7 @@ jobs:
 
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: resumefunctions-app
           path: ./publish
@@ -157,12 +156,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('ResumeFunctions/**/*.csproj') }}
@@ -189,7 +188,7 @@ jobs:
       - name: Notify Claude of integration test failures
         if: failure()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.CLAUDE_NOTIFY_PAT }}
         run: |
           ISSUE_URL=$(gh issue create \
             --title "Integration test failures blocked ResumeFunctions promote (${{ github.sha }})" \
