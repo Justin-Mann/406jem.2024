@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<RootNamespace>BlazorApp.BlazorClient</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="BlazorClient.Tests\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.7.5" />
