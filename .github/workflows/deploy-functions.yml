@@ -1,6 +1,6 @@
 name: Deploy – ResumeFunctions (Azure Functions)
 
-# Fires only when ResumeFunctions source changes.
+# Fires only when ResumeFunctions source or this workflow changes.
 #
 # Required GitHub secrets:
 #   CLAUDE_CODE_OAUTH_TOKEN                        — Claude Code OAuth token
