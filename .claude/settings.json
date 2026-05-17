@@ -23,7 +23,23 @@
       "Bash(python3 -c \"import sys,json,base64; print\\(base64.b64decode\\(json.load\\(sys.stdin\\)['content']\\).decode\\(\\)\\)\")",
       "Bash(node -e \"const chunks=[]; process.stdin.on\\('data',c=>chunks.push\\(c\\)\\); process.stdin.on\\('end',\\(\\)=>process.stdout.write\\(Buffer.from\\(chunks.join\\(''\\).replace\\(/\\\\n/g,''\\),'base64'\\).toString\\(\\)\\)\\)\")",
       "Bash(git merge *)",
-      "Bash(gh workflow *)"
+      "Bash(gh workflow *)",
+      "WebFetch(domain:406resumeapi.azurewebsites.net)",
+      "Bash(grep -v \"^$\")",
+      "Bash(dotnet publish *)",
+      "Bash(Select-String \"functions|metadata|worker|host\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://406resumeapi.azurewebsites.net/api/resumes/myresume\")",
+      "Bash(Invoke-WebRequest -Uri \"https://406resumeapi.azurewebsites.net/api/resumes/myresume\" -Method GET -UseBasicParsing)",
+      "Bash(Select-Object -ExpandProperty StatusCode)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://406resumeapi.azurewebsites.net/api/resumes/myresume\" -Method GET -UseBasicParsing; $r.StatusCode } catch { $_.Exception.Response.StatusCode.value__ })",
+      "Bash(dotnet package *)",
+      "Bash(dotnet list *)",
+      "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk.generators/1.3.6/**)",
+      "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/build/**)",
+      "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\justi\\Repos\\406jem.2024\\temp-publish"
     ]
   }
 }
