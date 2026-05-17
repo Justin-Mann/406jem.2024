@@ -70,10 +70,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_NOTIFY_PAT }}
         run: |
-          ISSUE_URL=$(gh issue create \
-            --title "Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
-            --body "Automated: unit tests failed in the deploy pipeline.")
-          ISSUE_NUMBER=$(basename "$ISSUE_URL")
+          ISSUE_NUMBER=$(curl -s -X POST \
+            -H "Authorization: token ${{ secrets.CLAUDE_NOTIFY_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues" \
+            -d '{"title":"Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})","body":"Automated: unit tests failed in the deploy pipeline."}' \
+            | jq -r '.number')
           gh issue comment "$ISSUE_NUMBER" --body "@claude
 
           Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
@@ -190,10 +192,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_NOTIFY_PAT }}
         run: |
-          ISSUE_URL=$(gh issue create \
-            --title "Integration test failures blocked ResumeFunctions promote (${{ github.sha }})" \
-            --body "Automated: integration tests against staging slot failed.")
-          ISSUE_NUMBER=$(basename "$ISSUE_URL")
+          ISSUE_NUMBER=$(curl -s -X POST \
+            -H "Authorization: token ${{ secrets.CLAUDE_NOTIFY_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues" \
+            -d '{"title":"Integration test failures blocked ResumeFunctions promote (${{ github.sha }})","body":"Automated: integration tests against staging slot failed."}' \
+            | jq -r '.number')
           gh issue comment "$ISSUE_NUMBER" --body "@claude
 
           Integration tests against the staging slot failed and blocked promotion to production.
