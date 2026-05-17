@@ -36,7 +36,9 @@
       "Bash(dotnet list *)",
       "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk.generators/1.3.6/**)",
       "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/build/**)",
-      "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/**)"
+      "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/**)",
+      "Bash(Get-ChildItem -Force \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2024\\\\ResumeFunctions\\\\publish_test\")",
+      "Bash(Select-Object Mode, LastWriteTime, Name)"
     ],
     "additionalDirectories": [
       "c:\\Users\\justi\\Repos\\406jem.2024\\temp-publish"

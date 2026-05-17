@@ -54,6 +54,7 @@ jobs:
         with:
           name: resumefunctions-app
           path: ./ResumeFunctions/publish
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
