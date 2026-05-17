@@ -11,7 +11,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 
 ### BlazorClient (`BlazorClient/`)
 - **Type:** Blazor WebAssembly (static SPA)
-- **Framework:** .NET 9 / `Microsoft.NET.Sdk.BlazorWebAssembly`
+- **Framework:** .NET 10 / `Microsoft.NET.Sdk.BlazorWebAssembly`
 - **Root namespace:** `BlazorApp.BlazorClient`
 - **Deploy:** Azure Static Web Apps (workflow: `deploy-blazor.yml`)
 - **Live URL:** https://406jem.com
@@ -60,18 +60,18 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **API call:** `GET /api/resumes/myresume` in `resume-data.service.ts`
 
 ### ResumeFunctions (`ResumeFunctions/`)
-- **Type:** Azure Functions v4 (isolated worker, ASP.NET Core integration)
-- **Framework:** .NET 9 / `Microsoft.NET.Sdk`
+- **Type:** Azure Functions v4 (isolated worker, plain `HostBuilder` — no ASP.NET Core integration)
+- **Framework:** .NET 10 / `Microsoft.NET.Sdk`
 - **Azure app name:** `406resumeapi`
 - **Deploy:** Azure Functions App Service (workflow: `deploy-functions.yml`)
 - **Live URL:** https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net
-- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.0.0, `Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore` 2.0.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.0, Newtonsoft.Json 13.0.3
-- **Entry:** `Program.cs` — `FunctionsApplication.CreateBuilder` + `ConfigureFunctionsWebApplication()`
-- **Functions:** `ResumeApi.cs`
+- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.52.0, `Microsoft.Azure.Functions.Worker.Extensions.Http` 3.3.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.7, Newtonsoft.Json 13.0.3
+- **Entry:** `Program.cs` — `new HostBuilder().ConfigureFunctionsWorkerDefaults().Build().Run()`
+- **Functions:** `ResumeApi.cs` — uses `HttpRequestData`/`HttpResponseData` (not ASP.NET Core types)
   - `myResume` — `GET /api/resumes/myresume` (Anonymous auth) — **primary endpoint used by both clients**
   - `resumes` — `GET /api/resumes` (Function auth) — returns full array
 - **Data:** `StaticData/Resumes/JustinMann_062024.json` — resume JSON source of truth (copied to output on build)
-- **CORS:** `builder.Services.AddCors()` is configured but `app.UseCors()` is **not called** — CORS middleware is not active. This needs to be fixed if browser clients start hitting CORS errors.
+- **CORS:** Not configured — both SWA clients are on different origins. Add if browser CORS errors appear.
 - **Default route prefix:** `api` (Azure Functions default for isolated worker — no `routePrefix` override in `host.json`)
 
 ### MyResumeApi (`MyResumeApi/`)
@@ -143,30 +143,14 @@ StaticData/Resumes/JustinMann_062024.json
 
 ---
 
-## Known Issues / In-Progress Work
-
-### ResumeFunctions — functions not loading (root cause identified, fix pending)
-- **Symptom:** Azure portal shows no functions listed; log stream shows `0 functions found (Custom)` on startup.
-- **What we know:**
-  - Local `dotnet publish --configuration Release --output ./publish` generates a correct `functions.metadata` with both `resumes` and `myResume` entries. The build is fine.
-  - The `--no-build` split was fixed (commit `18403f6`) but didn't resolve the issue — so the problem is in the deployment, not the build.
-  - Azure app settings include `WEBSITE_CONTENTAZUREFILECONNECTIONSTRING` — this is a **Windows consumption plan**, which stores function content in Azure Files. Zip deploy sometimes fails silently to update certain files (including `functions.metadata`) due to Azure Files locking/caching.
-- **Most likely root cause:** Azure Files share is either caching old (empty) deployment content, or zip deploy is not fully overwriting it on a Windows consumption plan.
-- **Next steps to try (in order):**
-  1. **Check Kudu file system** — go to `https://406resumeapi.scm.azurewebsites.net/DebugConsole`, navigate to `D:\home\site\wwwroot\`, and verify whether `functions.metadata` is present and non-empty. This confirms whether the deploy is actually writing the file.
-  2. **Set `WEBSITE_RUN_FROM_PACKAGE=1`** in Azure Portal → Configuration → App Settings. This tells Azure to mount and run directly from the zip file instead of extracting to Azure Files — bypasses the Azure Files locking issue entirely. After setting this, redeploy.
-  3. **Recreate Function App as Linux** — The Windows consumption plan + Azure Files combination is the most likely cause. A Linux Consumption or Flex Consumption plan is more reliable for .NET 9 isolated worker deploys. This would require re-creating the Function App resource and updating the publish profile secret.
-
-### ResumeFunctions — CORS middleware not wired up
-- `ResumeFunctions/Program.cs` calls `builder.Services.AddCors(...)` but never calls `app.UseCors("AllowOrigin")` after `builder.Build()`. CORS policy is registered but not applied. This won't cause failures while both SWA clients are on the same Azure origin setup, but should be fixed if cross-origin errors appear. Fix: add `var app = builder.Build(); app.UseCors("AllowOrigin"); app.Run();`
-
 ---
 
 ## Conventions
 
 - **Blazor:** Razor components in `Pages/` (not using the standard `Components/` structure); no code-behind files; styles scoped inline or in `app.css`
 - **Angular:** Standalone components only — no `NgModule`; `inject()` pattern preferred over constructor injection; new `@if`/`@for` control flow (not `*ngIf`/`*ngFor`); signal-based `input()` where feasible
-- **.NET version:** .NET 9 across all C# projects
+- **.NET version:** .NET 10 across all C# projects
 - **Serialization:** System.Text.Json for Blazor; Newtonsoft.Json in ResumeFunctions (Azure SDK compat)
 - **No unit tests** currently in C# projects; Angular has Karma/Jasmine spec files (mostly scaffolded stubs)
 - **Azure Functions deploy:** Always use `dotnet publish` in a single step — never split `dotnet build` + `dotnet publish --no-build`, as this prevents `functions.metadata` from being generated
+- **`upload-artifact@v4` hidden files:** The deploy workflow must include `include-hidden-files: true` on the upload step. `actions/upload-artifact@v4.4.0+` excludes hidden folders by default; the `.azurefunctions/` directory (required by the Functions host) starts with `.` and will be silently dropped without this flag, causing "0 functions found (Custom)" at runtime.

@@ -4,6 +4,9 @@ on:
   issues:
     types: [labeled]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   implement:
     if: github.event.label.name == 'ready-for-coding'
@@ -20,7 +23,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '10.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,9 +45,9 @@ jobs:
             ${{ github.event.issue.body }}
 
             Repository context:
-            - Blazor client (BlazorClient/): Blazor WASM on .NET 9, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
+            - Blazor client (BlazorClient/): Blazor WASM on .NET 10, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
             - Angular client (AngularClient/): Angular 19, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
-            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 9; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
+            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 10; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
             - Both frontend clients must be visually and functionally in sync
             - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
 

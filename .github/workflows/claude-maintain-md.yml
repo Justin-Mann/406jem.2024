@@ -6,6 +6,9 @@ on:
   issues:
     types: [labeled]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   update-claude-md:
     if: |
@@ -25,7 +28,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '10.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

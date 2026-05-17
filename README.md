@@ -12,13 +12,13 @@ A personal portfolio and digital resume showcase with two frontend clients and a
 ## Projects
 
 ### BlazorClient
-Blazor WebAssembly SPA on .NET 9. Uses Blazorise (Bootstrap5 + FontAwesome) for UI components. Deployed to Azure Static Web Apps.
+Blazor WebAssembly SPA on .NET 10. Uses Blazorise (Bootstrap5 + FontAwesome) for UI components. Deployed to Azure Static Web Apps.
 
 ### AngularClient
 Angular 19 SPA with standalone components, Angular Material, and Bootstrap 5. Built with the Angular CLI using signal-based inputs and the `@if`/`@for` control flow syntax. Deployed to Azure Static Web Apps.
 
 ### ResumeFunctions
-Azure Functions v4 isolated worker on .NET 9. The sole backend — serves the resume data from a static JSON file at `GET /resumes/myresume`. Deployed to Azure Functions (Consumption plan).
+Azure Functions v4 isolated worker on .NET 10. The sole backend — serves the resume data from a static JSON file at `GET /resumes/myresume`. Deployed to Azure Functions (Consumption plan).
 
 ---
 
@@ -56,8 +56,8 @@ Workflows in `.github/workflows/` are path-isolated — each only triggers when 
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend (Blazor) | .NET 9, Blazor WASM, Blazorise |
+| Frontend (Blazor) | .NET 10, Blazor WASM, Blazorise |
 | Frontend (Angular) | Angular 19, TypeScript 5.6, Angular Material |
-| Backend | Azure Functions v4, .NET 9 |
+| Backend | Azure Functions v4, .NET 10 |
 | Hosting | Azure Static Web Apps (×2), Azure Functions Consumption |
 | CI/CD | GitHub Actions, Claude Code Actions |

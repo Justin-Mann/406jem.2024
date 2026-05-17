@@ -4,6 +4,9 @@ on:
   issues:
     types: [labeled]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   review:
     if: github.event.label.name == 'ready-for-review'
@@ -32,7 +35,7 @@ jobs:
             - Correctness: Does the implementation fulfill the feature request?
             - Code quality: Clean, maintainable, follows existing patterns?
             - Visual consistency: Are the Blazor and Angular clients visually and functionally in sync?
-            - .NET 9 consistency: All projects target net9.0; no drift to older frameworks
+            - .NET 10 consistency: All projects target net10.0; no drift to older frameworks
             - No regressions: Are existing features preserved?
             - Security: No obvious vulnerabilities introduced?
             - Build: Does it build cleanly?
