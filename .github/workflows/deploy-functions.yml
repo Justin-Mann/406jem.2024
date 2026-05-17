@@ -1,8 +1,15 @@
 name: Deploy – ResumeFunctions (Azure Functions)
 
 # Fires only when ResumeFunctions source changes.
-# Required secret: AZURE_RESUMEFUNCTIONS_PUBLISH_PROFILE
-# Azure Functions App name: 406resumeapi
+#
+# Required GitHub secrets:
+#   AZURE_RESUMEFUNCTIONS_STAGING_PUBLISH_PROFILE  — publish profile for the staging slot
+#   AZURE_CREDENTIALS                              — service principal JSON for slot swap
+#
+# Required GitHub repository variables:
+#   AZURE_RESOURCE_GROUP        — resource group that owns the function app
+#   AZURE_FUNCTIONS_STAGING_URL — base URL of the staging slot (no trailing slash)
+#                                 e.g. https://406resumeapi-staging.azurewebsites.net
 
 on:
   push:
@@ -22,9 +29,10 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
+  # ── 1. Unit tests ──────────────────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
-    name: Test ResumeFunctions
+    name: Unit Tests
     permissions:
       contents: read
       issues: write
@@ -49,8 +57,12 @@ jobs:
         run: dotnet restore ResumeFunctions.Tests/ResumeFunctions.Tests.csproj
         working-directory: ./ResumeFunctions
 
-      - name: Run tests
-        run: dotnet test ResumeFunctions.Tests/ResumeFunctions.Tests.csproj --no-restore --logger "console;verbosity=normal"
+      - name: Run unit tests
+        run: >
+          dotnet test ResumeFunctions.Tests/ResumeFunctions.Tests.csproj
+          --no-restore
+          --filter "Category!=Integration"
+          --logger "console;verbosity=normal"
         working-directory: ./ResumeFunctions
 
       - name: Report failures to Claude
@@ -59,7 +71,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
-            --title "Test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
+            --title "Unit test failures blocked ResumeFunctions deploy (${{ github.sha }})" \
             --body "@claude
 
           Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
@@ -70,10 +82,11 @@ jobs:
 
           Please review the test failures in the run linked above, fix the failing tests, and push a corrected commit."
 
+  # ── 2. Build & package ─────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
     needs: test
-    name: Build ResumeFunctions
+    name: Build
 
     steps:
       - uses: actions/checkout@v4
@@ -106,10 +119,11 @@ jobs:
           path: ./ResumeFunctions/publish
           include-hidden-files: true
 
-  deploy:
+  # ── 3. Deploy to staging slot ──────────────────────────────────────────────
+  deploy-staging:
     runs-on: ubuntu-latest
     needs: build
-    name: Deploy ResumeFunctions
+    name: Deploy to Staging
 
     steps:
       - name: Download artifact
@@ -118,9 +132,91 @@ jobs:
           name: resumefunctions-app
           path: ./publish
 
-      - name: Deploy to Azure Functions
+      - name: Deploy to staging slot
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_RESUMEFUNCTIONS_PUBLISH_PROFILE }}
+          slot-name: staging
+          publish-profile: ${{ secrets.AZURE_RESUMEFUNCTIONS_STAGING_PUBLISH_PROFILE }}
           package: ./publish
+
+  # ── 4. Integration tests against staging ───────────────────────────────────
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    name: Integration Tests (Staging)
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('ResumeFunctions/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore ResumeFunctions.Tests/ResumeFunctions.Tests.csproj
+        working-directory: ./ResumeFunctions
+
+      - name: Wait for staging slot to warm up
+        run: sleep 20
+
+      - name: Run integration tests
+        run: >
+          dotnet test ResumeFunctions.Tests/ResumeFunctions.Tests.csproj
+          --no-restore
+          --filter "Category=Integration"
+          --logger "console;verbosity=normal"
+        working-directory: ./ResumeFunctions
+        env:
+          FUNCTIONS_STAGING_URL: ${{ vars.AZURE_FUNCTIONS_STAGING_URL }}
+
+      - name: Report integration test failures to Claude
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Integration test failures blocked ResumeFunctions promote (${{ github.sha }})" \
+            --body "@claude
+
+          Integration tests against the staging slot failed and blocked promotion to production.
+
+          - **Staging URL:** ${{ vars.AZURE_FUNCTIONS_STAGING_URL }}
+          - **Commit:** \`${{ github.sha }}\`
+          - **Branch:** \`${{ github.ref_name }}\`
+          - **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          The staging slot at the URL above is still running this build — you can hit it directly
+          to investigate. Please fix the issue and push a corrected commit."
+
+  # ── 5. Promote staging → production ───────────────────────────────────────
+  promote:
+    runs-on: ubuntu-latest
+    needs: integration-test
+    name: Promote to Production
+
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap staging → production
+        run: |
+          az functionapp deployment slot swap \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --slot staging \
+            --target-slot production
