@@ -21,7 +21,7 @@ namespace ResumeFunctions
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
             _logger.LogInformation("Getting all resumes...");
-            var data = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(Path.Combine("StaticData", "Resumes", "JustinMann_062024.json"));
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(data);
             return response;
@@ -32,7 +32,7 @@ namespace ResumeFunctions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resumes/myresume")] HttpRequestData req)
         {
             _logger.LogInformation("Getting my resume...");
-            var data = JsonFileReader.Read<DigitalResumeModel[]>(@".\StaticData\Resumes\JustinMann_062024.json");
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(Path.Combine("StaticData", "Resumes", "JustinMann_062024.json"));
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(data?.FirstOrDefault());
             return response;
