@@ -17,12 +17,63 @@ on:
   workflow_dispatch:
 
 env:
+  DOTNET_VERSION: '10.x'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
+  test:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Test Blazor Client
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('BlazorClient/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore BlazorClient.Tests/BlazorClient.Tests.csproj
+        working-directory: ./BlazorClient
+
+      - name: Run tests
+        run: dotnet test BlazorClient.Tests/BlazorClient.Tests.csproj --no-restore --logger "console;verbosity=normal"
+        working-directory: ./BlazorClient
+
+      - name: Report failures to Claude
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Test failures blocked Blazor Client deploy (${{ github.sha }})" \
+            --body "@claude
+
+          Unit tests failed and blocked the **${{ github.workflow }}** deploy pipeline.
+
+          - **Commit:** \`${{ github.sha }}\`
+          - **Branch:** \`${{ github.ref_name }}\`
+          - **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Please review the test failures in the run linked above, fix the failing tests, and push a corrected commit."
+
   build_and_deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    needs: test
     name: Build and Deploy Blazor Client
     steps:
       - uses: actions/checkout@v4
