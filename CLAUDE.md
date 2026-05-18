@@ -15,7 +15,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Root namespace:** `BlazorApp.BlazorClient`
 - **Deploy:** Azure Static Web Apps (workflow: `deploy-blazor.yml`)
 - **Live URL:** https://406jem.com
-- **Key packages:** Blazorise 1.7.x (Bootstrap5 + FontAwesome), System.Text.Json (built-in)
+- **Key packages:** Blazorise 1.7.5 (Bootstrap5 + FontAwesome), System.Text.Json (built-in)
 - **Entry:** `Program.cs` → `App.razor` → `Layout/MainLayout.razor`
 - **Pages:**
   - `Pages/Home.razor` — home/landing page (`/`)
@@ -27,11 +27,11 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
   - `Pages/EducationSection.razor` — reusable education list component
   - `Pages/CustomSections.razor` — reusable custom skills/tech section component
 - **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat)
-- **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs, favicon
+- **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs (`jmResume.4.2025.pdf`, `jmResume.7.2024.pdf`), favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
 - **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
 - **API call:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`
-- **Tests:** `BlazorClient.Tests/` — bUnit (xUnit) project, 24 tests covering all page components
+- **Tests:** `BlazorClient.Tests/` — bUnit 1.34.4 (xUnit) project, 24 tests covering ContactSection, DigitalResumePage, GeneralSection, and WorkExperienceSection
 
 ### AngularClient (`AngularClient/`)
 - **Type:** Angular SPA (standalone components, no NgModules)
@@ -40,7 +40,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Test runner:** `@angular/build:karma` (Karma + Jasmine; updated from `@angular-devkit/build-angular:karma`)
 - **Deploy:** Azure Static Web Apps (workflow: `deploy-angular.yml`)
 - **Live URL:** https://angular.406jem.com
-- **Key packages:** Angular Material 19, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 17
+- **Key packages:** Angular Material 19, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 18
 - **Entry:** `src/main.ts` → `src/app/app.component.ts`
 - **Routing:** `src/app/app.routes.ts` — `home`, `digitalresume`, `projects`
 - **Components (all standalone):**
@@ -78,7 +78,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **CORS:** Not configured — both SWA clients are on different origins. Add if browser CORS errors appear.
 - **Default route prefix:** `api` (Azure Functions default for isolated worker — no `routePrefix` override in `host.json`)
 - **Tests:** `ResumeFunctions.Tests/` — xUnit project; 11 unit tests + 5 integration tests
-  - Unit tests use `[Trait("Category", "Integration")]` to separate from integration tests
+  - Integration tests use `[Trait("Category", "Integration")]` to separate from unit tests
   - Integration tests require `FUNCTIONS_STAGING_URL` env var; filtered in CI with `--filter "Category=Integration"`
   - `WriteAsJsonAsync` requires `WorkerOptions.Serializer` registered in `FunctionContext.InstanceServices` — configured in test setup via `services.Configure<WorkerOptions>(opts => opts.Serializer = new JsonObjectSerializer())`
 
@@ -179,7 +179,7 @@ test (unit) → build → deploy-staging → integration-test → promote
 - **Serialization:** System.Text.Json for Blazor; Newtonsoft.Json in ResumeFunctions (Azure SDK compat)
 - **Testing:**
   - ResumeFunctions: xUnit + NSubstitute; test project in `ResumeFunctions/ResumeFunctions.Tests/`; `InternalsVisibleTo` exposes `JsonFileReader`; `<Compile Remove="ResumeFunctions.Tests\**" />` prevents main project from picking up test files
-  - BlazorClient: bUnit (1.35.x); test project in `BlazorClient/BlazorClient.Tests/`; `BlockingFakeHttpHandler` (using `TaskCompletionSource`) needed to test loading states before async HTTP completes
+  - BlazorClient: bUnit (1.34.4); test project in `BlazorClient/BlazorClient.Tests/`; `BlockingFakeHttpHandler` (using `TaskCompletionSource`) needed to test loading states before async HTTP completes
   - AngularClient: Karma + Jasmine; 36 specs; use `provideRouter([])` in test beds for components with `RouterLink`; use `toHaveBeenCalledTimes(1)` not `toHaveBeenCalledOnce()`
 - **Azure Functions deploy:** Always use `dotnet publish` in a single step — never split `dotnet build` + `dotnet publish --no-build`, as this prevents `functions.metadata` from being generated
 - **`upload-artifact@v4` hidden files:** The deploy workflow must include `include-hidden-files: true` on the upload step. `actions/upload-artifact@v4.4.0+` excludes hidden folders by default; the `.azurefunctions/` directory (required by the Functions host) starts with `.` and will be silently dropped without this flag, causing "0 functions found (Custom)" at runtime.
