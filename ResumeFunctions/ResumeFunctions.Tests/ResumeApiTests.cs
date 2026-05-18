@@ -49,7 +49,7 @@ public class ResumeApiTests : IDisposable
 
         var result = await _api.GetResume(request);
 
-        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode); // intentional failure for pipeline test
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
     [Fact]
