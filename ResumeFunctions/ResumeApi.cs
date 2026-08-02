@@ -10,10 +10,12 @@ namespace ResumeFunctions
     public class ResumeApi
     {
         private readonly ILogger<ResumeApi> _logger;
+        private readonly string _resumeDataPath;
 
-        public ResumeApi(ILogger<ResumeApi> logger)
+        public ResumeApi(ILogger<ResumeApi> logger, string? resumeDataPath = null)
         {
             _logger = logger;
+            _resumeDataPath = resumeDataPath ?? Path.Combine(AppContext.BaseDirectory, "StaticData", "Resumes", "JustinMann_062024.json");
         }
 
         [Function("resumes")]
@@ -21,7 +23,7 @@ namespace ResumeFunctions
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
             _logger.LogInformation("Getting all resumes...");
-            var data = JsonFileReader.Read<DigitalResumeModel[]>(Path.Combine("StaticData", "Resumes", "JustinMann_062024.json"));
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(_resumeDataPath);
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(data);
             return response;
@@ -32,7 +34,7 @@ namespace ResumeFunctions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resumes/myresume")] HttpRequestData req)
         {
             _logger.LogInformation("Getting my resume...");
-            var data = JsonFileReader.Read<DigitalResumeModel[]>(Path.Combine("StaticData", "Resumes", "JustinMann_062024.json"));
+            var data = JsonFileReader.Read<DigitalResumeModel[]>(_resumeDataPath);
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(data?.FirstOrDefault());
             return response;

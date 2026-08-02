@@ -14,7 +14,6 @@ namespace ResumeFunctions.Tests;
 
 public class ResumeApiTests : IDisposable
 {
-    private readonly string _originalDir = Environment.CurrentDirectory;
     private readonly string _tempDir;
     private readonly ResumeApi _api;
     private readonly FunctionContext _functionContext;
@@ -22,17 +21,16 @@ public class ResumeApiTests : IDisposable
     public ResumeApiTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var dataDir = Path.Combine(_tempDir, "StaticData", "Resumes");
-        Directory.CreateDirectory(dataDir);
-        File.WriteAllText(Path.Combine(dataDir, "JustinMann_062024.json"), TestData.ResumeJson);
-        Environment.CurrentDirectory = _tempDir;
+        Directory.CreateDirectory(_tempDir);
+        var dataPath = Path.Combine(_tempDir, "JustinMann_062024.json");
+        File.WriteAllText(dataPath, TestData.ResumeJson);
 
         var services = new ServiceCollection();
         services.Configure<WorkerOptions>(opts => opts.Serializer = new JsonObjectSerializer());
         _functionContext = Substitute.For<FunctionContext>();
         _functionContext.InstanceServices.Returns(services.BuildServiceProvider());
 
-        _api = new ResumeApi(Substitute.For<ILogger<ResumeApi>>());
+        _api = new ResumeApi(Substitute.For<ILogger<ResumeApi>>(), dataPath);
     }
 
     private (TestHttpResponseData response, TestHttpRequestData request) BuildRequest()
@@ -121,7 +119,6 @@ public class ResumeApiTests : IDisposable
 
     public void Dispose()
     {
-        Environment.CurrentDirectory = _originalDir;
         Directory.Delete(_tempDir, recursive: true);
     }
 }
