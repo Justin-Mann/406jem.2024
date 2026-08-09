@@ -104,8 +104,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GENTLE_CLIFF_07E56211E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./AngularClient"
-          output_location: "dist/angular-client/browser"
+          app_location: "./AngularClient/dist/angular-client/browser"
           skip_app_build: true
 
   close_staging_environment:
