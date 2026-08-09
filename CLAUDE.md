@@ -35,12 +35,12 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 
 ### AngularClient (`AngularClient/`)
 - **Type:** Angular SPA (standalone components, no NgModules)
-- **Framework:** Angular 19 / TypeScript 5.6
+- **Framework:** Angular 22 / TypeScript 6.0 (upgraded 2026-08-09 from Angular 19 via the autonomous pipeline, PR #19, to close a Dependabot-flagged XSS CVE with no fix on the 19.x line — see the pipeline section below)
 - **Build:** `@angular/build:application`
 - **Test runner:** `@angular/build:karma` (Karma + Jasmine; updated from `@angular-devkit/build-angular:karma`)
 - **Deploy:** Azure Static Web Apps (workflow: `deploy-angular.yml`)
 - **Live URL:** https://angular.406jem.com
-- **Key packages:** Angular Material 19, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 18
+- **Key packages:** Angular Material 22, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 21
 - **Entry:** `src/main.ts` → `src/app/app.component.ts`
 - **Routing:** `src/app/app.routes.ts` — `home`, `digitalresume`, `projects`
 - **Components (all standalone):**
