@@ -40,8 +40,16 @@ jobs:
 
             Your job:
             1. Find the PR associated with issue #${{ github.event.issue.number }}.
-            2. Review all changed files thoroughly.
-            3. Post a detailed review on the PR with specific inline comments where applicable.
-            4. If the code is acceptable: approve the PR, add label "review-approved", and mark the PR ready for review (undraft).
-            5. If changes are needed: request changes on the PR, add label "needs-revision" to the issue to trigger Stage 5.
-            6. Post a summary comment on the issue with your verdict.
+            2. Check CI status FIRST, before judging code quality: run `gh pr checks <PR> --watch`
+               to wait for all checks to reach a final state (don't judge on a still-pending
+               check). If ANY check failed, that is an automatic "changes needed" regardless of
+               how good the code looks — do not approve a PR with a red check. Quote the
+               specific failing check name and the relevant error from its log in your review.
+            3. Only if all checks are green (or there are none configured), review all changed
+               files thoroughly against the criteria above.
+            4. Post a detailed review on the PR with specific inline comments where applicable.
+            5. If checks are green AND the code is acceptable: approve the PR, add label
+               "review-approved", and mark the PR ready for review (undraft).
+            6. If checks failed OR changes are needed: request changes on the PR, add label
+               "needs-revision" to the issue to trigger Stage 5.
+            7. Post a summary comment on the issue with your verdict.
