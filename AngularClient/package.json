@@ -2,7 +2,7 @@
   "name": "angular-client",
   "version": "0.0.0",
   "engines": {
-    "node": ">=22.22.3"
+    "node": "^22.22.3"
   },
   "scripts": {
     "ng": "ng",
