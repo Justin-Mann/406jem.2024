@@ -52,7 +52,8 @@
       "Bash(cp package-lock.json package-lock.json.bak)",
       "Bash(mv package.json.bak package.json)",
       "Bash(mv package-lock.json.bak package-lock.json)",
-      "Bash(npm ci *)"
+      "Bash(npm ci *)",
+      "Bash(git rebase *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\justi\\Repos\\406jem.2026\\temp-publish"
