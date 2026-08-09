@@ -77,7 +77,27 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Build and Deploy to Azure Static Web Apps
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: AngularClient/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./AngularClient
+
+      - name: Build
+        run: npx ng build
+        working-directory: ./AngularClient
+
+      # Builds in this job, not Azure's remote Oryx build - Oryx's supported Node
+      # version list doesn't include anything that satisfies Angular's own minimum
+      # (needs 22.22.3+, 24.15.0+, or 26.0.0+; Oryx currently tops out at 22.22.0
+      # and 24.13.0). skip_app_build uploads the already-built dist/ output instead
+      # of asking Azure to build it.
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -86,6 +106,7 @@ jobs:
           action: "upload"
           app_location: "./AngularClient"
           output_location: "dist/angular-client/browser"
+          skip_app_build: true
 
   close_staging_environment:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
