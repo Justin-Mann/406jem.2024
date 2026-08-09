@@ -43,7 +43,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
-          claude_args: "--max-turns 15 --permission-mode bypassPermissions"
+          claude_args: "--max-turns 30 --permission-mode bypassPermissions"
           prompt: |
             You are Stage 0 (Security) of a multi-agent CI/CD pipeline for the 406jem.2024
             repository — a personal portfolio/resume site (Blazor + Angular clients, Azure
@@ -51,8 +51,13 @@ jobs:
             request issues for the pipeline. You do NOT fix anything yourself.
 
             Step 1 — Fetch open alerts:
-            Run `gh api "repos/${{ github.repository }}/dependabot/alerts?state=open&per_page=100" --paginate`.
-            If there are none, stop — post nothing.
+            Run `gh api "repos/${{ github.repository }}/dependabot/alerts?state=open&per_page=100" --paginate --jq '.[] | {number, severity: .security_advisory.severity, package: .dependency.package.name, manifest: .dependency.manifest_path, ghsa: .security_advisory.ghsa_id, cve: .security_advisory.cve_id, summary: .security_advisory.summary, html_url}'`.
+            This trims each alert to the essentials — the raw response includes full CVE
+            descriptions/references per alert and will burn your turn budget fast with 30+
+            open alerts. Only fetch an individual alert's full description via a plain
+            `gh api repos/.../dependabot/alerts/<number>` call if you genuinely need the
+            patched-version details for one specific alert while writing the issue body.
+            If there are no open alerts at all, stop — post nothing.
 
             Step 2 — Group:
             Group the alerts by `manifest_path` (e.g. AngularClient/package-lock.json,
