@@ -34,6 +34,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
+          claude_args: "--permission-mode bypassPermissions"
           prompt: |
             You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
@@ -76,6 +77,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
+          claude_args: "--permission-mode bypassPermissions"
           prompt: |
             You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
 
