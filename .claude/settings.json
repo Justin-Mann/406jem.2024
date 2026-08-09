@@ -5,15 +5,15 @@
       "Bash(npm install *)",
       "Bash(Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue)",
       "Bash(npm run *)",
-      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" status)",
-      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" add AngularClient/package.json AngularClient/package-lock.json)",
-      "Bash(git -C c:/Users/justi/Repos/406jem.2024 commit -m ' *)",
-      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" push)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2026\" status)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2026\" add AngularClient/package.json AngularClient/package-lock.json)",
+      "Bash(git -C c:/Users/justi/Repos/406jem.2026 commit -m ' *)",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2026\" push)",
       "Bash(dotnet --version)",
       "Bash(npm --version)",
       "Bash(dotnet build *)",
-      "Bash(git -C \"c:/Users/justi/Repos/406jem.2024\" add MyResumeApi/Program.cs BlazorClient/wwwroot/appsettings.Development.json AngularClient/src/environments/environment.ts AngularClient/src/environments/environment.prod.ts AngularClient/src/app/services/data/resume-data.service.ts AngularClient/angular.json)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2024\\\\.github\\\\workflows\\\\azure-webapps-dotnet-resumeapi-core.yml\")",
+      "Bash(git -C \"c:/Users/justi/Repos/406jem.2026\" add MyResumeApi/Program.cs BlazorClient/wwwroot/appsettings.Development.json AngularClient/src/environments/environment.ts AngularClient/src/environments/environment.prod.ts AngularClient/src/app/services/data/resume-data.service.ts AngularClient/angular.json)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2026\\\\.github\\\\workflows\\\\azure-webapps-dotnet-resumeapi-core.yml\")",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
@@ -37,7 +37,7 @@
       "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk.generators/1.3.6/**)",
       "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/build/**)",
       "Read(//c/Users/justi/.nuget/packages/microsoft.azure.functions.worker.sdk/2.0.7/**)",
-      "Bash(Get-ChildItem -Force \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2024\\\\ResumeFunctions\\\\publish_test\")",
+      "Bash(Get-ChildItem -Force \"c:\\\\Users\\\\justi\\\\Repos\\\\406jem.2026\\\\ResumeFunctions\\\\publish_test\")",
       "Bash(Select-Object Mode, LastWriteTime, Name)",
       "Bash(dotnet test *)",
       "Bash(npx ng *)",
@@ -55,7 +55,7 @@
       "Bash(npm ci *)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\justi\\Repos\\406jem.2024\\temp-publish"
+      "c:\\Users\\justi\\Repos\\406jem.2026\\temp-publish"
     ]
   }
 }
