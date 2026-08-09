@@ -44,7 +44,7 @@ jobs:
 
             Repository context:
             - Blazor client (BlazorClient/): Blazor WASM on .NET 10, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
-            - Angular client (AngularClient/): Angular 19, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
+            - Angular client (AngularClient/): Angular 22, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
             - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 10; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
             - Both frontend clients must be visually and functionally in sync
             - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
