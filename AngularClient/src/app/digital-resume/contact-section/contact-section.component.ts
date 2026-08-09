@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { ContactItem } from '../../interfaces/resume.interface';
 
 @Component({
@@ -6,6 +6,7 @@ import { ContactItem } from '../../interfaces/resume.interface';
   standalone: true,
   imports: [],
   templateUrl: './contact-section.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './contact-section.component.css'
 })
 export class ContactSectionComponent {

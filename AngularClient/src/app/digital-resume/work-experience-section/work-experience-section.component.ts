@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { WorkExperienceItem } from '../../interfaces/resume.interface';
 
 @Component({
@@ -6,6 +6,7 @@ import { WorkExperienceItem } from '../../interfaces/resume.interface';
   standalone: true,
   imports: [],
   templateUrl: './work-experience-section.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './work-experience-section.component.css'
 })
 export class WorkExperienceSectionComponent {

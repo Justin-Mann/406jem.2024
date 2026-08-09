@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { CustomSections } from '../../interfaces/resume.interface';
 
 @Component({
@@ -6,6 +6,7 @@ import { CustomSections } from '../../interfaces/resume.interface';
   standalone: true,
   imports: [],
   templateUrl: './custom-sections.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './custom-sections.component.css'
 })
 export class CustomSectionsComponent {
