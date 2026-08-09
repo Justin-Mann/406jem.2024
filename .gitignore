@@ -343,3 +343,6 @@ healthchecksdb
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Azure Functions local dev secrets (JWT signing key, admin seed password, etc.)
+local.settings.json

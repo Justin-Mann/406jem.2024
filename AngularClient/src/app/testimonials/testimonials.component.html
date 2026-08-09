@@ -1,0 +1,35 @@
+<div class="container">
+  <h2>Testimonials</h2>
+  <p>Leave a note — you must be logged in to post, but anyone can read them.</p>
+
+  @if (authService.isAuthenticated()) {
+    <form (ngSubmit)="onSubmit()" #testimonialForm="ngForm">
+      <textarea class="form-control" rows="3" name="message" [(ngModel)]="newMessage" placeholder="Leave a note..." required></textarea>
+      @if (errorMessage()) {
+        <div class="alert alert-danger mt-2">{{ errorMessage() }}</div>
+      }
+      <button type="submit" class="btn btn-primary mt-2" [disabled]="isBusy() || testimonialForm.invalid">Post</button>
+    </form>
+  } @else {
+    <p><a routerLink="/login">Log in</a> or <a routerLink="/register">register</a> to leave a testimonial.</p>
+  }
+
+  <hr />
+
+  @if (testimonials() === null) {
+    <p>Loading...</p>
+  } @else if (testimonials()!.length === 0) {
+    <p>No testimonials yet — be the first.</p>
+  } @else {
+    <ul class="list-unstyled">
+      @for (testimonial of testimonials()!; track testimonial.id) {
+        <li class="mb-3">
+          <strong>{{ testimonial.authorUsername }}</strong> — {{ testimonial.message }}
+          @if (authService.isAdmin()) {
+            <button class="btn btn-sm btn-link text-danger" (click)="onDelete(testimonial.id)">Delete</button>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

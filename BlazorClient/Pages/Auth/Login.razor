@@ -1,0 +1,58 @@
+@page "/login"
+@using BlazorApp.BlazorClient.Services
+@inject AuthenticationService AuthService
+@inject NavigationManager Nav
+
+<PageTitle>Log In</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col col-sm-6 col-12 offset-sm-3">
+            <h2>Log In</h2>
+            <EditForm Model="model" OnValidSubmit="HandleLoginAsync">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <InputText id="username" class="form-control" @bind-Value="model.Username" />
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" type="password" class="form-control" @bind-Value="model.Password" />
+                </div>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+                <button type="submit" class="btn btn-primary" disabled="@isBusy">Log In</button>
+            </EditForm>
+            <p class="mt-3">Don't have an account? <a href="/register">Register</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly LoginModel model = new();
+    private string? errorMessage;
+    private bool isBusy;
+
+    private async Task HandleLoginAsync()
+    {
+        isBusy = true;
+        errorMessage = await AuthService.LoginAsync(model.Username, model.Password);
+        isBusy = false;
+
+        if (errorMessage is null)
+        {
+            Nav.NavigateTo("/testimonials");
+        }
+    }
+
+    private class LoginModel
+    {
+        [Required]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+}

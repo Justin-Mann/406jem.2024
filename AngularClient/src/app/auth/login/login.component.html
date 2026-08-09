@@ -1,0 +1,22 @@
+<div class="container">
+  <div class="row">
+    <div class="col col-sm-6 col-12 offset-sm-3">
+      <h2>Log In</h2>
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input id="username" name="username" class="form-control" [(ngModel)]="username" required />
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input id="password" name="password" type="password" class="form-control" [(ngModel)]="password" required />
+        </div>
+        @if (errorMessage()) {
+          <div class="alert alert-danger">{{ errorMessage() }}</div>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="isBusy() || loginForm.invalid">Log In</button>
+      </form>
+      <p class="mt-3">Don't have an account? <a routerLink="/register">Register</a></p>
+    </div>
+  </div>
+</div>

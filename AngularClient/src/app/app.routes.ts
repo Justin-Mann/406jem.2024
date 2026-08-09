@@ -7,5 +7,8 @@ export const routes: Routes = [
     { path: 'home', component: HomeComponent },
     { path: 'digitalresume', component: DigitalResumeComponent },
     { path: 'projects', component: ProjectsComponent },
+    { path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent) },
+    { path: 'register', loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent) },
+    { path: 'testimonials', loadComponent: () => import('./testimonials/testimonials.component').then(m => m.TestimonialsComponent) },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];
