@@ -1,9 +1,15 @@
 name: Stage 0 (Security) - Vulnerability Watch
 
-# Dedicated to GitHub's own vulnerability signal (Dependabot alerts). Reacts to new
-# alerts in near-real-time and also sweeps daily as a safety net, groups open alerts
-# per project, and opens a labeled issue so Stage 1 picks it up automatically. Does
-# not fix anything itself — later stages handle branching, coding, and review.
+# Dedicated to GitHub's own vulnerability signal (Dependabot alerts). Sweeps daily,
+# groups open alerts per project, and opens a labeled issue so Stage 1 picks it up
+# automatically. Does not fix anything itself — later stages handle branching,
+# coding, and review.
+#
+# Note: there is no native `dependabot_alert` Actions trigger (it doesn't appear in
+# GitHub's events-that-trigger-workflows list) — an earlier version of this workflow
+# tried it and GitHub rejected the whole file at parse time (startup_failure, 0s
+# run). The daily cron sweep is the only automatic trigger; workflow_dispatch covers
+# on-demand runs.
 #
 # Required GitHub secrets:
 #   CLAUDE_CODE_OAUTH_TOKEN — Claude Code OAuth token
@@ -18,9 +24,7 @@ name: Stage 0 (Security) - Vulnerability Watch
 
 on:
   schedule:
-    - cron: '0 13 * * *' # daily 13:00 UTC safety-net sweep
-  dependabot_alert:
-    types: [created, reintroduced, reopened]
+    - cron: '0 13 * * *' # daily 13:00 UTC sweep
   workflow_dispatch:
 
 jobs:
