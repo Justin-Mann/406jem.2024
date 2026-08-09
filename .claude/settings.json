@@ -45,7 +45,14 @@
       "Bash(python -c \"import json; d=json.load\\(open\\('angular.json'\\)\\); print\\(json.dumps\\(d['projects']['angular-client']['architect']['test'], indent=2\\)\\)\")",
       "Bash(python -c \"import json; d=json.load\\(open\\('angular.json'\\)\\); print\\(list\\(d['projects'].keys\\(\\)\\)\\)\")",
       "Bash(python -c \"import json; d=json.load\\(open\\('angular.json'\\)\\); print\\(json.dumps\\(d['projects']['AngularClient']['architect'].get\\('test', 'NOT FOUND'\\), indent=2\\)\\)\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(gh label *)",
+      "Bash(npm audit *)",
+      "Bash(cp package.json package.json.bak)",
+      "Bash(cp package-lock.json package-lock.json.bak)",
+      "Bash(mv package.json.bak package.json)",
+      "Bash(mv package-lock.json.bak package-lock.json)",
+      "Bash(npm ci *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\justi\\Repos\\406jem.2024\\temp-publish"

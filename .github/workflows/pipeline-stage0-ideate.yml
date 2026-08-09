@@ -1,0 +1,74 @@
+name: Stage 0 - Ideate Site Improvements
+
+# Runs on a schedule (and on-demand via workflow_dispatch), researches a small,
+# concrete improvement for the site, and opens a labeled issue to kick off
+# Stage 1 of the pipeline. Does not touch code itself.
+#
+# Required GitHub secrets:
+#   CLAUDE_CODE_OAUTH_TOKEN — Claude Code OAuth token
+#   CLAUDE_NOTIFY_PAT       — fine-grained PAT with issues:write, pull-requests:read,
+#                             contents:read. Must be a PAT (not GITHUB_TOKEN): labels
+#                             added by the default GITHUB_TOKEN do not trigger other
+#                             workflow runs, so Stage 1 would never fire.
+
+on:
+  schedule:
+    - cron: '0 15 * * 1' # Monday 15:00 UTC
+  workflow_dispatch:
+
+jobs:
+  ideate:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude - Propose a Site Improvement
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
+          claude_args: "--max-turns 20"
+          prompt: |
+            You are Stage 0 of a multi-agent CI/CD pipeline for the 406jem.2024 repository —
+            a personal portfolio/resume site (Blazor + Angular clients, Azure Functions API).
+
+            Your job is to find ONE small, concrete, worthwhile improvement to the site and
+            open a GitHub issue describing it. You do NOT implement anything — later stages
+            of the pipeline handle branching, coding, and review. Read CLAUDE.md first for
+            full repo context.
+
+            Step 1 — Check for pipeline backlog:
+            Run `gh issue list --label claude --state open` and `gh pr list --state open`.
+            If either returns any results, a previous cycle is still in flight — post nothing
+            and end immediately. Do not queue up a second idea on top of an unfinished one.
+
+            Step 2 — Research (budget: at most 4 web searches total):
+            Look at the current resume/site content (StaticData/Resumes/JustinMann_062024.json,
+            the Blazor/Angular page components, Projects pages) to understand what's already
+            there. Then use a handful of web searches to find current, credible ideas for what
+            makes a strong developer portfolio/resume site — e.g. content gaps, presentation
+            patterns, accessibility, or small feature ideas. Stay tightly scoped to this site;
+            do not go on an open-ended research tangent.
+
+            Step 3 — Pick ONE idea:
+            Choose a single change scoped to roughly one PR: a content addition, a small
+            feature, or a presentation improvement. Prefer concrete and verifiable over vague
+            ("add a testimonials section sourced from X" beats "improve the site's appeal").
+            It must be implementable by an autonomous coding agent working from the issue text
+            alone, and must respect the shared design language and conventions in CLAUDE.md.
+
+            Step 4 — Open the issue:
+            Use `gh issue create` to file it with:
+            - A clear, specific title.
+            - A body with: the idea, why it's worth doing (cite what you found, if research-based),
+              which project(s) it touches (BlazorClient / AngularClient / ResumeFunctions), and
+              concrete acceptance criteria.
+            Then add the "claude" label (`gh issue edit <number> --add-label claude`) to trigger
+            Stage 1 of the pipeline.
+
+            If you don't find anything genuinely worth doing, it is fine to open nothing — do
+            not create a low-value issue just to produce output.
