@@ -56,5 +56,10 @@ jobs:
             4. Build and verify the solution compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient).
             5. Commit your changes with a clear commit message referencing the issue.
             6. Push the branch.
-            7. Add the label "ready-for-review" to the issue to trigger Stage 4.
-            8. Post a comment summarizing what was changed.
+            7. Mark the PR ready for review if it's still a draft (`gh pr ready <PR-number>`).
+            8. Request a review from GitHub Copilot as an independent parallel reviewer, in addition
+               to Stage 4's own review: `gh pr edit <PR-number> --add-reviewer copilot-pull-request-reviewer[bot]`.
+               This is best-effort — if Copilot review isn't available/enabled for this repo, that
+               command may fail; don't let it block the rest of the pipeline.
+            9. Add the label "ready-for-review" to the issue to trigger Stage 4.
+            10. Post a comment summarizing what was changed.
