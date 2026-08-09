@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
 import { ResumeData } from '../interfaces/resume.interface';
@@ -20,6 +20,7 @@ import { WorkExperienceSectionComponent } from "./work-experience-section/work-e
     WorkExperienceSectionComponent
   ],
   templateUrl: './digital-resume.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './digital-resume.component.css'
 })
 export class DigitalResumeComponent implements OnInit {

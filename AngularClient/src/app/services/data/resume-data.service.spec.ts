@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { ResumeDataService } from './resume-data.service';
 import { ResumeData } from '../../interfaces/resume.interface';
 import { environment } from '../../../environments/environment';
@@ -27,7 +27,7 @@ describe('ResumeDataService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()]
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()]
     });
     service = TestBed.inject(ResumeDataService);
     httpMock = TestBed.inject(HttpTestingController);
