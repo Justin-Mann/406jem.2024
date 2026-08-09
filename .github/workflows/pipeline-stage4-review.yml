@@ -24,7 +24,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--permission-mode bypassPermissions"
           prompt: |
-            You are Stage 4 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+            You are Stage 4 of a multi-agent CI/CD pipeline for the 406jem.2026 repository.
             You are an independent code reviewer — you did NOT write this code.
 
             Issue #${{ github.event.issue.number }} has been implemented. Review the PR associated with this issue.

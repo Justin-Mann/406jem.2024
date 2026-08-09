@@ -21,7 +21,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--permission-mode bypassPermissions"
           prompt: |
-            You are Stage 1 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+            You are Stage 1 of a multi-agent CI/CD pipeline for the 406jem.2026 repository.
 
             A new feature request has been submitted (Issue #${{ github.event.issue.number }}):
 

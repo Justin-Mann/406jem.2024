@@ -45,7 +45,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--max-turns 30 --permission-mode bypassPermissions"
           prompt: |
-            You are Stage 0 (Security) of a multi-agent CI/CD pipeline for the 406jem.2024
+            You are Stage 0 (Security) of a multi-agent CI/CD pipeline for the 406jem.2026
             repository — a personal portfolio/resume site (Blazor + Angular clients, Azure
             Functions API). Your job is to turn open GitHub Dependabot alerts into feature
             request issues for the pipeline. You do NOT fix anything yourself.

@@ -33,7 +33,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--max-turns 20 --permission-mode bypassPermissions"
           prompt: |
-            You are Stage 0 of a multi-agent CI/CD pipeline for the 406jem.2024 repository —
+            You are Stage 0 of a multi-agent CI/CD pipeline for the 406jem.2026 repository —
             a personal portfolio/resume site (Blazor + Angular clients, Azure Functions API).
 
             Your job is to find ONE small, concrete, worthwhile improvement to the site and

@@ -36,7 +36,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--permission-mode bypassPermissions"
           prompt: |
-            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2026 repository.
 
             Issue #${{ github.event.issue.number }} received review feedback that requires changes.
 
@@ -79,7 +79,7 @@ jobs:
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
           claude_args: "--permission-mode bypassPermissions"
           prompt: |
-            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2024 repository.
+            You are Stage 5 of a multi-agent CI/CD pipeline for the 406jem.2026 repository.
 
             A reviewer has requested changes on PR #${{ github.event.pull_request.number }}.
 
