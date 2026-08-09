@@ -61,3 +61,4 @@ Workflows in `.github/workflows/` are path-isolated — each only triggers when 
 | Backend | Azure Functions v4, .NET 10 |
 | Hosting | Azure Static Web Apps (×2), Azure Functions Consumption |
 | CI/CD | GitHub Actions, Claude Code Actions |
+
