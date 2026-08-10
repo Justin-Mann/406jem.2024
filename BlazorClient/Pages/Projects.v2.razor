@@ -22,14 +22,14 @@
     else
     {
         <div class="row justify-content-center g-4">
-            @foreach (var section in listing.Sections)
+            @foreach (var projSection in listing.Sections)
             {
                 <div class="col-sm-4 col-12">
                     <div class="card jem-card text-center h-100">
-                        <div class="card-header">@section.Heading</div>
+                        <div class="card-header">@projSection.Heading</div>
                         <div class="card-body">
                             <ul class="list-group project-menu-list-group">
-                                @foreach (var link in section.Links)
+                                @foreach (var link in projSection.Links)
                                 {
                                     @if (string.IsNullOrEmpty(link.Description))
                                     {
@@ -47,9 +47,9 @@
                                 }
                             </ul>
                         </div>
-                        @if (!string.IsNullOrEmpty(section.LastUpdated))
+                        @if (!string.IsNullOrEmpty(projSection.LastUpdated))
                         {
-                            <div class="card-footer">Last Updated @section.LastUpdated</div>
+                            <div class="card-footer">Last Updated @projSection.LastUpdated</div>
                         }
                     </div>
                 </div>
