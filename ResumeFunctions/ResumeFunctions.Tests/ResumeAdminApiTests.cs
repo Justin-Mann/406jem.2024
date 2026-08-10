@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ResumeFunctions.Auth;
@@ -14,11 +15,12 @@ namespace ResumeFunctions.Tests;
 public class ResumeAdminApiTests
 {
     private readonly FakeResumeStore _store = new();
+    private readonly FakeResumeBlobStore _blobStore = new();
     private readonly ResumeAdminApi _api;
 
     public ResumeAdminApiTests()
     {
-        _api = new ResumeAdminApi(Substitute.For<ILogger<ResumeAdminApi>>(), _store);
+        _api = new ResumeAdminApi(Substitute.For<ILogger<ResumeAdminApi>>(), _store, _blobStore);
     }
 
     private static (TestHttpResponseData response, TestHttpRequestData request) BuildRequest(
@@ -39,6 +41,26 @@ public class ResumeAdminApiTests
     }
 
     private static object SamplePayload => new { FName = "Jane", LName = "Doe" };
+
+    private static byte[] ValidPdfBytes => Encoding.ASCII.GetBytes("%PDF-1.4\n%%EOF");
+
+    private static (TestHttpResponseData response, TestHttpRequestData request) BuildUploadRequest(
+        FunctionContext context, byte[]? body, string? contentType = "application/pdf", string? fileName = "resume.pdf")
+    {
+        var response = new TestHttpResponseData(context);
+        var headers = new HttpHeadersCollection();
+        if (contentType is not null)
+        {
+            headers.Add("Content-Type", contentType);
+        }
+        if (fileName is not null)
+        {
+            headers.Add("X-File-Name", fileName);
+        }
+        var bodyStream = body is null ? Stream.Null : new MemoryStream(body);
+        var request = new TestHttpRequestData(context, response, bodyStream, "POST", headers);
+        return (response, request);
+    }
 
     [Fact]
     public async Task ListMine_Returns401_WhenNotLoggedIn()
@@ -215,5 +237,130 @@ public class ResumeAdminApiTests
 
         var stillFeatured = await _store.FindByIdAsync(first.Id);
         Assert.False(stillFeatured!.IsFeatured);
+    }
+
+    [Fact]
+    public async Task Upload_Returns401_WhenNotLoggedIn()
+    {
+        var context = TestFunctionContextFactory.Create();
+        var (_, request) = BuildUploadRequest(context, ValidPdfBytes);
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_Returns403_ForVisitor()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.Visitor));
+        var (_, request) = BuildUploadRequest(context, ValidPdfBytes);
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_Returns201_StoresBlob_AndCreatesDraftResume_ForResumeAdmin()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildUploadRequest(context, ValidPdfBytes, fileName: "jane-resume.pdf");
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.Created, result.StatusCode);
+        var dto = await ReadBody<ResumeDto>((TestHttpResponseData)result);
+        Assert.Equal("jane", dto!.OwnerUserId);
+        Assert.Equal("Draft", dto.Status);
+        Assert.False(dto.IsFeatured);
+        Assert.Equal("jane-resume.pdf", dto.OriginalFileName);
+        Assert.Equal("application/pdf", dto.ContentType);
+        Assert.Equal(ValidPdfBytes.Length, dto.FileSizeBytes);
+
+        var stored = await _store.FindByIdAsync(dto.Id);
+        Assert.NotNull(stored);
+        Assert.NotNull(stored!.BlobPath);
+        Assert.True(_blobStore.Blobs.ContainsKey(stored.BlobPath!));
+        Assert.Equal(ValidPdfBytes, _blobStore.Blobs[stored.BlobPath!].Content);
+    }
+
+    [Fact]
+    public async Task Upload_Returns201_ForSuperAdmin()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("root", AccountRoles.SuperAdmin));
+        var (_, request) = BuildUploadRequest(context, ValidPdfBytes);
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.Created, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_Returns400_ForNonPdfContentType()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildUploadRequest(context, Encoding.UTF8.GetBytes("not a pdf"), contentType: "image/png");
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.Empty(_blobStore.Blobs);
+    }
+
+    [Fact]
+    public async Task Upload_Returns400_WhenContentDoesNotStartWithPdfMagicBytes()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildUploadRequest(context, Encoding.UTF8.GetBytes("definitely not a pdf"));
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.Empty(_blobStore.Blobs);
+    }
+
+    [Fact]
+    public async Task Upload_Returns400_WhenBodyIsEmpty()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildUploadRequest(context, Array.Empty<byte>());
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_Returns400_WhenFileExceedsSizeCap()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var oversized = new byte[10 * 1024 * 1024 + 1];
+        Encoding.ASCII.GetBytes("%PDF-1.4\n").CopyTo(oversized, 0);
+        var (_, request) = BuildUploadRequest(context, oversized);
+
+        var result = await _api.Upload(request, context);
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.Empty(_blobStore.Blobs);
+    }
+
+    [Fact]
+    public async Task Upload_OnlyOwnerCanSeeTheirDraftResume()
+    {
+        var janeContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, uploadRequest) = BuildUploadRequest(janeContext, ValidPdfBytes);
+        await _api.Upload(uploadRequest, janeContext);
+
+        var bobContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("bob", AccountRoles.ResumeAdmin));
+        var (_, listRequest) = BuildRequest(bobContext);
+        var bobList = await ReadBody<List<ResumeDto>>((TestHttpResponseData)await _api.ListMine(listRequest, bobContext));
+
+        Assert.Empty(bobList!);
+
+        var (_, janeListRequest) = BuildRequest(janeContext);
+        var janeList = await ReadBody<List<ResumeDto>>((TestHttpResponseData)await _api.ListMine(janeListRequest, janeContext));
+        Assert.Single(janeList!);
+        Assert.Equal("Draft", janeList![0].Status);
     }
 }

@@ -20,13 +20,19 @@ namespace ResumeFunctions
     /// </summary>
     public class ResumeAdminApi
     {
+        private const long MaxUploadSizeBytes = 10 * 1024 * 1024; // 10MB, per #29's "reasonable size cap"
+        private const string PdfContentType = "application/pdf";
+        private static readonly byte[] PdfMagicBytes = "%PDF-"u8.ToArray();
+
         private readonly ILogger<ResumeAdminApi> _logger;
         private readonly IResumeStore _resumeStore;
+        private readonly IResumeBlobStore _resumeBlobStore;
 
-        public ResumeAdminApi(ILogger<ResumeAdminApi> logger, IResumeStore resumeStore)
+        public ResumeAdminApi(ILogger<ResumeAdminApi> logger, IResumeStore resumeStore, IResumeBlobStore resumeBlobStore)
         {
             _logger = logger;
             _resumeStore = resumeStore;
+            _resumeBlobStore = resumeBlobStore;
         }
 
         [Function("listMyResumes")]
@@ -82,6 +88,7 @@ namespace ResumeFunctions
                 OwnerUserId = requestedOwner,
                 IsFeatured = payload.IsFeatured,
                 PayloadJson = JsonSerializer.Serialize(payload.Payload),
+                Status = ResumeEntity.StatusPublished,
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
             };
@@ -93,6 +100,82 @@ namespace ResumeFunctions
 
             await _resumeStore.AddAsync(resume);
             _logger.LogInformation("Resume created for owner '{Owner}' by '{Username}'.", requestedOwner, owner);
+
+            var response = req.CreateResponse(HttpStatusCode.Created);
+            await response.WriteAsJsonAsync(ToDto(resume));
+            return response;
+        }
+
+        [Function("uploadResume")]
+        public async Task<HttpResponseData> Upload(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "resumes/upload")] HttpRequestData req,
+            FunctionContext context)
+        {
+            var user = context.GetAuthenticatedUser();
+            if (user is null || !context.IsInRoleOrHigher(AccountRoles.ResumeAdmin))
+            {
+                return await Forbidden(req, user);
+            }
+
+            var contentType = req.Headers.TryGetValues("Content-Type", out var contentTypeValues)
+                ? contentTypeValues.FirstOrDefault()
+                : null;
+            if (!string.Equals(contentType, PdfContentType, StringComparison.OrdinalIgnoreCase))
+            {
+                return await BadRequest(req, "Only application/pdf uploads are accepted.");
+            }
+
+            using var buffer = new MemoryStream();
+            await req.Body.CopyToAsync(buffer);
+
+            if (buffer.Length == 0)
+            {
+                return await BadRequest(req, "The uploaded file is empty.");
+            }
+
+            if (buffer.Length > MaxUploadSizeBytes)
+            {
+                return await BadRequest(req, $"File exceeds the {MaxUploadSizeBytes / (1024 * 1024)}MB size limit.");
+            }
+
+            buffer.Position = 0;
+            var header = new byte[PdfMagicBytes.Length];
+            var bytesRead = await buffer.ReadAsync(header.AsMemory(0, header.Length));
+            if (bytesRead < PdfMagicBytes.Length || !header.AsSpan().SequenceEqual(PdfMagicBytes))
+            {
+                return await BadRequest(req, "The uploaded file is not a valid PDF.");
+            }
+
+            var owner = NormalizedUsername(user);
+            var fileName = req.Headers.TryGetValues("X-File-Name", out var fileNameValues)
+                ? fileNameValues.FirstOrDefault()
+                : null;
+            var resumeId = Guid.NewGuid().ToString();
+            var blobName = $"{owner}/{resumeId}.pdf";
+
+            buffer.Position = 0;
+            await _resumeBlobStore.UploadAsync(blobName, buffer, PdfContentType);
+
+            var now = DateTimeOffset.UtcNow;
+            var resume = new ResumeEntity
+            {
+                RowKey = resumeId,
+                OwnerUserId = owner,
+                IsFeatured = false,
+                Status = ResumeEntity.StatusDraft,
+                PayloadJson = string.Empty,
+                BlobPath = blobName,
+                OriginalFileName = string.IsNullOrWhiteSpace(fileName) ? "resume.pdf" : fileName,
+                ContentType = PdfContentType,
+                FileSizeBytes = buffer.Length,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
+            };
+
+            await _resumeStore.AddAsync(resume);
+            _logger.LogInformation(
+                "Resume PDF uploaded for owner '{Owner}' ({Size} bytes, blob '{BlobPath}').",
+                owner, resume.FileSizeBytes, resume.BlobPath);
 
             var response = req.CreateResponse(HttpStatusCode.Created);
             await response.WriteAsJsonAsync(ToDto(resume));
@@ -196,7 +279,17 @@ namespace ResumeFunctions
                 // Leave payload null rather than fail the whole response over one bad row.
             }
 
-            return new ResumeDto(entity.RowKey, entity.OwnerUserId, entity.IsFeatured, payload, entity.CreatedAtUtc, entity.UpdatedAtUtc);
+            return new ResumeDto(
+                entity.RowKey,
+                entity.OwnerUserId,
+                entity.IsFeatured,
+                payload,
+                entity.CreatedAtUtc,
+                entity.UpdatedAtUtc,
+                entity.Status,
+                entity.OriginalFileName,
+                entity.ContentType,
+                entity.FileSizeBytes);
         }
 
         private static async Task<HttpResponseData> Forbidden(HttpRequestData req, ClaimsPrincipal? user) =>
