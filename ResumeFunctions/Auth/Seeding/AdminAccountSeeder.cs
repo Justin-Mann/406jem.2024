@@ -53,7 +53,7 @@ namespace ResumeFunctions.Auth.Seeding
                 Username = username,
                 Email = _configuration["Auth:AdminEmail"] ?? string.Empty,
                 PasswordHash = _passwordHasher.Hash(password),
-                Role = AccountRoles.Admin,
+                Role = AccountRoles.ResumeAdmin,
                 CreatedAtUtc = DateTimeOffset.UtcNow,
             };
 

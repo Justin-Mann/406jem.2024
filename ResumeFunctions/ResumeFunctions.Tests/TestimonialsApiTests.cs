@@ -105,7 +105,20 @@ public class TestimonialsApiTests
     public async Task Delete_Returns204_WhenLoggedInAsAdmin()
     {
         _store.DeleteAsync("some-id").Returns(true);
-        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("admin", AccountRoles.Admin));
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("admin", AccountRoles.ResumeAdmin));
+        var (response, request) = BuildRequest(context, method: "DELETE");
+
+        var result = await _api.Delete(request, context, "some-id");
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Returns204_WhenLoggedInAsSuperAdmin()
+    {
+        // SuperAdmin implies ResumeAdmin via IsInRoleOrHigher — added alongside #28's role split.
+        _store.DeleteAsync("some-id").Returns(true);
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("root", AccountRoles.SuperAdmin));
         var (response, request) = BuildRequest(context, method: "DELETE");
 
         var result = await _api.Delete(request, context, "some-id");

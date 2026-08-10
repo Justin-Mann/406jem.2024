@@ -31,6 +31,9 @@ var builder = new HostBuilder()
 
         services.AddSingleton<IUserStore, TableUserStore>();
         services.AddSingleton<ITestimonialStore, TableTestimonialStore>();
+        services.AddSingleton<IResumeStore, TableResumeStore>();
+        services.AddSingleton<IProjectListingStore, TableProjectListingStore>();
+        services.AddSingleton<ISiteConfigStore, TableSiteConfigStore>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IIdentityProvider, LocalPasswordIdentityProvider>();
         services.AddSingleton<IAuthTokenService, JwtAuthTokenService>();

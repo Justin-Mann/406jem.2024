@@ -89,7 +89,7 @@ namespace ResumeFunctions
                 return await Unauthorized(req);
             }
 
-            if (!context.IsInRole(AccountRoles.Admin))
+            if (!context.IsInRoleOrHigher(AccountRoles.ResumeAdmin))
             {
                 return await ErrorResponse(req, HttpStatusCode.Forbidden, "Admin role required.");
             }

@@ -93,6 +93,14 @@ describe('AuthService', () => {
     expect(service.isAdmin()).toBeTrue();
   });
 
+  it('isAdmin is also true for a superadmin (#28 role hierarchy)', () => {
+    service.login({ username: 'root', password: 'password123' }).subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
+      .flush({ token: buildToken('root', 'superadmin'), username: 'root', role: 'superadmin', expiresAtUtc: new Date().toISOString() });
+
+    expect(service.isAdmin()).toBeTrue();
+  });
+
   it('logout clears the session and notifies the server', () => {
     service.login({ username: 'jane', password: 'password123' }).subscribe();
     httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
