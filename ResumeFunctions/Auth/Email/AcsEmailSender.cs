@@ -10,6 +10,13 @@ namespace ResumeFunctions.Auth.Email
     /// stack (no new SaaS vendor/account to provision) and has a workable free tier for this
     /// site's volume.
     /// </summary>
+    /// <remarks>
+    /// Manual end-to-end verification in staging (no test endpoint needed): set
+    /// <c>Email:AcsConnectionString</c>/<c>Email:SenderAddress</c> on the ACS Email resource, then
+    /// use that resource's own "Try Email" quick-send panel in the Azure Portal to confirm the
+    /// connection string, sender domain verification, and delivery all work before anything in
+    /// this codebase calls <see cref="SendAsync"/> for real.
+    /// </remarks>
     public class AcsEmailSender : IEmailSender
     {
         private readonly EmailClient _client;
