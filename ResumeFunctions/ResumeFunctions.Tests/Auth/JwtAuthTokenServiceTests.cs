@@ -30,12 +30,12 @@ public class JwtAuthTokenServiceTests
     {
         var service = BuildService();
 
-        var issued = service.IssueToken("jane", AccountRoles.Admin);
+        var issued = service.IssueToken("jane", AccountRoles.ResumeAdmin);
         var principal = service.ValidateToken(issued.Token);
 
         Assert.NotNull(principal);
         Assert.Equal("jane", principal!.Identity!.Name);
-        Assert.True(principal.IsInRole(AccountRoles.Admin));
+        Assert.True(principal.IsInRole(AccountRoles.ResumeAdmin));
     }
 
     [Fact]

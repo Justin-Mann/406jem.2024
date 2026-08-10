@@ -19,7 +19,7 @@ public class JwtAuthenticationMiddlewareTests
     public void TryAuthenticate_PopulatesAuthenticatedUser_ForValidBearerToken()
     {
         var tokenService = BuildTokenService();
-        var issued = tokenService.IssueToken("jane", AccountRoles.Admin);
+        var issued = tokenService.IssueToken("jane", AccountRoles.ResumeAdmin);
         var middleware = new JwtAuthenticationMiddleware(tokenService);
         var context = TestFunctionContextFactory.Create();
         var headers = new HttpHeadersCollection();
@@ -30,7 +30,7 @@ public class JwtAuthenticationMiddlewareTests
         var user = context.GetAuthenticatedUser();
         Assert.NotNull(user);
         Assert.Equal("jane", user!.Identity!.Name);
-        Assert.True(user.IsInRole(AccountRoles.Admin));
+        Assert.True(user.IsInRole(AccountRoles.ResumeAdmin));
     }
 
     [Fact]

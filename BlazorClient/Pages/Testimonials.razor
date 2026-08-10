@@ -41,7 +41,9 @@
             {
                 <li class="mb-3">
                     <strong>@testimonial.AuthorUsername</strong> — @testimonial.Message
-                    <AuthorizeView Roles="admin">
+                    @* SuperAdmin (#28) implies ResumeAdmin's "admin" permissions, mirroring the
+                       backend's FunctionContextAuthExtensions.IsInRoleOrHigher. *@
+                    <AuthorizeView Roles="admin,superadmin">
                         <Authorized>
                             <button class="btn btn-sm btn-link text-danger" @onclick="() => DeleteTestimonialAsync(testimonial.Id)">Delete</button>
                         </Authorized>

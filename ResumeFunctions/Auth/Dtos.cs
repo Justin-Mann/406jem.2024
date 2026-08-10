@@ -1,3 +1,5 @@
+using ResumeFunctions.Models;
+
 namespace ResumeFunctions.Auth.Dtos
 {
     public record RegisterRequest(string? Username, string? Email, string? Password);
@@ -11,4 +13,18 @@ namespace ResumeFunctions.Auth.Dtos
     public record CreateTestimonialRequest(string? Message);
 
     public record ErrorResponse(string Message);
+
+    public record ResumeDto(string Id, string OwnerUserId, bool IsFeatured, DigitalResumeModel? Payload, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
+
+    /// <summary>OwnerUserId is only honored when the caller is a SuperAdmin creating on behalf
+    /// of another owner — a plain ResumeAdmin is always pinned to their own username.</summary>
+    public record CreateOrUpdateResumeRequest(string? OwnerUserId, bool IsFeatured, DigitalResumeModel? Payload);
+
+    public record ProjectListingDto(string Id, string OwnerUserId, bool IsFeatured, ProjectListingModel? Payload, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
+
+    public record CreateOrUpdateProjectListingRequest(string? OwnerUserId, bool IsFeatured, ProjectListingModel? Payload);
+
+    public record SiteConfigDto(string? PublicResumeOwnerId, string? PublicProjectsOwnerId);
+
+    public record UpdateSiteConfigRequest(string? PublicResumeOwnerId, string? PublicProjectsOwnerId);
 }

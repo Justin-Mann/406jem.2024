@@ -28,7 +28,12 @@ export class AuthService {
 
   readonly username = computed(() => this.currentUser()?.username ?? null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
-  readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
+  // SuperAdmin (#28) implies ResumeAdmin's "admin" permissions, mirroring the backend's
+  // FunctionContextAuthExtensions.IsInRoleOrHigher.
+  readonly isAdmin = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'superadmin';
+  });
 
   private restoreSession(): AuthUser | null {
     const token = sessionStorage.getItem(TOKEN_STORAGE_KEY);
