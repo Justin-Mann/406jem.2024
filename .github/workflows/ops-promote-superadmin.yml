@@ -1,0 +1,60 @@
+name: Ops - Promote justinmann.406 to SuperAdmin
+
+# One-off, manually-triggered fix for a bootstrap gap discovered while manually migrating
+# content to justinmann.406: #25's original seeder only ever creates the ResumeAdmin role
+# (AccountRoles.Admin, wire value "admin"); #28 introduced SuperAdmin but nothing has ever
+# been able to create one, since role escalation isn't (and shouldn't be) a self-service
+# endpoint. This promotes the existing justinmann.406 row directly via Table Storage.
+#
+# Delete this workflow file once it has run successfully -- it's a one-time bootstrap fix,
+# not something that should be re-runnable against arbitrary accounts.
+#
+# Required GitHub secrets:
+#   AZURE_CREDENTIALS — service principal JSON (already used by deploy-functions.yml)
+#
+# Required GitHub repository variables:
+#   AZURE_RESOURCE_GROUP
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_NAME: 406resumeapi
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Resolve storage connection string
+        id: conn
+        run: |
+          CONN=$(az functionapp config appsettings list \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --query "[?name=='AzureWebJobsStorage'].value" -o tsv)
+          echo "::add-mask::$CONN"
+          echo "conn=$CONN" >> "$GITHUB_OUTPUT"
+
+      - name: Promote justinmann.406 to superadmin
+        run: |
+          az storage entity merge \
+            --connection-string "${{ steps.conn.outputs.conn }}" \
+            --table-name "Users" \
+            --entity PartitionKey=user RowKey=justinmann.406 Role=superadmin \
+            --if-match "*" \
+            --output none
+
+      - name: Verify
+        run: |
+          az storage entity show \
+            --connection-string "${{ steps.conn.outputs.conn }}" \
+            --table-name "Users" \
+            --partition-key user \
+            --row-key justinmann.406 \
+            --query "{Username:Username, Role:Role}" \
+            -o table
