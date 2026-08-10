@@ -1,0 +1,57 @@
+name: Ops - Set ResumeFunctions Anthropic API Key
+
+# One-off, manually-triggered utility to apply the dedicated Anthropic API key (for #30's
+# PDF-parsing feature) to both slots of the ResumeFunctions Function App. Reads from a
+# temporary repo secret rather than a workflow_dispatch input, since dispatch inputs are
+# visible in the run's event log and would leak the value.
+#
+# Delete this workflow file once it has run successfully.
+#
+# Required GitHub secrets:
+#   AZURE_CREDENTIALS                     — service principal JSON (already used by deploy-functions.yml)
+#   RESUMEFUNCTIONS_ANTHROPIC_API_KEY     — the dedicated key for this feature
+#
+# Required GitHub repository variables:
+#   AZURE_RESOURCE_GROUP
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_NAME: 406resumeapi
+
+jobs:
+  set-app-settings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set app setting on production slot
+        run: |
+          az functionapp config appsettings set \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --settings "Anthropic:ApiKey=${{ secrets.RESUMEFUNCTIONS_ANTHROPIC_API_KEY }}" \
+            --output none
+
+      - name: Set app setting on staging slot
+        run: |
+          az functionapp config appsettings set \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --slot staging \
+            --settings "Anthropic:ApiKey=${{ secrets.RESUMEFUNCTIONS_ANTHROPIC_API_KEY }}" \
+            --output none
+
+      - name: Restart both slots to pick up new settings
+        run: |
+          az functionapp restart \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}"
+          az functionapp restart \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --slot staging
