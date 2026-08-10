@@ -1,5 +1,6 @@
-﻿@page "/projects"
-@using BlazorApp.Models 
+@page "/projects"
+@using BlazorApp.Models
+@using System.Net.Http.Json
 @inject HttpClient Http
 
 <PageTitle>Projects</PageTitle>
@@ -9,64 +10,335 @@
         <p>This page has various resources related to my professional activities as well as side projects for reference and review.  Resources include my public GitHub and discussions of side projects w/ relevant urls.</p>
     </div>
     <div class="row"><br /></div>
-    <div class="row">
-        <div class="col col-1"></div>
-        <div class="col card jem-card col-sm-4 col-12 text-center">
-            <div class="card-header">WWW</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group">
-                    <a class="list-group-item list-group-item-action" href="https://www.linkedin.com/in/justin-mann-b3822075/" title="LinkedIn" target="_new">LinkedIn</a>
-                    <a class="list-group-item list-group-item-action" href="https://github.com/Justin-Mann" title="My GitHub" target="_new">GitHub</a>
-                    <a class="list-group-item list-group-item-action" href="https://406creatorcollections.com" title="My Shopify Store" target="_new">406CreatorCollections.com</a>
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
+
+    @if (listing is null)
+    {
+        <p class="text-center">Loading...</p>
+    }
+    else if (listing.Sections.Count == 0)
+    {
+        <p class="text-center">No project listings to show yet.</p>
+    }
+    else
+    {
+        <div class="row justify-content-center g-4">
+            @foreach (var section in listing.Sections)
+            {
+                <div class="col-sm-4 col-12">
+                    <div class="card jem-card text-center h-100">
+                        <div class="card-header">@section.Heading</div>
+                        <div class="card-body">
+                            <ul class="list-group project-menu-list-group">
+                                @foreach (var link in section.Links)
+                                {
+                                    @if (string.IsNullOrEmpty(link.Description))
+                                    {
+                                        <a class="list-group-item list-group-item-action" href="@link.Url" title="@link.Label" target="_new">@link.Label</a>
+                                    }
+                                    else
+                                    {
+                                        <li class="list-group-item">
+                                            <a href="@link.Url" title="@link.Label" target="_new">@link.Label</a>
+                                            <ul>
+                                                <li class="list-group-item-description">@link.Description</li>
+                                            </ul>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                        @if (!string.IsNullOrEmpty(section.LastUpdated))
+                        {
+                            <div class="card-footer">Last Updated @section.LastUpdated</div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
-        <div class="col col-2"></div>
-        <div class="col card jem-card col-sm-4 col-12 text-center">
-            <div class="card-header">Open Source & Tutorials</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group list-group-flush">
-                    <li class="list-group-item">
-                        <a href="https://meshtastic.org/" title="Open Source Project: Meshtastic" target="_new">Meshtastic Project</a>
-                        <ul>
-                            <li class="list-group-item-description">I made simple modifications to the <a href="https://github.com/meshtastic/firmware" title="Open Source Project: Meshtastic Frimware Repository" target="_new">firmware repository</a> in order to add support for the RAK12035 Soil Monitor.  As of today this is still a WIP, but I have functional prototypes.  Basically I have my water monitors working just fine, but need to loop back and update the code a little more and complete the submission.</li>
-                        </ul>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="https://www.instructables.com/Water-Flow-Controller-W-HTTP-Controls-Using-Adafru/" title="Instructables: Flowerbed Irrigation Controller" target="_new">Flowerbed Soil Monitor &amp; Water Controller</a>
-                        <ul>
-                            <li class="list-group-item-description">Just a .ino file I wrote and component recipe for an Arduino Feather I'm using to check the soil moisture content and turn the water on and off for my front flowerbed.'</li>
-                        </ul>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="https://www.instructables.com/RAKMeshtastic-Based-Irrigation-Monitor/" title="Instructables: Meshtastic Based Long Range Water Monitor" target="_new">Meshtastic Based Long Range (Lorawan Radio Based) Water Monitor</a>
-                        <ul>
-                            <li class="list-group-item-description">Just the Instructable describing my build for the Meshtastic implementation referenced above.</li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
-        </div>
-        <div class="col col-1"></div>
-    </div>
-    <div class="row"><br /></div>
-    <div class="row">
-        <div class="col card jem-card col-sm-4 col-12 offset-sm-4 text-center">
-            <div class="card-header">This Website, Different Client Frameworks</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group">
-                    <li class="list-group-item">
-                        <a href="https://angular.406jem.com" title="This Website In Angular" target="_new">Angular Client</a>
-                    </li>
-                    <!-- <li class="list-group-item">
-                        <a href="/" title="This Website In React" target="_new">React Client</a>
-                    </li> -->
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
-        </div>
-    </div>
+    }
 </div>
-@code {}
+
+<AuthorizeView Roles="admin,superadmin" Context="authorizeContext">
+    <Authorized>
+        <div class="container manage-projects-panel">
+            <hr />
+            @if (!showManagePanel)
+            {
+                <button class="btn btn-outline-secondary btn-sm" @onclick="OpenManagePanelAsync">Manage My Project Listings</button>
+            }
+            else
+            {
+                <h3>Manage My Project Listings</h3>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                @if (mine is null)
+                {
+                    <p>Loading your listings...</p>
+                }
+                else
+                {
+                    @if (editState is null)
+                    {
+                        @if (mine.Count == 0)
+                        {
+                            <p>You don't have any project listings yet.</p>
+                        }
+                        else
+                        {
+                            <ul class="list-group mb-3">
+                                @foreach (var item in mine)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            @(item.Payload?.Title ?? "(untitled)")
+                                            @if (item.IsFeatured)
+                                            {
+                                                <span class="badge bg-success ms-2">Public</span>
+                                            }
+                                        </span>
+                                        <span>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => StartEdit(item)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(item.Id)" disabled="@isBusy">Delete</button>
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <button class="btn btn-primary btn-sm" @onclick="StartNew">+ New Listing</button>
+                    }
+                    else
+                    {
+                        <EditForm Model="editState" OnValidSubmit="SaveAsync">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <InputText class="form-control" @bind-Value="editState.Payload.Title" />
+                            </div>
+                            <div class="form-check mb-3">
+                                <InputCheckbox class="form-check-input" id="isFeatured" @bind-Value="editState.IsFeatured" />
+                                <label class="form-check-label" for="isFeatured">Show publicly (Featured)</label>
+                            </div>
+
+                            @for (var sectionIndex = 0; sectionIndex < editState.Payload.Sections.Count; sectionIndex++)
+                            {
+                                var section = editState.Payload.Sections[sectionIndex];
+                                var currentSectionIndex = sectionIndex;
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="mb-2 d-flex gap-2">
+                                            <input class="form-control" placeholder="Section heading" @bind="section.Heading" />
+                                            <input class="form-control" placeholder="Last updated (e.g. 08/2026)" @bind="section.LastUpdated" />
+                                        </div>
+
+                                        @for (var linkIndex = 0; linkIndex < section.Links.Count; linkIndex++)
+                                        {
+                                            var link = section.Links[linkIndex];
+                                            var currentLinkIndex = linkIndex;
+                                            <div class="row g-2 mb-2 align-items-center">
+                                                <div class="col-sm-3"><input class="form-control" placeholder="Label" @bind="link.Label" /></div>
+                                                <div class="col-sm-3"><input class="form-control" placeholder="URL" @bind="link.Url" /></div>
+                                                <div class="col-sm-4"><input class="form-control" placeholder="Description (optional)" @bind="link.Description" /></div>
+                                                <div class="col-sm-2 text-end">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveLinkUp(section, currentLinkIndex)" disabled="@(currentLinkIndex == 0)">&uarr;</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveLinkDown(section, currentLinkIndex)" disabled="@(currentLinkIndex == section.Links.Count - 1)">&darr;</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveLink(section, currentLinkIndex)">&times;</button>
+                                                </div>
+                                            </div>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddLink(section)">+ Add Link</button>
+
+                                        <div class="mt-3 text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveSectionUp(currentSectionIndex)" disabled="@(currentSectionIndex == 0)">&uarr; Section</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveSectionDown(currentSectionIndex)" disabled="@(currentSectionIndex == editState.Payload.Sections.Count - 1)">&darr; Section</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveSection(currentSectionIndex)">Remove Section</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <button type="button" class="btn btn-sm btn-outline-secondary mb-3" @onclick="AddSection">+ Add Section</button>
+
+                            <div>
+                                <button type="submit" class="btn btn-primary" disabled="@isBusy">Save</button>
+                                <button type="button" class="btn btn-secondary" @onclick="CancelEdit" disabled="@isBusy">Cancel</button>
+                            </div>
+                        </EditForm>
+                    }
+                }
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private ProjectListingModel? listing;
+    private bool showManagePanel;
+    private List<ProjectListingDto>? mine;
+    private ListingEditState? editState;
+    private string? errorMessage;
+    private bool isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPublicListingAsync();
+    }
+
+    private async Task LoadPublicListingAsync()
+    {
+        try
+        {
+            listing = await Http.GetFromJsonAsync<ProjectListingModel>("api/projectlistings/public") ?? new ProjectListingModel();
+        }
+        catch
+        {
+            listing = new ProjectListingModel();
+        }
+    }
+
+    private async Task OpenManagePanelAsync()
+    {
+        showManagePanel = true;
+        await LoadMineAsync();
+    }
+
+    private async Task LoadMineAsync()
+    {
+        errorMessage = null;
+        try
+        {
+            mine = await Http.GetFromJsonAsync<List<ProjectListingDto>>("api/projectlistings/mine");
+        }
+        catch
+        {
+            errorMessage = "Could not load your project listings.";
+            mine = new List<ProjectListingDto>();
+        }
+    }
+
+    private void StartNew()
+    {
+        editState = new ListingEditState
+        {
+            Id = null,
+            IsFeatured = false,
+            Payload = new ProjectListingModel
+            {
+                Title = "Projects",
+                Sections = new List<ProjectSection>
+                {
+                    new() { Heading = string.Empty, Links = new List<ProjectLink> { new() } },
+                },
+            },
+        };
+    }
+
+    private void StartEdit(ProjectListingDto item)
+    {
+        var payload = item.Payload ?? new ProjectListingModel();
+        editState = new ListingEditState
+        {
+            Id = item.Id,
+            IsFeatured = item.IsFeatured,
+            Payload = new ProjectListingModel
+            {
+                Title = payload.Title,
+                Sections = payload.Sections.Select(s => new ProjectSection
+                {
+                    Heading = s.Heading,
+                    LastUpdated = s.LastUpdated,
+                    Links = s.Links.Select(l => new ProjectLink { Label = l.Label, Url = l.Url, Description = l.Description }).ToList(),
+                }).ToList(),
+            },
+        };
+    }
+
+    private void CancelEdit() => editState = null;
+
+    private void AddSection() => editState!.Payload.Sections.Add(new ProjectSection { Heading = string.Empty, Links = new List<ProjectLink> { new() } });
+
+    private void RemoveSection(int index) => editState!.Payload.Sections.RemoveAt(index);
+
+    private void MoveSectionUp(int index) => Swap(editState!.Payload.Sections, index, index - 1);
+
+    private void MoveSectionDown(int index) => Swap(editState!.Payload.Sections, index, index + 1);
+
+    private void AddLink(ProjectSection section) => section.Links.Add(new ProjectLink());
+
+    private void RemoveLink(ProjectSection section, int index) => section.Links.RemoveAt(index);
+
+    private void MoveLinkUp(ProjectSection section, int index) => Swap(section.Links, index, index - 1);
+
+    private void MoveLinkDown(ProjectSection section, int index) => Swap(section.Links, index, index + 1);
+
+    private static void Swap<T>(List<T> list, int a, int b)
+    {
+        if (a < 0 || b < 0 || a >= list.Count || b >= list.Count)
+        {
+            return;
+        }
+
+        (list[a], list[b]) = (list[b], list[a]);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (editState is null)
+        {
+            return;
+        }
+
+        isBusy = true;
+        errorMessage = null;
+
+        var request = new CreateOrUpdateProjectListingRequest
+        {
+            IsFeatured = editState.IsFeatured,
+            Payload = editState.Payload,
+        };
+
+        var response = editState.Id is null
+            ? await Http.PostAsJsonAsync("api/projectlistings", request)
+            : await Http.PutAsJsonAsync($"api/projectlistings/{editState.Id}", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            editState = null;
+            await LoadMineAsync();
+            await LoadPublicListingAsync();
+        }
+        else
+        {
+            errorMessage = "Could not save this project listing. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private async Task DeleteAsync(string id)
+    {
+        isBusy = true;
+        errorMessage = null;
+
+        var response = await Http.DeleteAsync($"api/projectlistings/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadMineAsync();
+            await LoadPublicListingAsync();
+        }
+        else
+        {
+            errorMessage = "Could not delete this project listing. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private class ListingEditState
+    {
+        public string? Id { get; set; }
+        public bool IsFeatured { get; set; }
+        public ProjectListingModel Payload { get; set; } = new();
+    }
+}
