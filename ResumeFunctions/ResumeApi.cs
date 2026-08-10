@@ -32,7 +32,10 @@ namespace ResumeFunctions
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
             _logger.LogInformation("Getting all resumes...");
-            var data = JsonFileReader.Read<DigitalResumeModel[]>(_resumeDataPath);
+            var featured = await TryGetFeaturedResumeAsync();
+            var data = featured is not null
+                ? new[] { featured }
+                : JsonFileReader.Read<DigitalResumeModel[]>(_resumeDataPath);
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(data);
             return response;
@@ -53,7 +56,8 @@ namespace ResumeFunctions
         /// <summary>
         /// Resolves the public resume through SiteConfig (#28) — null if no SiteConfig row
         /// exists yet, no owner is configured, or the configured owner has no featured resume,
-        /// in which case GetResume falls back to the pre-#28 static-file behavior.
+        /// in which case GetResume and GetAllResumes both fall back to the pre-#28 static-file
+        /// behavior.
         /// </summary>
         private async Task<DigitalResumeModel?> TryGetFeaturedResumeAsync()
         {

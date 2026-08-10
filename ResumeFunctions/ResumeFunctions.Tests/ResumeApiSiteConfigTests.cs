@@ -114,6 +114,41 @@ public class ResumeApiSiteConfigTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
+    [Fact]
+    public async Task GetAllResumes_FallsBackToStaticFile_WhenNoSiteConfigRow()
+    {
+        var (response, request) = BuildRequest();
+
+        await _api.GetAllResumes(request);
+
+        response.Body.Position = 0;
+        var resumes = await JsonSerializer.DeserializeAsync<DigitalResumeModel[]>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Single(resumes!);
+        Assert.Equal("Jane", resumes![0].FName);
+    }
+
+    [Fact]
+    public async Task GetAllResumes_ReturnsConfiguredOwnersFeaturedResume_WrappedInArray_WhenSet()
+    {
+        await _resumeStore.AddAsync(new ResumeEntity
+        {
+            OwnerUserId = "alice",
+            IsFeatured = true,
+            PayloadJson = JsonSerializer.Serialize(new DigitalResumeModel { FName = "Alice", LName = "Admin" }),
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetAllResumes(request);
+
+        response.Body.Position = 0;
+        var resumes = await JsonSerializer.DeserializeAsync<DigitalResumeModel[]>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Single(resumes!);
+        Assert.Equal("Alice", resumes![0].FName);
+    }
+
     public void Dispose()
     {
         Directory.Delete(_tempDir, recursive: true);
