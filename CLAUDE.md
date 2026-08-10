@@ -106,11 +106,6 @@ Issue #25. Two account types — self-registered **visitor** accounts and one se
 - **The gated feature proving the chain works — Testimonials (`TestimonialsApi.cs`):** `GET /api/testimonials` is public; `POST /api/testimonials` requires any logged-in user; `DELETE /api/testimonials/{id}` requires the `admin` role. This is the minimal end-to-end proof the issue asked for — not a real comments product.
 - **Required app settings** (Azure Functions app settings / Key Vault references in prod, `local.settings.json` `Values` locally — `local.settings.json` is gitignored, never commit it): `Auth:JwtSigningKey` (≥32 bytes, `JwtAuthTokenService` throws on startup if missing/short), `Auth:AdminUsername` (defaults to `admin`), `Auth:AdminEmail`, `Auth:AdminPassword` (required for the admin account to be seeded at all).
 
-### MyResumeApi (`MyResumeApi/`)
-- **Status: DEPRECATED / NOT IN USE**
-- This was the original ASP.NET Core Web API backend. It has been replaced by ResumeFunctions as part of the Azure account migration. The project still exists in the repo but is not deployed and has no active workflow.
-- **Do not use or deploy this project.** Both clients now point to `406resumeapi.azurewebsites.net` (the Azure Functions app).
-
 ### Client (`Client/`)
 - **Type:** Legacy stub — only contains `Pages/Home.razor`; leftover from initial scaffolding
 - **Not part of active builds**
