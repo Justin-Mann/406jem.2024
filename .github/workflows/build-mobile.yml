@@ -1,0 +1,43 @@
+name: Build – Mobile Client (Kotlin Multiplatform)
+
+# Builds and tests MobileClient's Android + iOS targets on every change. Runs on
+# macos-latest specifically because the iOS target needs Xcode, which only
+# macOS runners provide (GitHub Actions macOS runners come with Xcode
+# preinstalled — no separate CI platform needed for this).
+#
+# Build/test verification only — no code signing, no App Store/Play Store
+# publishing. That remains a deliberate follow-up once the app itself exists
+# and this workflow is proven out.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'MobileClient/**'
+      - '.github/workflows/build-mobile.yml'
+  pull_request:
+    paths:
+      - 'MobileClient/**'
+      - '.github/workflows/build-mobile.yml'
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: MobileClient
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build and test all targets (Android + iOS)
+        run: ./gradlew build

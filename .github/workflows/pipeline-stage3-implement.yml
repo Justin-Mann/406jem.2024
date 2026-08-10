@@ -27,6 +27,12 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - name: Claude - Implement Feature
         uses: anthropics/claude-code-action@v1
         with:
@@ -49,12 +55,18 @@ jobs:
             - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 10; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
             - Both frontend clients must be visually and functionally in sync
             - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
+            - MobileClient (MobileClient/, if the issue calls for it): Kotlin Multiplatform + Compose
+              Multiplatform, JDK 21 is available in this job. `.github/workflows/build-mobile.yml`
+              builds and tests both the Android and iOS targets on a macOS runner (Xcode is only
+              available there, not in this job) — that workflow is the real build/test gate for this
+              project; this job can still run `./gradlew build` here to catch Android/common-target
+              issues early, but can't verify the iOS target itself.
 
             Your job:
             1. Check out the feature branch created in Stage 2 (feature/issue-${{ github.event.issue.number }}-*).
             2. Read the existing codebase (especially CLAUDE.md) to understand the current structure.
             3. Implement all changes described in the issue, following existing conventions.
-            4. Build and verify the solution compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient).
+            4. Build and verify the solution compiles (dotnet build in relevant projects, npm ci && ng build in AngularClient, ./gradlew build in MobileClient if applicable).
             5. Commit your changes with a clear commit message referencing the issue.
             6. Push the branch.
             7. Mark the PR ready for review if it's still a draft (`gh pr ready <PR-number>`).
