@@ -24,20 +24,32 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: MobileClient
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check MobileClient exists
+        id: check
+        run: |
+          if [ -f "MobileClient/gradlew" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::MobileClient/ doesn't exist yet (issue #34 not implemented) — nothing to build."
+          fi
+
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        if: steps.check.outputs.exists == 'true'
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - name: Grant execute permission for gradlew
+        if: steps.check.outputs.exists == 'true'
+        working-directory: MobileClient
         run: chmod +x ./gradlew
 
       - name: Build and test all targets (Android + iOS)
+        if: steps.check.outputs.exists == 'true'
+        working-directory: MobileClient
         run: ./gradlew build
