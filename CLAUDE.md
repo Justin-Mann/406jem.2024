@@ -15,8 +15,8 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Root namespace:** `BlazorApp.BlazorClient`
 - **Deploy:** Azure Static Web Apps (workflow: `deploy-blazor.yml`)
 - **Live URL:** https://406jem.com
-- **Key packages:** Blazorise 1.7.5 (Bootstrap5 + FontAwesome), System.Text.Json (built-in)
-- **Entry:** `Program.cs` → `App.razor` → `Layout/MainLayout.razor`
+- **Key packages:** Blazorise 1.7.5 (Bootstrap5 + FontAwesome), Microsoft.AspNetCore.Components.Authorization 10.0.0, System.Text.Json (built-in)
+- **Entry:** `Program.cs` → `App.razor` (wrapped in `<CascadingAuthenticationState>`) → `Layout/MainLayout.razor`
 - **Pages:**
   - `Pages/Home.razor` — home/landing page (`/`)
   - `Pages/DigitalResume.razor` — resume view fetched from API (`/digitalresume`)
@@ -26,12 +26,16 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
   - `Pages/ContactSection.razor` — reusable contact list component
   - `Pages/EducationSection.razor` — reusable education list component
   - `Pages/CustomSections.razor` — reusable custom skills/tech section component
-- **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat)
+  - `Pages/Auth/Login.razor` (`/login`), `Pages/Auth/Register.razor` (`/register`) — auth forms; register auto-logs-in on success
+  - `Pages/Testimonials.razor` (`/testimonials`) — **the gated feature proving login works end-to-end** (see Auth section below): list is public, the post form only renders inside `<AuthorizeView><Authorized>`, delete button only for `<AuthorizeView Roles="admin">`
+- **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat); `Models/AuthModels.cs` — `AuthResponse`, `ErrorResponse`, `TestimonialItem`
+- **Auth (`Services/`):** see the shared "User Accounts (Phase 1)" section below — `JwtAuthenticationStateProvider` (custom `AuthenticationStateProvider`, decodes the JWT client-side via `JwtClaimsParser`, no server round-trip needed to know who's logged in), `AuthenticationService` (register/login/logout HTTP calls + sessionStorage token handling), both registered scoped in `Program.cs`
 - **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs (`jmResume.4.2025.pdf`, `jmResume.7.2024.pdf`), favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
 - **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
-- **API call:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`
-- **Tests:** `BlazorClient.Tests/` — bUnit 1.34.4 (xUnit) project, 24 tests covering ContactSection, DigitalResumePage, GeneralSection, and WorkExperienceSection
+- **API calls:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`; `/api/auth/*` and `/api/testimonials*` — see Auth section
+- **Tests:** `BlazorClient.Tests/` — bUnit 1.34.4 (xUnit) project, 33 tests covering ContactSection, DigitalResumePage, GeneralSection, WorkExperienceSection, `JwtClaimsParser`, and `AuthenticationService`
+  - bUnit gotcha: `JSInterop.SetupVoid(...)` (unlike real JS interop) does **not** auto-complete — the awaited `InvokeVoidAsync` call hangs forever unless you chain `.SetVoidResult()`. Cost a live debugging session (dotnet test hung indefinitely with no error) before being traced to this.
 
 ### AngularClient (`AngularClient/`)
 - **Type:** Angular SPA (standalone components, no NgModules)
@@ -42,9 +46,9 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Live URL:** https://angular.406jem.com
 - **Key packages:** Angular Material 22, Bootstrap 5.3, Bootstrap Icons, ng-bootstrap 21
 - **Entry:** `src/main.ts` → `src/app/app.component.ts`
-- **Routing:** `src/app/app.routes.ts` — `home`, `digitalresume`, `projects`
+- **Routing:** `src/app/app.routes.ts` — `home`, `digitalresume`, `projects` eager; `login`, `register`, `testimonials` lazy via `loadComponent` (keeps the initial bundle from growing further past the pre-existing `angular.json` 600kb budget warning)
 - **Components (all standalone):**
-  - `app/header/` — nav bar with mobile hamburger menu, logo display
+  - `app/header/` — nav bar with mobile hamburger menu, logo display; also renders Log In/Register or "Hi {user}"/Log Out based on `AuthService` signals
   - `app/home/` — landing page
   - `app/projects/` — projects/links page
   - `app/digital-resume/` — main resume view, fetches data from API
@@ -54,13 +58,15 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
     - `work-experience-section/` — job cards with hover effects
     - `custom-sections/` — tech/skills lists (input is `customItems`, not `sections`)
   - `app/spinner/` — loading overlay
-- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls ResumeFunctions API
-- **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models
+  - `app/auth/login/`, `app/auth/register/` — template-driven (`FormsModule`/`ngModel`) auth forms; register auto-logs-in on success
+  - `app/testimonials/` — **the gated feature proving login works end-to-end** (see Auth section below): list is public, the post form only renders when `authService.isAuthenticated()`, delete button only when `authService.isAdmin()`
+- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls ResumeFunctions API; `app/services/data/testimonials-data.service.ts` — list/create/delete for testimonials; `app/services/auth/auth.service.ts` — register/login/logout, exposes `isAuthenticated`/`isAdmin`/`username` as signals, session restored on construction by decoding a still-valid token out of `sessionStorage`; `app/services/auth/auth.interceptor.ts` — functional `HttpInterceptorFn` that attaches `Authorization: Bearer <token>` to every request when a token is present (registered via `withInterceptors` in `app.config.ts`)
+- **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models; `app/interfaces/auth.interface.ts` — auth/testimonial request/response shapes
 - **Styles:** `src/styles.css` — global; each component has its own `.css`
 - **Config:** `angular.json`, `tsconfig.json`
 - **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (in `src/environments/environment.prod.ts`)
-- **API call:** `GET /api/resumes/myresume` in `resume-data.service.ts`
-- **Tests:** 36 Karma/Jasmine specs across all components and the data service; run with `npx ng test --watch=false --browsers=ChromeHeadless`
+- **API calls:** `GET /api/resumes/myresume` in `resume-data.service.ts`; `/api/auth/*` and `/api/testimonials*` — see Auth section
+- **Tests:** 64 Karma/Jasmine specs across all components, the data services, `AuthService`, `authInterceptor`, and the JWT decode util (`jwt.util.ts`); run with `npx ng test --watch=false --browsers=ChromeHeadless`
 
 ### ResumeFunctions (`ResumeFunctions/`)
 - **Type:** Azure Functions v4 (isolated worker, plain `HostBuilder` — no ASP.NET Core integration)
@@ -69,20 +75,36 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Deploy:** Azure Functions App Service (workflow: `deploy-functions.yml`)
 - **Live URL:** https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net
 - **Staging slot:** `staging` — deployed to before production; URL set in repo variable `AZURE_FUNCTIONS_STAGING_URL`
-- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.52.0, `Microsoft.Azure.Functions.Worker.Extensions.Http` 3.3.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.7, Newtonsoft.Json 13.0.3
-- **Entry:** `Program.cs` — `new HostBuilder().ConfigureFunctionsWorkerDefaults()`, plus `ConfigureServices` registering `WorkerOptions.Serializer` as `JsonObjectSerializer(JsonSerializerDefaults.Web)` so HTTP response bodies are camelCase (see Wire serialization below)
+- **Key packages:** `Microsoft.Azure.Functions.Worker` 2.52.0, `Microsoft.Azure.Functions.Worker.Extensions.Http` 3.3.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.7, Newtonsoft.Json 13.0.3, `Azure.Data.Tables` 12.11.0, `System.IdentityModel.Tokens.Jwt` 8.22.0
+- **Entry:** `Program.cs` — `new HostBuilder().ConfigureFunctionsWorkerDefaults(...)`, plus `ConfigureServices` registering `WorkerOptions.Serializer` as `JsonObjectSerializer(JsonSerializerDefaults.Web)` so HTTP response bodies are camelCase (see Wire serialization below), the `Auth/` DI services below, and `JwtAuthenticationMiddleware` as a global `IFunctionsWorkerMiddleware`
 - **Functions:** `ResumeApi.cs` — uses `HttpRequestData`/`HttpResponseData` (not ASP.NET Core types)
-  - `myResume` — `GET /api/resumes/myresume` (Anonymous auth) — **primary endpoint used by both clients**
+  - `myResume` — `GET /api/resumes/myresume` (Anonymous auth) — **primary endpoint used by both clients, unaffected by the auth work below**
   - `resumes` — `GET /api/resumes` (Function auth) — returns full array
   - Constructor takes an optional `resumeDataPath` (defaults to `Path.Combine(AppContext.BaseDirectory, "StaticData", "Resumes", "JustinMann_062024.json")`), injectable for tests. **Never build this path from `Environment.CurrentDirectory`** — the Linux Functions host doesn't guarantee CWD equals the deployment folder, which previously caused the endpoint to 500 in staging/production.
 - **Data:** `StaticData/Resumes/JustinMann_062024.json` — resume JSON source of truth (copied to output on build)
 - **Wire serialization:** The isolated worker's `WorkerOptions.Serializer` (used by `WriteAsJsonAsync`, i.e. the actual HTTP response) is set to `JsonSerializerDefaults.Web` (camelCase) in `Program.cs`. This is separate from `JsonFileReader`, which reads the static JSON file with its own serializer instance (Newtonsoft, PascalCase source data) — don't conflate the two when debugging casing issues. Blazor's `GetFromJsonAsync` deserializes case-insensitively so it's unaffected either way; Angular's typed `HttpClient` is not, so a casing mismatch here silently renders blank instead of erroring.
 - **CORS:** Not configured — both SWA clients are on different origins. Add if browser CORS errors appear.
 - **Default route prefix:** `api` (Azure Functions default for isolated worker — no `routePrefix` override in `host.json`)
-- **Tests:** `ResumeFunctions.Tests/` — xUnit project; 11 unit tests + 5 integration tests
+- **Tests:** `ResumeFunctions.Tests/` — xUnit project; 43 unit tests + 5 integration tests (up from 11 unit tests, all additions are auth/testimonials coverage)
   - Integration tests use `[Trait("Category", "Integration")]` to separate from unit tests
   - Integration tests require `FUNCTIONS_STAGING_URL` env var; filtered in CI with `--filter "Category=Integration"`
-  - `WriteAsJsonAsync` requires `WorkerOptions.Serializer` registered in `FunctionContext.InstanceServices` — configured in test setup via `services.Configure<WorkerOptions>(opts => opts.Serializer = new JsonObjectSerializer())`
+  - `WriteAsJsonAsync` requires `WorkerOptions.Serializer` registered in `FunctionContext.InstanceServices` — configured in test setup via `services.Configure<WorkerOptions>(opts => opts.Serializer = new JsonObjectSerializer())`; `Tests/Helpers/TestFunctionContextFactory.cs` centralizes this plus optional pre-authenticated `ClaimsPrincipal` seeding for auth-guard tests
+  - `TestHttpRequestData` (in `Tests/Helpers/`) grew optional `body`/`method`/`headers` constructor params (defaulted, so existing GET-only tests are unaffected) to support POST/DELETE requests with JSON bodies and an `Authorization` header
+
+#### User Accounts (Phase 1 — in-app auth, `Auth/` folder)
+
+Issue #25. Two account types — self-registered **visitor** accounts and one seeded **admin** account (not publicly registrable) — backed by a `Role` claim (`AccountRoles.Visitor` / `AccountRoles.Admin`). This is Phase 1 (in-app username/password); a future phase integrates Microsoft Entra ID.
+
+- **Persistence — Azure Table Storage, not a new SQL resource:** `TableUserStore`/`TableTestimonialStore` open a `TableServiceClient` built from the **same `AzureWebJobsStorage` connection string the Functions host already has** for its own bookkeeping (`Program.cs`) — no second storage account or paid SQL resource to provision, matching the Consumption-plan/isolated-worker setup. Two tables, auto-created on first use: `Users` (PartitionKey `"user"`, RowKey = lowercased username) and `Testimonials` (PartitionKey `"testimonial"`, RowKey = a GUID).
+- **Password hashing:** `Pbkdf2PasswordHasher` — PBKDF2-SHA256 via the .NET built-in `Rfc2898DeriveBytes.Pbkdf2` (no third-party crypto package needed), 210,000 iterations (OWASP 2023 guidance), format `"{iterations}.{base64 salt}.{base64 hash}"`. Never plaintext, never reversible encryption.
+- **Identity provider seam (the Entra extensibility point):** `IIdentityProvider.AuthenticateAsync(username, password)` is implemented today by `LocalPasswordIdentityProvider` only. A future Entra phase adds a second implementation (e.g. validating an Entra-issued token) — `AuthApi`, `JwtAuthTokenService`, and the auth guard middleware don't need to change for that.
+- **Login rate limiting / lockout:** persisted **on the `UserAccountEntity` itself** (`FailedLoginAttempts`, `LockoutUntilUtc`), not in an in-memory dictionary — an in-memory counter would reset per Consumption-plan instance and not actually protect anything once the app scales out. 5 failed attempts locks the account for 5 minutes (`LocalPasswordIdentityProvider`).
+- **JWT issuance/validation:** `JwtAuthTokenService`, HMAC-SHA256, 2-hour expiry, claims are the literal `System.Security.Claims.ClaimTypes.Name`/`ClaimTypes.Role` URI strings (confirmed by inspection: `System.IdentityModel.Tokens.Jwt` 8.x does **not** apply the old short-name outbound claim mapping by default) — both frontends' client-side JWT decoders rely on those exact long-form URI strings as dictionary keys, so don't "clean up" the claim types to short names without updating `JwtClaimsParser.cs` (Blazor) and `jwt.util.ts` (Angular) too.
+- **Auth guard:** `JwtAuthenticationMiddleware` (`IFunctionsWorkerMiddleware`, registered globally in `Program.cs`) parses a `Bearer` token if present on *every* request and stashes the resulting `ClaimsPrincipal` in `FunctionContext.Items` — but a missing/invalid token is never itself an error at the middleware layer, since anonymous endpoints (`myResume`, `resumes`, `GET /api/testimonials`) must keep working unauthenticated. Endpoints that require login check `context.GetAuthenticatedUser()` themselves (`FunctionContextAuthExtensions.cs`) and return 401/403. The header-parsing logic is split into an `internal TryAuthenticate(...)` method specifically so tests don't need to fake the `GetHttpRequestDataAsync()` static extension (which can't be mocked with NSubstitute).
+- **Admin seeding:** `AdminAccountSeeder` (`IHostedService`) runs on cold start, reads `Auth:AdminUsername`/`Auth:AdminEmail`/`Auth:AdminPassword` from config, and creates the admin row if it doesn't already exist. Logs a warning and skips (doesn't crash startup) if `Auth:AdminPassword` isn't set.
+- **Endpoints:** `AuthApi.cs` — `POST /api/auth/register` (Anonymous trigger, visitor role only), `POST /api/auth/login` (issues the JWT), `POST /api/auth/logout` (204 no-op — JWT is stateless; logout is a client-side token discard, bounded by the 2-hour expiry).
+- **The gated feature proving the chain works — Testimonials (`TestimonialsApi.cs`):** `GET /api/testimonials` is public; `POST /api/testimonials` requires any logged-in user; `DELETE /api/testimonials/{id}` requires the `admin` role. This is the minimal end-to-end proof the issue asked for — not a real comments product.
+- **Required app settings** (Azure Functions app settings / Key Vault references in prod, `local.settings.json` `Values` locally — `local.settings.json` is gitignored, never commit it): `Auth:JwtSigningKey` (≥32 bytes, `JwtAuthTokenService` throws on startup if missing/short), `Auth:AdminUsername` (defaults to `admin`), `Auth:AdminEmail`, `Auth:AdminPassword` (required for the admin account to be seeded at all).
 
 ### MyResumeApi (`MyResumeApi/`)
 - **Status: DEPRECATED / NOT IN USE**
@@ -184,6 +206,7 @@ stage5 (label: needs-revision, or PR review changes_requested) → addresses fee
 | Angular frontend | Azure Static Web App | https://angular.406jem.com |
 | Resume API (production) | Azure Functions App | `406resumeapi` → https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net |
 | Resume API (staging) | Azure Functions Slot | `406resumeapi/staging` — URL in repo variable `AZURE_FUNCTIONS_STAGING_URL` |
+| User accounts / testimonials storage | Azure Table Storage | Reuses the storage account already backing `AzureWebJobsStorage` for `406resumeapi` — no separate resource |
 
 **GitHub secrets required:**
 - `AZURE_STATIC_WEB_APPS_API_TOKEN_*` — SWA deploy tokens (one per SWA, auto-named by Azure)
@@ -207,9 +230,9 @@ stage5 (label: needs-revision, or PR review changes_requested) → addresses fee
 - **.NET version:** .NET 10 across all C# projects
 - **Serialization:** System.Text.Json for Blazor; ResumeFunctions uses Newtonsoft.Json (`JsonFileReader`) to read the static resume file, but the HTTP wire format is System.Text.Json camelCase via `WorkerOptions.Serializer` (see Wire serialization above) — the two serializers are independent, don't assume a fix to one affects the other
 - **Testing:**
-  - ResumeFunctions: xUnit + NSubstitute; test project in `ResumeFunctions/ResumeFunctions.Tests/`; `InternalsVisibleTo` exposes `JsonFileReader`; `<Compile Remove="ResumeFunctions.Tests\**" />` prevents main project from picking up test files; tests pass a temp-file path directly into `ResumeApi`'s `resumeDataPath` constructor param rather than mutating `Environment.CurrentDirectory`
-  - BlazorClient: bUnit (1.34.4); test project in `BlazorClient/BlazorClient.Tests/`; `BlockingFakeHttpHandler` (using `TaskCompletionSource`) needed to test loading states before async HTTP completes
-  - AngularClient: Karma + Jasmine; 36 specs; use `provideRouter([])` in test beds for components with `RouterLink`; use `toHaveBeenCalledTimes(1)` not `toHaveBeenCalledOnce()`
+  - ResumeFunctions: xUnit + NSubstitute; test project in `ResumeFunctions/ResumeFunctions.Tests/`; `InternalsVisibleTo` exposes `JsonFileReader` (and now the `internal` auth-guard methods in `Auth/Middleware/`); `<Compile Remove="ResumeFunctions.Tests\**" />` prevents main project from picking up test files; tests pass a temp-file path directly into `ResumeApi`'s `resumeDataPath` constructor param rather than mutating `Environment.CurrentDirectory`; `Tests/Helpers/FakeUserStore.cs` is a plain in-memory `IUserStore` (not an NSubstitute mock) for tests that need real stateful mutation, e.g. lockout counters incrementing across calls
+  - BlazorClient: bUnit (1.34.4); test project in `BlazorClient/BlazorClient.Tests/`; `BlockingFakeHttpHandler` (using `TaskCompletionSource`) needed to test loading states before async HTTP completes; see the bUnit `SetupVoid`/`.SetVoidResult()` gotcha noted above
+  - AngularClient: Karma + Jasmine; 64 specs; use `provideRouter([])` in test beds for components with `RouterLink`; use `toHaveBeenCalledTimes(1)` not `toHaveBeenCalledOnce()`; RxJS/Jasmine gotcha — `let x: T | null = null; obs.subscribe(v => x = v); /* sync flush */ expect(x)...` can fail to compile (TS2345, "Expected<null>") because TypeScript's control-flow analysis narrows `x` to the literal `null` type at the initializer and doesn't see the closure's reassignment as reachable; declare without a literal initializer instead (`let x: T | null | undefined;`) as done in `auth.service.spec.ts`
 - **Azure Functions deploy:** Always use `dotnet publish` in a single step — never split `dotnet build` + `dotnet publish --no-build`, as this prevents `functions.metadata` from being generated
 - **`upload-artifact@v4` hidden files:** The deploy workflow must include `include-hidden-files: true` on the upload step. `actions/upload-artifact@v4.4.0+` excludes hidden folders by default; the `.azurefunctions/` directory (required by the Functions host) starts with `.` and will be silently dropped without this flag, causing "0 functions found (Custom)" at runtime.
 - **Claude Code failure notifications:** Deploy workflows create a GitHub issue (via curl + `CLAUDE_NOTIFY_PAT`, since fine-grained PATs can't use `gh issue create`'s GraphQL mutation) then immediately post an `@claude` comment (`gh issue comment` with `GH_TOKEN` also set to `CLAUDE_NOTIFY_PAT`). Both steps use the PAT, not `GITHUB_TOKEN` — see the pipeline token note above for why. Note: `claude-code-action` does not support `push` event contexts and cannot be called inline from a push-triggered workflow.

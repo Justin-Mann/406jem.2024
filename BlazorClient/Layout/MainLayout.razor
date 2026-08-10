@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject BlazorApp.BlazorClient.Services.AuthenticationService AuthService
 <div class="page">
     <main>
         <div class="top-row px-4 top-menu-row">
@@ -6,6 +7,17 @@
                 <a href="/" class="@GetActive("*")">Home</a>
                 <a href="/digitalresume" class="@GetActive("digitalresume")">Digital Resume</a>
                 <a href="/projects" class="@GetActive("projects")">Current Project(s)</a>
+                <a href="/testimonials" class="@GetActive("testimonials")">Testimonials</a>
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="auth-status">Hi, @context.User.Identity?.Name</span>
+                        <a href="javascript:void(0)" @onclick="HandleLogoutAsync">Log Out</a>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login" class="@GetActive("login")">Log In</a>
+                        <a href="/register" class="@GetActive("register")">Register</a>
+                    </NotAuthorized>
+                </AuthorizeView>
             </div>
         </div>
 
@@ -33,4 +45,10 @@
     }
 
     string GetActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix) => IsActive(href, navLinkMatch) ? "active" : "";
+
+    async Task HandleLogoutAsync()
+    {
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("/", forceLoad: false);
+    }
 }

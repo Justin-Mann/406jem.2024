@@ -1,0 +1,103 @@
+@page "/testimonials"
+@using BlazorApp.Models
+@inject HttpClient Http
+
+<PageTitle>Testimonials</PageTitle>
+
+<div class="container">
+    <h2>Testimonials</h2>
+    <p>Leave a note — you must be logged in to post, but anyone can read them.</p>
+
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <EditForm Model="newTestimonial" OnValidSubmit="HandleSubmitAsync">
+                <InputTextArea class="form-control" rows="3" @bind-Value="newTestimonial.Message" placeholder="Leave a note..." />
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-2">@errorMessage</div>
+                }
+                <button type="submit" class="btn btn-primary mt-2" disabled="@isBusy">Post</button>
+            </EditForm>
+        </Authorized>
+        <NotAuthorized>
+            <p><a href="/login">Log in</a> or <a href="/register">register</a> to leave a testimonial.</p>
+        </NotAuthorized>
+    </AuthorizeView>
+
+    <hr />
+
+    @if (testimonials is null)
+    {
+        <p>Loading...</p>
+    }
+    else if (testimonials.Count == 0)
+    {
+        <p>No testimonials yet — be the first.</p>
+    }
+    else
+    {
+        <ul class="list-unstyled">
+            @foreach (var testimonial in testimonials)
+            {
+                <li class="mb-3">
+                    <strong>@testimonial.AuthorUsername</strong> — @testimonial.Message
+                    <AuthorizeView Roles="admin">
+                        <Authorized>
+                            <button class="btn btn-sm btn-link text-danger" @onclick="() => DeleteTestimonialAsync(testimonial.Id)">Delete</button>
+                        </Authorized>
+                    </AuthorizeView>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private List<TestimonialItem>? testimonials;
+    private readonly NewTestimonialModel newTestimonial = new();
+    private string? errorMessage;
+    private bool isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTestimonialsAsync();
+    }
+
+    private async Task LoadTestimonialsAsync()
+    {
+        testimonials = await Http.GetFromJsonAsync<List<TestimonialItem>>("api/testimonials");
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        isBusy = true;
+        errorMessage = null;
+
+        var response = await Http.PostAsJsonAsync("api/testimonials", new { message = newTestimonial.Message });
+        if (response.IsSuccessStatusCode)
+        {
+            newTestimonial.Message = string.Empty;
+            await LoadTestimonialsAsync();
+        }
+        else
+        {
+            errorMessage = "Could not post your testimonial. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private async Task DeleteTestimonialAsync(string id)
+    {
+        var response = await Http.DeleteAsync($"api/testimonials/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadTestimonialsAsync();
+        }
+    }
+
+    private class NewTestimonialModel
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+}

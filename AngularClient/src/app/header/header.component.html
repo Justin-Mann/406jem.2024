@@ -17,6 +17,24 @@
                         <li [routerLink]="['/projects']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
                             Current Projects
                         </li>
+                        <li [routerLink]="['/testimonials']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                            Testimonials
+                        </li>
+                        @if (authService.isAuthenticated()) {
+                            <li class="nav-item auth-status">
+                                Hi, {{ authService.username() }}
+                            </li>
+                            <li class="nav-item" (click)="logout()">
+                                Log Out
+                            </li>
+                        } @else {
+                            <li [routerLink]="['/login']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                                Log In
+                            </li>
+                            <li [routerLink]="['/register']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
+                                Register
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
