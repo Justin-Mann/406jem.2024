@@ -34,7 +34,7 @@ public class AdminAccountSeederTests
 
         var created = await userStore.FindByUsernameAsync("admin");
         Assert.NotNull(created);
-        Assert.Equal(AccountRoles.Admin, created!.Role);
+        Assert.Equal(AccountRoles.ResumeAdmin, created!.Role);
     }
 
     [Fact]
