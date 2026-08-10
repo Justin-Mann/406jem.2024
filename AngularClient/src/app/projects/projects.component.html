@@ -3,63 +3,128 @@
         <p>This page has various resources related to my professional activities as well as side projects for reference and review.  Resources include my public GitHub and discussions of side projects w/ relevant urls.</p>
     </div>
     <div class="row"><br /></div>
-    <div class="row">
-        <div class="col col-1"></div>
-        <div class="col card jem-card col-sm-4 col-12 text-center">
-            <div class="card-header">WWW</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group">
-                    <a class="list-group-item list-group-item-action" href="https://www.linkedin.com/in/justin-mann-b3822075/" title="LinkedIn" target="_new">LinkedIn</a>
-                    <a class="list-group-item list-group-item-action" href="https://github.com/Justin-Mann" title="My GitHub" target="_new">GitHub</a>
-                    <a class="list-group-item list-group-item-action" href="https://406creatorcollections.com" title="My Shopify Store" target="_new">406CreatorCollections.com</a>
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
+
+    @if (listing() === null) {
+        <p class="text-center">Loading...</p>
+    } @else if (listing()!.sections.length === 0) {
+        <p class="text-center">No project listings to show yet.</p>
+    } @else {
+        <div class="row justify-content-center g-4">
+            @for (section of listing()!.sections; track section.heading) {
+                <div class="col-sm-4 col-12">
+                    <div class="card jem-card text-center h-100">
+                        <div class="card-header">{{ section.heading }}</div>
+                        <div class="card-body">
+                            <ul class="list-group project-menu-list-group">
+                                @for (link of section.links; track link.url) {
+                                    @if (!link.description) {
+                                        <a class="list-group-item list-group-item-action" [href]="link.url" [title]="link.label" target="_new">{{ link.label }}</a>
+                                    } @else {
+                                        <li class="list-group-item">
+                                            <a [href]="link.url" [title]="link.label" target="_new">{{ link.label }}</a>
+                                            <ul>
+                                                <li class="list-group-item-description">{{ link.description }}</li>
+                                            </ul>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                        @if (section.lastUpdated) {
+                            <div class="card-footer">Last Updated {{ section.lastUpdated }}</div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
-        <div class="col col-2"></div>
-        <div class="col card jem-card col-sm-4 col-12 text-center">
-            <div class="card-header">Open Source & Tutorials</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group list-group-flush">
-                    <li class="list-group-item">
-                        <a href="https://meshtastic.org/" title="Open Source Project: Meshtastic" target="_new">Meshtastic Project</a>
-                        <ul>
-                            <li class="list-group-item-description">I made simple modifications to the <a href="https://github.com/meshtastic/firmware" title="Open Source Project: Meshtastic Frimware Repository" target="_new">firmware repository</a> in order to add support for the RAK12035 Soil Monitor.  As of today this is still a WIP, but I have functional prototypes.  Basically I have my water monitors working just fine, but need to loop back and update the code a little more and complete the submission.</li>
-                        </ul>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="https://www.instructables.com/Water-Flow-Controller-W-HTTP-Controls-Using-Adafru/" title="Instructables: Flowerbed Irrigation Controller" target="_new">Flowerbed Soil Monitor &amp; Water Controller</a>
-                        <ul>
-                            <li class="list-group-item-description">Just a .ino file I wrote and component recipe for an Arduino Feather I'm using to check the soil moisture content and turn the water on and off for my front flowerbed.'</li>
-                        </ul>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="https://www.instructables.com/RAKMeshtastic-Based-Irrigation-Monitor/" title="Instructables: Meshtastic Based Long Range Water Monitor" target="_new">Meshtastic Based Long Range (Lorawan Radio Based) Water Monitor</a>
-                        <ul>
-                            <li class="list-group-item-description">Just the Instructable describing my build for the Meshtastic implementation referenced above.</li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
-        </div>
-        <div class="col col-1"></div>
-    </div>
-    <div class="row"><br /></div><div class="row"><br /></div>
-    <div class="row">
-        <div class="col card jem-card col-sm-4 col-12 offset-sm-4 text-center">
-            <div class="card-header">This Website, Different Client Frameworks</div>
-            <div class="card-body">
-                <ul class="list-group project-menu-list-group">
-                    <li class="list-group-item">
-                        <a href="https://406jem.com" title="This Website In Blazor" target="_new">Blazor Client</a>
-                    </li>
-                    <!-- <li class="list-group-item">
-                        <a href="/" title="This Website In React" target="_new">React Client</a>
-                    </li> -->
-                </ul>
-            </div>
-            <div class="card-footer">Last Updated 04/2025</div>
-        </div>
-    </div>
+    }
 </div>
+
+@if (authService.isAdmin()) {
+    <div class="container manage-projects-panel">
+        <hr />
+        @if (!showManagePanel()) {
+            <button class="btn btn-outline-secondary btn-sm" (click)="openManagePanel()">Manage My Project Listings</button>
+        } @else {
+            <h3>Manage My Project Listings</h3>
+
+            @if (errorMessage()) {
+                <div class="alert alert-danger">{{ errorMessage() }}</div>
+            }
+
+            @if (mine() === null) {
+                <p>Loading your listings...</p>
+            } @else if (editState() === null) {
+                @if (mine()!.length === 0) {
+                    <p>You don't have any project listings yet.</p>
+                } @else {
+                    <ul class="list-group mb-3">
+                        @for (item of mine()!; track item.id) {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    {{ item.payload?.title || '(untitled)' }}
+                                    @if (item.isFeatured) {
+                                        <span class="badge bg-success ms-2">Public</span>
+                                    }
+                                </span>
+                                <span>
+                                    <button class="btn btn-sm btn-outline-primary" (click)="startEdit(item)">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" [disabled]="isBusy()" (click)="deleteListing(item.id)">Delete</button>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                <button class="btn btn-primary btn-sm" (click)="startNew()">+ New Listing</button>
+            } @else {
+                <form (ngSubmit)="save()" #listingForm="ngForm">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input class="form-control" name="title" [(ngModel)]="editState()!.payload.title" />
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="isFeatured" name="isFeatured" [(ngModel)]="editState()!.isFeatured" />
+                        <label class="form-check-label" for="isFeatured">Show publicly (Featured)</label>
+                    </div>
+
+                    @for (section of editState()!.payload.sections; track $index; let sectionIndex = $index) {
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="mb-2 d-flex gap-2">
+                                    <input class="form-control" placeholder="Section heading" [name]="'heading' + sectionIndex" [(ngModel)]="section.heading" />
+                                    <input class="form-control" placeholder="Last updated (e.g. 08/2026)" [name]="'lastUpdated' + sectionIndex" [(ngModel)]="section.lastUpdated" />
+                                </div>
+
+                                @for (link of section.links; track $index; let linkIndex = $index) {
+                                    <div class="row g-2 mb-2 align-items-center">
+                                        <div class="col-sm-3"><input class="form-control" placeholder="Label" [name]="'label' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.label" /></div>
+                                        <div class="col-sm-3"><input class="form-control" placeholder="URL" [name]="'url' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.url" /></div>
+                                        <div class="col-sm-4"><input class="form-control" placeholder="Description (optional)" [name]="'description' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.description" /></div>
+                                        <div class="col-sm-2 text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="linkIndex === 0" (click)="moveLinkUp(section, linkIndex)">&uarr;</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="linkIndex === section.links.length - 1" (click)="moveLinkDown(section, linkIndex)">&darr;</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLink(section, linkIndex)">&times;</button>
+                                        </div>
+                                    </div>
+                                }
+                                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLink(section)">+ Add Link</button>
+
+                                <div class="mt-3 text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="sectionIndex === 0" (click)="moveSectionUp(sectionIndex)">&uarr; Section</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="sectionIndex === editState()!.payload.sections.length - 1" (click)="moveSectionDown(sectionIndex)">&darr; Section</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeSection(sectionIndex)">Remove Section</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" (click)="addSection()">+ Add Section</button>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary" [disabled]="isBusy()">Save</button>
+                        <button type="button" class="btn btn-secondary" [disabled]="isBusy()" (click)="cancelEdit()">Cancel</button>
+                    </div>
+                </form>
+            }
+        }
+    </div>
+}
