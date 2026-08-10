@@ -12,7 +12,14 @@ namespace ResumeFunctions.Auth.Storage
         public TableTestimonialStore(TableServiceClient tableServiceClient)
         {
             _tableClient = tableServiceClient.GetTableClient(TableName);
-            _tableClient.CreateIfNotExists();
+            try
+            {
+                _tableClient.CreateIfNotExists();
+            }
+            catch (RequestFailedException)
+            {
+                // Best-effort: see TableUserStore for why this must not throw.
+            }
         }
 
         public async Task<IReadOnlyList<TestimonialEntity>> ListAsync(CancellationToken cancellationToken = default)

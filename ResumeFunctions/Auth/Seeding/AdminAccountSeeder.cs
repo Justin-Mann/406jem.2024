@@ -33,6 +33,22 @@ namespace ResumeFunctions.Auth.Seeding
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            // Seeding is best-effort and must never take the whole host down: a transient
+            // Table Storage hiccup here previously failed IHostedService.StartAsync, which
+            // aborts the entire Functions host startup and breaks anonymous endpoints
+            // (myResume, resumes) that have nothing to do with auth.
+            try
+            {
+                await SeedAdminAccountAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to seed admin account — continuing host startup without it.");
+            }
+        }
+
+        private async Task SeedAdminAccountAsync(CancellationToken cancellationToken)
+        {
             var username = _configuration["Auth:AdminUsername"] ?? "admin";
             var password = _configuration["Auth:AdminPassword"];
 
