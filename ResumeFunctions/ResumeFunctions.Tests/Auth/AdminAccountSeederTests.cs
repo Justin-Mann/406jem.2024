@@ -24,7 +24,7 @@ public class AdminAccountSeederTests
             .Build();
 
     [Fact]
-    public async Task StartAsync_SeedsAdminAccount_WhenNotAlreadyPresent()
+    public async Task StartAsync_SeedsAccountAsSuperAdmin_WhenNotAlreadyPresent()
     {
         var userStore = new FakeUserStore();
         var seeder = new AdminAccountSeeder(
@@ -34,7 +34,61 @@ public class AdminAccountSeederTests
 
         var created = await userStore.FindByUsernameAsync("admin");
         Assert.NotNull(created);
-        Assert.Equal(AccountRoles.ResumeAdmin, created!.Role);
+        Assert.Equal(AccountRoles.SuperAdmin, created!.Role);
+    }
+
+    [Fact]
+    public async Task StartAsync_PromotesExistingAccount_WhenRoleIsLesser()
+    {
+        var userStore = new FakeUserStore();
+        var existingHash = new Pbkdf2PasswordHasher().Hash("original-password");
+        await userStore.CreateAsync(new UserAccountEntity
+        {
+            Username = "admin",
+            Email = "admin@example.com",
+            PasswordHash = existingHash,
+            Role = AccountRoles.ResumeAdmin,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        });
+
+        var seeder = new AdminAccountSeeder(
+            userStore, new Pbkdf2PasswordHasher(), BuildConfig(), Substitute.For<ILogger<AdminAccountSeeder>>());
+
+        await seeder.StartAsync(CancellationToken.None);
+
+        var promoted = await userStore.FindByUsernameAsync("admin");
+        Assert.NotNull(promoted);
+        Assert.Equal(AccountRoles.SuperAdmin, promoted!.Role);
+        // Promotion must never reset the existing password.
+        Assert.Equal(existingHash, promoted.PasswordHash);
+    }
+
+    [Fact]
+    public async Task StartAsync_IsNoOp_WhenAccountAlreadySuperAdmin()
+    {
+        var userStore = new RecordingUserStore();
+        var existingHash = new Pbkdf2PasswordHasher().Hash("original-password");
+        await userStore.CreateAsync(new UserAccountEntity
+        {
+            Username = "admin",
+            Email = "admin@example.com",
+            PasswordHash = existingHash,
+            Role = AccountRoles.SuperAdmin,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        userStore.CreateCallCount = 0;
+
+        var seeder = new AdminAccountSeeder(
+            userStore, new Pbkdf2PasswordHasher(), BuildConfig(), Substitute.For<ILogger<AdminAccountSeeder>>());
+
+        await seeder.StartAsync(CancellationToken.None);
+
+        var unchanged = await userStore.FindByUsernameAsync("admin");
+        Assert.NotNull(unchanged);
+        Assert.Equal(AccountRoles.SuperAdmin, unchanged!.Role);
+        Assert.Equal(existingHash, unchanged.PasswordHash);
+        Assert.Equal(0, userStore.UpdateCallCount);
+        Assert.Equal(0, userStore.CreateCallCount);
     }
 
     [Fact]
@@ -65,5 +119,39 @@ public class AdminAccountSeederTests
         var exception = await Record.ExceptionAsync(() => seeder.StartAsync(CancellationToken.None));
 
         Assert.Null(exception);
+    }
+
+    /// <summary>In-memory IUserStore with call counters, used to assert true no-op behavior.</summary>
+    private class RecordingUserStore : IUserStore
+    {
+        private readonly Dictionary<string, UserAccountEntity> _users = new();
+
+        public int CreateCallCount { get; set; }
+        public int UpdateCallCount { get; set; }
+
+        public Task<UserAccountEntity?> FindByUsernameAsync(string username, CancellationToken cancellationToken = default)
+        {
+            _users.TryGetValue(username.Trim().ToLowerInvariant(), out var user);
+            return Task.FromResult(user);
+        }
+
+        public Task<bool> CreateAsync(UserAccountEntity user, CancellationToken cancellationToken = default)
+        {
+            CreateCallCount++;
+            var key = user.Username.Trim().ToLowerInvariant();
+            if (_users.ContainsKey(key))
+            {
+                return Task.FromResult(false);
+            }
+            _users[key] = user;
+            return Task.FromResult(true);
+        }
+
+        public Task UpdateAsync(UserAccountEntity user, CancellationToken cancellationToken = default)
+        {
+            UpdateCallCount++;
+            _users[user.Username.Trim().ToLowerInvariant()] = user;
+            return Task.CompletedTask;
+        }
     }
 }
