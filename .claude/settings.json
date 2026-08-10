@@ -53,10 +53,15 @@
       "Bash(mv package.json.bak package.json)",
       "Bash(mv package-lock.json.bak package-lock.json)",
       "Bash(npm ci *)",
-      "Bash(git rebase *)"
+      "Bash(git rebase *)",
+      "Bash(git checkout *)",
+      "Bash(echo \"\")",
+      "Bash(git branch *)",
+      "Bash(cat > *)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\justi\\Repos\\406jem.2026\\temp-publish"
+      "c:\\Users\\justi\\Repos\\406jem.2026\\temp-publish",
+      "\\tmp"
     ]
   }
 }
