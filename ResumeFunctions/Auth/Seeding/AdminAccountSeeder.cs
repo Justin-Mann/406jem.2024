@@ -8,9 +8,10 @@ using ResumeFunctions.Auth.Storage;
 namespace ResumeFunctions.Auth.Seeding
 {
     /// <summary>
-    /// Seeds the one admin account from app settings on cold start. There is deliberately no
-    /// public registration path to the admin role — this is the only way an admin account gets
-    /// created.
+    /// Seeds the one SuperAdmin account from app settings on cold start, and promotes it to
+    /// SuperAdmin if it already exists under a lesser role. There is deliberately no public
+    /// registration or API path to the SuperAdmin role — this is the only way one gets created,
+    /// so a wiped or freshly-stood-up environment can always bootstrap the first SuperAdmin.
     /// </summary>
     public class AdminAccountSeeder : IHostedService
     {
@@ -59,22 +60,30 @@ namespace ResumeFunctions.Auth.Seeding
             }
 
             var existing = await _userStore.FindByUsernameAsync(username, cancellationToken);
-            if (existing is not null)
+            if (existing is null)
             {
+                var admin = new UserAccountEntity
+                {
+                    Username = username,
+                    Email = _configuration["Auth:AdminEmail"] ?? string.Empty,
+                    PasswordHash = _passwordHasher.Hash(password),
+                    Role = AccountRoles.SuperAdmin,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                };
+
+                await _userStore.CreateAsync(admin, cancellationToken);
+                _logger.LogInformation("Seeded SuperAdmin account '{Username}'.", username);
                 return;
             }
 
-            var admin = new UserAccountEntity
+            if (existing.Role != AccountRoles.SuperAdmin)
             {
-                Username = username,
-                Email = _configuration["Auth:AdminEmail"] ?? string.Empty,
-                PasswordHash = _passwordHasher.Hash(password),
-                Role = AccountRoles.ResumeAdmin,
-                CreatedAtUtc = DateTimeOffset.UtcNow,
-            };
-
-            await _userStore.CreateAsync(admin, cancellationToken);
-            _logger.LogInformation("Seeded admin account '{Username}'.", username);
+                // Only the role changes — never touch PasswordHash on an existing account, or
+                // every cold start would reset whatever password the account currently has.
+                existing.Role = AccountRoles.SuperAdmin;
+                await _userStore.UpdateAsync(existing, cancellationToken);
+                _logger.LogInformation("Promoted account '{Username}' to SuperAdmin.", username);
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
