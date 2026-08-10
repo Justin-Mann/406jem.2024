@@ -12,7 +12,17 @@ namespace ResumeFunctions.Auth.Storage
         public TableUserStore(TableServiceClient tableServiceClient)
         {
             _tableClient = tableServiceClient.GetTableClient(TableName);
-            _tableClient.CreateIfNotExists();
+            try
+            {
+                _tableClient.CreateIfNotExists();
+            }
+            catch (RequestFailedException)
+            {
+                // Best-effort: a transient failure here must not take down the whole host
+                // (this constructor runs during DI graph creation for a hosted service, before
+                // the Functions host starts accepting requests). Table operations below already
+                // treat a missing table as equivalent to "not found" / surface their own errors.
+            }
         }
 
         private static string NormalizeUsername(string username) => username.Trim().ToLowerInvariant();
