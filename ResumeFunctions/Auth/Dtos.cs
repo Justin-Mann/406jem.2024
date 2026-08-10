@@ -14,7 +14,17 @@ namespace ResumeFunctions.Auth.Dtos
 
     public record ErrorResponse(string Message);
 
-    public record ResumeDto(string Id, string OwnerUserId, bool IsFeatured, DigitalResumeModel? Payload, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
+    public record ResumeDto(
+        string Id,
+        string OwnerUserId,
+        bool IsFeatured,
+        DigitalResumeModel? Payload,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc,
+        string Status = "Published",
+        string? OriginalFileName = null,
+        string? ContentType = null,
+        long? FileSizeBytes = null);
 
     /// <summary>OwnerUserId is only honored when the caller is a SuperAdmin creating on behalf
     /// of another owner — a plain ResumeAdmin is always pinned to their own username.</summary>

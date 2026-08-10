@@ -13,6 +13,14 @@ namespace ResumeFunctions.Auth.Models
     {
         public const string PartitionKeyValue = "resume";
 
+        /// <summary>Created from an upload (#29) and not yet parsed/reviewed — excluded from
+        /// public visibility regardless of IsFeatured/SiteConfig.</summary>
+        public const string StatusDraft = "Draft";
+
+        /// <summary>Has a complete, reviewed Payload and is eligible for public visibility via
+        /// IsFeatured + SiteConfig, same as the pre-#29 behavior.</summary>
+        public const string StatusPublished = "Published";
+
         public string PartitionKey { get; set; } = PartitionKeyValue;
         public string RowKey { get; set; } = Guid.NewGuid().ToString();
         public DateTimeOffset? Timestamp { get; set; }
@@ -27,6 +35,18 @@ namespace ResumeFunctions.Auth.Models
         public bool IsFeatured { get; set; }
 
         public string PayloadJson { get; set; } = string.Empty;
+
+        /// <summary>StatusDraft or StatusPublished. Defaults to Draft so any code path that
+        /// forgets to set it explicitly fails closed rather than becoming publicly eligible.</summary>
+        public string Status { get; set; } = StatusDraft;
+
+        /// <summary>Blob name within the resume-uploads container (#29) for the source PDF, if
+        /// this resume originated from an upload rather than the JSON create/update endpoints.</summary>
+        public string? BlobPath { get; set; }
+
+        public string? OriginalFileName { get; set; }
+        public string? ContentType { get; set; }
+        public long? FileSizeBytes { get; set; }
 
         public DateTimeOffset CreatedAtUtc { get; set; }
         public DateTimeOffset UpdatedAtUtc { get; set; }

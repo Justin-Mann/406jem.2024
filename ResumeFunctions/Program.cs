@@ -1,5 +1,6 @@
 using Azure.Core.Serialization;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +30,15 @@ var builder = new HostBuilder()
         services.AddSingleton(_ =>
             new TableServiceClient(context.Configuration["AzureWebJobsStorage"] ?? "UseDevelopmentStorage=true"));
 
+        // Same storage account/connection string as TableServiceClient above (#28's "no new
+        // Azure resource" reasoning, reused for #29's blob container).
+        services.AddSingleton(_ =>
+            new BlobServiceClient(context.Configuration["AzureWebJobsStorage"] ?? "UseDevelopmentStorage=true"));
+
         services.AddSingleton<IUserStore, TableUserStore>();
         services.AddSingleton<ITestimonialStore, TableTestimonialStore>();
         services.AddSingleton<IResumeStore, TableResumeStore>();
+        services.AddSingleton<IResumeBlobStore, BlobResumeStore>();
         services.AddSingleton<IProjectListingStore, TableProjectListingStore>();
         services.AddSingleton<ISiteConfigStore, TableSiteConfigStore>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
