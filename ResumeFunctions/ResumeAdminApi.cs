@@ -267,44 +267,15 @@ namespace ResumeFunctions
         private static string NormalizedUsername(ClaimsPrincipal user) =>
             (user.Identity?.Name ?? string.Empty).Trim().ToLowerInvariant();
 
-        private static ResumeDto ToDto(ResumeEntity entity)
-        {
-            DigitalResumeModel? payload = null;
-            try
-            {
-                payload = JsonSerializer.Deserialize<DigitalResumeModel>(entity.PayloadJson);
-            }
-            catch (JsonException)
-            {
-                // Leave payload null rather than fail the whole response over one bad row.
-            }
-
-            return new ResumeDto(
-                entity.RowKey,
-                entity.OwnerUserId,
-                entity.IsFeatured,
-                payload,
-                entity.CreatedAtUtc,
-                entity.UpdatedAtUtc,
-                entity.Status,
-                entity.OriginalFileName,
-                entity.ContentType,
-                entity.FileSizeBytes);
-        }
+        private static ResumeDto ToDto(ResumeEntity entity) => ResumeDtoMapper.ToDto(entity);
 
         private static async Task<HttpResponseData> Forbidden(HttpRequestData req, ClaimsPrincipal? user) =>
-            user is null
-                ? await ErrorResponse(req, HttpStatusCode.Unauthorized, "You must be logged in.")
-                : await ErrorResponse(req, HttpStatusCode.Forbidden, "Resume Admin role required.");
+            await HttpResponseHelpers.Forbidden(req, user, "Resume Admin role required.");
 
         private static async Task<HttpResponseData> BadRequest(HttpRequestData req, string message) =>
             await ErrorResponse(req, HttpStatusCode.BadRequest, message);
 
-        private static async Task<HttpResponseData> ErrorResponse(HttpRequestData req, HttpStatusCode status, string message)
-        {
-            var response = req.CreateResponse(status);
-            await response.WriteAsJsonAsync(new ErrorResponse(message));
-            return response;
-        }
+        private static async Task<HttpResponseData> ErrorResponse(HttpRequestData req, HttpStatusCode status, string message) =>
+            await HttpResponseHelpers.ErrorResponse(req, status, message);
     }
 }

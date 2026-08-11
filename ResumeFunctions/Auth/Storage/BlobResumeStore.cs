@@ -27,6 +27,15 @@ namespace ResumeFunctions.Auth.Storage
             return blobName;
         }
 
+        public async Task<Stream> DownloadAsync(string blobName, CancellationToken cancellationToken = default)
+        {
+            var blobClient = _containerClient.GetBlobClient(blobName);
+            var buffer = new MemoryStream();
+            await blobClient.DownloadToAsync(buffer, cancellationToken);
+            buffer.Position = 0;
+            return buffer;
+        }
+
         public async Task<bool> DeleteAsync(string blobName, CancellationToken cancellationToken = default)
         {
             var response = await _containerClient.GetBlobClient(blobName).DeleteIfExistsAsync(cancellationToken: cancellationToken);
