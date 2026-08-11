@@ -1,10 +1,13 @@
 using System.Net;
+using System.Security.Claims;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using ResumeFunctions.Auth;
+using ResumeFunctions.Auth.Cookies;
 using ResumeFunctions.Auth.Dtos;
 using ResumeFunctions.Auth.Identity;
+using ResumeFunctions.Auth.Middleware;
 using ResumeFunctions.Auth.Models;
 using ResumeFunctions.Auth.Security;
 using ResumeFunctions.Auth.Storage;
@@ -21,19 +24,22 @@ namespace ResumeFunctions
         private readonly IPasswordHasher _passwordHasher;
         private readonly IIdentityProvider _identityProvider;
         private readonly IAuthTokenService _tokenService;
+        private readonly AuthCookieService _cookieService;
 
         public AuthApi(
             ILogger<AuthApi> logger,
             IUserStore userStore,
             IPasswordHasher passwordHasher,
             IIdentityProvider identityProvider,
-            IAuthTokenService tokenService)
+            IAuthTokenService tokenService,
+            AuthCookieService cookieService)
         {
             _logger = logger;
             _userStore = userStore;
             _passwordHasher = passwordHasher;
             _identityProvider = identityProvider;
             _tokenService = tokenService;
+            _cookieService = cookieService;
         }
 
         [Function("register")]
@@ -103,8 +109,10 @@ namespace ResumeFunctions
                 case AuthenticationOutcome.Success:
                 default:
                     var issued = _tokenService.IssueToken(result.Username!, result.Role!);
+                    var xsrfToken = CsrfTokenGenerator.Generate();
                     var response = req.CreateResponse(HttpStatusCode.OK);
-                    await response.WriteAsJsonAsync(new AuthResponse(issued.Token, result.Username!, result.Role!, issued.ExpiresAtUtc));
+                    _cookieService.AppendSessionCookies(response, issued.Token, xsrfToken, issued.ExpiresAtUtc);
+                    await response.WriteAsJsonAsync(new AuthResponse(result.Username!, result.Role!, issued.ExpiresAtUtc));
                     return response;
             }
         }
@@ -113,9 +121,30 @@ namespace ResumeFunctions
         public HttpResponseData Logout(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/logout")] HttpRequestData req)
         {
-            // JWTs are stateless and short-lived (2 hours); logout is a client-side token
-            // discard. This endpoint exists as an explicit, documented contract for clients.
-            return req.CreateResponse(HttpStatusCode.NoContent);
+            // JWTs are stateless and short-lived (2 hours); logout clears the session/XSRF
+            // cookies client-side. This endpoint exists as an explicit, documented contract.
+            var response = req.CreateResponse(HttpStatusCode.NoContent);
+            _cookieService.AppendClearCookies(response);
+            return response;
+        }
+
+        [Function("me")]
+        public async Task<HttpResponseData> Me(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/me")] HttpRequestData req,
+            FunctionContext context)
+        {
+            var user = context.GetAuthenticatedUser();
+            if (user is null)
+            {
+                return await ErrorResponse(req, HttpStatusCode.Unauthorized, "Not logged in.");
+            }
+
+            var username = user.Identity?.Name ?? string.Empty;
+            var role = user.FindFirst(ClaimTypes.Role)?.Value ?? AccountRoles.Visitor;
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(new MeResponse(username, role));
+            return response;
         }
 
         private static async Task<HttpResponseData> BadRequest(HttpRequestData req, string message) =>

@@ -11,7 +11,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["API_Prefix"] ?? "https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net") });
+builder.Services.AddScoped<SessionCookieHandler>();
+builder.Services.AddScoped(sp =>
+{
+    var handler = sp.GetRequiredService<SessionCookieHandler>();
+    handler.InnerHandler = new HttpClientHandler();
+    return new HttpClient(handler) { BaseAddress = new Uri(builder.Configuration["API_Prefix"] ?? "https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net") };
+});
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();

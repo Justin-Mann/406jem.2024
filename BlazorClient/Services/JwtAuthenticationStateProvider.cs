@@ -1,43 +1,39 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
 
 namespace BlazorApp.BlazorClient.Services
 {
+    /// <summary>
+    /// Since #47, holds whatever auth state AuthenticationService last told it about - it never
+    /// decodes a token itself, because the session lives in an httpOnly cookie the app can't
+    /// read. AuthenticationService.InitializeAsync() calls NotifyUserAuthenticated/
+    /// NotifyUserLoggedOut once at startup (from GET /api/auth/me) before the host runs, so the
+    /// first GetAuthenticationStateAsync() call already reflects the hydrated result.
+    /// </summary>
     public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     {
-        public const string TokenStorageKey = "authToken";
-
         private static readonly AuthenticationState AnonymousState = new(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        private readonly IJSRuntime _js;
+        private AuthenticationState _currentState = AnonymousState;
 
-        public JwtAuthenticationStateProvider(IJSRuntime js)
+        public override Task<AuthenticationState> GetAuthenticationStateAsync() => Task.FromResult(_currentState);
+
+        public void NotifyUserAuthenticated(string username, string role)
         {
-            _js = js;
-        }
+            var identity = new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.Role, role) },
+                authenticationType: "auth-me",
+                nameType: ClaimTypes.Name,
+                roleType: ClaimTypes.Role);
 
-        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
-        {
-            var token = await _js.InvokeAsync<string?>("sessionStorage.getItem", TokenStorageKey);
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                return AnonymousState;
-            }
-
-            var principal = JwtClaimsParser.ParseClaimsPrincipal(token);
-            return principal is null ? AnonymousState : new AuthenticationState(principal);
-        }
-
-        public void NotifyUserAuthenticated(string token)
-        {
-            var principal = JwtClaimsParser.ParseClaimsPrincipal(token) ?? AnonymousState.User;
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
+            _currentState = new AuthenticationState(new ClaimsPrincipal(identity));
+            NotifyAuthenticationStateChanged(Task.FromResult(_currentState));
         }
 
         public void NotifyUserLoggedOut()
         {
-            NotifyAuthenticationStateChanged(Task.FromResult(AnonymousState));
+            _currentState = AnonymousState;
+            NotifyAuthenticationStateChanged(Task.FromResult(_currentState));
         }
     }
 }

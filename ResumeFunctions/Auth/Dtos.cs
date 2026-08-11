@@ -6,7 +6,13 @@ namespace ResumeFunctions.Auth.Dtos
 
     public record LoginRequest(string? Username, string? Password);
 
-    public record AuthResponse(string Token, string Username, string Role, DateTimeOffset ExpiresAtUtc);
+    /// <summary>No token field - the JWT lives only in the httpOnly session cookie (#47),
+    /// never in a response body a script could read.</summary>
+    public record AuthResponse(string Username, string Role, DateTimeOffset ExpiresAtUtc);
+
+    /// <summary>Body of GET /api/auth/me, used by clients to hydrate "am I logged in, as
+    /// whom" on load since the session cookie itself is deliberately unreadable from JS.</summary>
+    public record MeResponse(string Username, string Role);
 
     public record TestimonialDto(string Id, string AuthorUsername, string Message, DateTimeOffset CreatedAtUtc);
 

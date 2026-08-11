@@ -4,57 +4,68 @@ import { provideHttpClient, withXhr } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
-const NAME_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
-const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-
-function base64UrlEncode(json: object): string {
-  const base64 = btoa(JSON.stringify(json));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function buildToken(username: string, role: string, expiresInSeconds = 3600): string {
-  const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
-  return `header.${base64UrlEncode({ [NAME_CLAIM]: username, [ROLE_CLAIM]: role, exp })}.signature`;
-}
-
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
 
-  beforeEach(() => {
-    sessionStorage.clear();
+  function createService(): void {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(withXhr()), provideHttpClientTesting()]
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
-  });
+  }
+
+  /** The constructor fires GET /api/auth/me to hydrate session state - every test must
+   * account for it exactly once before making other assertions. */
+  function flushMeAsUnauthenticated(): void {
+    httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/me`)
+      .flush({ message: 'Not logged in.' }, { status: 401, statusText: 'Unauthorized' });
+  }
 
   afterEach(() => {
     httpMock.verify();
-    sessionStorage.clear();
   });
 
-  it('starts unauthenticated when there is no stored token', () => {
+  it('starts unauthenticated while GET /api/auth/me is pending', () => {
+    createService();
+
     expect(service.isAuthenticated()).toBeFalse();
     expect(service.username()).toBeNull();
+
+    flushMeAsUnauthenticated();
   });
 
-  it('login stores the token and marks the user authenticated', () => {
+  it('hydrates the session from GET /api/auth/me on startup when a cookie session exists', () => {
+    createService();
+
+    httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/me`)
+      .flush({ username: 'jane', role: 'visitor' });
+
+    expect(service.isAuthenticated()).toBeTrue();
+    expect(service.username()).toBe('jane');
+  });
+
+  it('login marks the user authenticated without ever receiving a token', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     let error: string | null | undefined;
     service.login({ username: 'jane', password: 'password123' }).subscribe(e => error = e);
 
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`);
     expect(req.request.method).toBe('POST');
-    req.flush({ token: buildToken('jane', 'visitor'), username: 'jane', role: 'visitor', expiresAtUtc: new Date().toISOString() });
+    req.flush({ username: 'jane', role: 'visitor', expiresAtUtc: new Date().toISOString() });
 
     expect(error).toBeNull();
     expect(service.isAuthenticated()).toBeTrue();
     expect(service.username()).toBe('jane');
-    expect(sessionStorage.getItem('authToken')).toBeTruthy();
   });
 
   it('login returns the server error message on failure', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     let error: string | null | undefined;
     service.login({ username: 'jane', password: 'wrong' }).subscribe(e => error = e);
 
@@ -66,6 +77,9 @@ describe('AuthService', () => {
   });
 
   it('register returns null on success', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     let error: string | null | undefined;
     service.register({ username: 'jane', email: 'jane@example.com', password: 'password123' }).subscribe(e => error = e);
 
@@ -76,6 +90,9 @@ describe('AuthService', () => {
   });
 
   it('register returns the server error message on conflict', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     let error: string | null | undefined;
     service.register({ username: 'jane', email: 'jane@example.com', password: 'password123' }).subscribe(e => error = e);
 
@@ -85,31 +102,56 @@ describe('AuthService', () => {
     expect(error).toBe('That username is already taken.');
   });
 
-  it('isAdmin reflects the role claim from the token', () => {
+  it('isAdmin reflects the role returned by the server', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     service.login({ username: 'admin', password: 'password123' }).subscribe();
     httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
-      .flush({ token: buildToken('admin', 'admin'), username: 'admin', role: 'admin', expiresAtUtc: new Date().toISOString() });
+      .flush({ username: 'admin', role: 'admin', expiresAtUtc: new Date().toISOString() });
 
     expect(service.isAdmin()).toBeTrue();
   });
 
   it('isAdmin is also true for a superadmin (#28 role hierarchy)', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     service.login({ username: 'root', password: 'password123' }).subscribe();
     httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
-      .flush({ token: buildToken('root', 'superadmin'), username: 'root', role: 'superadmin', expiresAtUtc: new Date().toISOString() });
+      .flush({ username: 'root', role: 'superadmin', expiresAtUtc: new Date().toISOString() });
 
     expect(service.isAdmin()).toBeTrue();
   });
 
   it('logout clears the session and notifies the server', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
     service.login({ username: 'jane', password: 'password123' }).subscribe();
     httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
-      .flush({ token: buildToken('jane', 'visitor'), username: 'jane', role: 'visitor', expiresAtUtc: new Date().toISOString() });
+      .flush({ username: 'jane', role: 'visitor', expiresAtUtc: new Date().toISOString() });
 
     service.logout();
 
-    expect(service.isAuthenticated()).toBeFalse();
-    expect(sessionStorage.getItem('authToken')).toBeNull();
     httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/logout`).flush(null);
+
+    expect(service.isAuthenticated()).toBeFalse();
+  });
+
+  it('logout clears the session even if the server call fails', () => {
+    createService();
+    flushMeAsUnauthenticated();
+
+    service.login({ username: 'jane', password: 'password123' }).subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/login`)
+      .flush({ username: 'jane', role: 'visitor', expiresAtUtc: new Date().toISOString() });
+
+    service.logout();
+
+    httpMock.expectOne(`${environment.apiBaseUrl}/api/auth/logout`)
+      .flush({ message: 'error' }, { status: 500, statusText: 'Server Error' });
+
+    expect(service.isAuthenticated()).toBeFalse();
   });
 });
