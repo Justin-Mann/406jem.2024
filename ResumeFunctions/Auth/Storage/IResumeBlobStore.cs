@@ -8,6 +8,11 @@ namespace ResumeFunctions.Auth.Storage
         /// <returns>The blob name the content was stored under (same as <paramref name="blobName"/>).</returns>
         Task<string> UploadAsync(string blobName, Stream content, string contentType, CancellationToken cancellationToken = default);
 
+        /// <returns>A seekable, fully-buffered stream positioned at the start of the blob's
+        /// content (#30 — PdfPig needs random access, which a lazily-fetched blob stream isn't
+        /// guaranteed to support).</returns>
+        Task<Stream> DownloadAsync(string blobName, CancellationToken cancellationToken = default);
+
         Task<bool> DeleteAsync(string blobName, CancellationToken cancellationToken = default);
     }
 }
