@@ -2,7 +2,7 @@
 
 @if (@ContactInfo != null)
 {
-    <div class="sectionheader">Contact</div>
+    <MudText Typo="Typo.h6" Class="sectionheader">Contact</MudText>
 
     <div class="sectionbody">
         <ul class="contactList">
@@ -14,19 +14,19 @@
                     {
                         case ContactTypeEnum.Phone:
                             <li>
-                                <i class="fa-solid fa-phone"></i>
+                                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" />
                                 <a href="tel:@contact.DisplayValue">@contact.DisplayValue</a>
                             </li>
                             break;
                         case ContactTypeEnum.Website:
                             <li>
-                                <i class="fa-solid fa-globe"></i>
+                                <MudIcon Icon="@Icons.Material.Filled.Language" Size="Size.Small" />
                                 <a href="@contact.Url" target="_new">@contact.DisplayValue</a>
                             </li>
                             break;
                         case ContactTypeEnum.Email:
                             <li>
-                                <i class="fa-solid fa-envelope"></i>
+                                <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" />
                                 <a href="mailto:@contact.MailTo">@contact.DisplayValue</a>
                             </li>
                             break;

@@ -5,40 +5,41 @@
 
 <PageTitle>Projects</PageTitle>
 
-<div class="container">
-    <div class="row pretty-text text-center page-note">
-        <p>This page has various resources related to my professional activities as well as side projects for reference and review.  Resources include my public GitHub and discussions of side projects w/ relevant urls.</p>
-    </div>
-    <div class="row"><br /></div>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudText Class="pretty-text page-note" Align="Align.Center">
+        This page has various resources related to my professional activities as well as side projects for reference and review. Resources include my public GitHub and discussions of side projects w/ relevant urls.
+    </MudText>
 
     @if (listing is null)
     {
-        <p class="text-center">Loading...</p>
+        <MudText Align="Align.Center">Loading...</MudText>
     }
     else if (listing.Sections.Count == 0)
     {
-        <p class="text-center">No project listings to show yet.</p>
+        <MudText Align="Align.Center">No project listings to show yet.</MudText>
     }
     else
     {
-        <div class="row justify-content-center g-4">
+        <MudGrid Justify="Justify.Center" Spacing="4" Class="mt-2">
             @foreach (var projSection in listing.Sections)
             {
-                <div class="col-sm-4 col-12">
-                    <div class="card jem-card text-center h-100">
-                        <div class="card-header">@projSection.Heading</div>
-                        <div class="card-body">
-                            <ul class="list-group project-menu-list-group">
+                <MudItem xs="12" sm="4">
+                    <MudCard Class="jem-card" Elevation="0">
+                        <MudCardHeader Class="card-header">
+                            <CardHeaderContent>@projSection.Heading</CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="card-body">
+                            <ul class="project-menu-list-group">
                                 @foreach (var link in projSection.Links)
                                 {
                                     @if (string.IsNullOrEmpty(link.Description))
                                     {
-                                        <a class="list-group-item list-group-item-action" href="@link.Url" title="@link.Label" target="_new">@link.Label</a>
+                                        <li><MudLink Href="@link.Url" Title="@link.Label" Target="_new">@link.Label</MudLink></li>
                                     }
                                     else
                                     {
-                                        <li class="list-group-item">
-                                            <a href="@link.Url" title="@link.Label" target="_new">@link.Label</a>
+                                        <li>
+                                            <MudLink Href="@link.Url" Title="@link.Label" Target="_new">@link.Label</MudLink>
                                             <ul>
                                                 <li class="list-group-item-description">@link.Description</li>
                                             </ul>
@@ -46,38 +47,38 @@
                                     }
                                 }
                             </ul>
-                        </div>
+                        </MudCardContent>
                         @if (!string.IsNullOrEmpty(projSection.LastUpdated))
                         {
-                            <div class="card-footer">Last Updated @projSection.LastUpdated</div>
+                            <MudCardActions Class="card-footer">Last Updated @projSection.LastUpdated</MudCardActions>
                         }
-                    </div>
-                </div>
+                    </MudCard>
+                </MudItem>
             }
-        </div>
+        </MudGrid>
     }
-</div>
+</MudContainer>
 
 <AuthorizeView Roles="admin,superadmin" Context="authorizeContext">
     <Authorized>
-        <div class="container manage-projects-panel">
-            <hr />
+        <MudContainer MaxWidth="MaxWidth.Large" Class="manage-projects-panel">
+            <MudDivider Class="my-4" />
             @if (!showManagePanel)
             {
-                <button class="btn btn-outline-secondary btn-sm" @onclick="OpenManagePanelAsync">Manage My Project Listings</button>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" Class="manage-projects-toggle" OnClick="OpenManagePanelAsync">Manage My Project Listings</MudButton>
             }
             else
             {
-                <h3>Manage My Project Listings</h3>
+                <MudText Typo="Typo.h5" Class="mb-3">Manage My Project Listings</MudText>
 
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <div class="alert alert-danger">@errorMessage</div>
+                    <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessage</MudAlert>
                 }
 
                 @if (mine is null)
                 {
-                    <p>Loading your listings...</p>
+                    <MudText>Loading your listings...</MudText>
                 }
                 else
                 {
@@ -85,90 +86,82 @@
                     {
                         @if (mine.Count == 0)
                         {
-                            <p>You don't have any project listings yet.</p>
+                            <MudText>You don't have any project listings yet.</MudText>
                         }
                         else
                         {
-                            <ul class="list-group mb-3">
+                            <ul class="manage-listing-list mb-3">
                                 @foreach (var item in mine)
                                 {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <li class="manage-listing-item d-flex justify-space-between align-center">
                                         <span>
                                             @(item.Payload?.Title ?? "(untitled)")
                                             @if (item.IsFeatured)
                                             {
-                                                <span class="badge bg-success ms-2">Public</span>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ms-2">Public</MudChip>
                                             }
                                         </span>
                                         <span>
-                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => StartEdit(item)">Edit</button>
-                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(item.Id)" disabled="@isBusy">Delete</button>
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="listing-edit-btn" OnClick="() => StartEdit(item)">Edit</MudButton>
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="listing-delete-btn" Disabled="@isBusy" OnClick="() => DeleteAsync(item.Id)">Delete</MudButton>
                                         </span>
                                     </li>
                                 }
                             </ul>
                         }
-                        <button class="btn btn-primary btn-sm" @onclick="StartNew">+ New Listing</button>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="listing-new-btn" OnClick="StartNew">+ New Listing</MudButton>
                     }
                     else
                     {
                         <EditForm Model="editState" OnValidSubmit="SaveAsync">
-                            <div class="mb-3">
-                                <label class="form-label">Title</label>
-                                <InputText class="form-control" @bind-Value="editState.Payload.Title" />
-                            </div>
-                            <div class="form-check mb-3">
-                                <InputCheckbox class="form-check-input" id="isFeatured" @bind-Value="editState.IsFeatured" />
-                                <label class="form-check-label" for="isFeatured">Show publicly (Featured)</label>
-                            </div>
+                            <MudTextField T="string" Label="Title" @bind-Value="editState.Payload.Title" Immediate="true" Class="mb-3 listing-title-input" />
+                            <MudCheckBox T="bool" Label="Show publicly (Featured)" @bind-Value="editState.IsFeatured" Class="mb-3 listing-featured-checkbox" />
 
                             @for (var sectionIndex = 0; sectionIndex < editState.Payload.Sections.Count; sectionIndex++)
                             {
                                 var section = editState.Payload.Sections[sectionIndex];
                                 var currentSectionIndex = sectionIndex;
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="mb-2 d-flex gap-2">
-                                            <input class="form-control" placeholder="Section heading" @bind="section.Heading" />
-                                            <input class="form-control" placeholder="Last updated (e.g. 08/2026)" @bind="section.LastUpdated" />
-                                        </div>
+                                <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudStack Row="true" Spacing="2" Class="mb-2">
+                                            <MudTextField T="string" Placeholder="Section heading" @bind-Value="section.Heading" Immediate="true" />
+                                            <MudTextField T="string" Placeholder="Last updated (e.g. 08/2026)" @bind-Value="section.LastUpdated" Immediate="true" />
+                                        </MudStack>
 
                                         @for (var linkIndex = 0; linkIndex < section.Links.Count; linkIndex++)
                                         {
                                             var link = section.Links[linkIndex];
                                             var currentLinkIndex = linkIndex;
-                                            <div class="row g-2 mb-2 align-items-center">
-                                                <div class="col-sm-3"><input class="form-control" placeholder="Label" @bind="link.Label" /></div>
-                                                <div class="col-sm-3"><input class="form-control" placeholder="URL" @bind="link.Url" /></div>
-                                                <div class="col-sm-4"><input class="form-control" placeholder="Description (optional)" @bind="link.Description" /></div>
-                                                <div class="col-sm-2 text-end">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveLinkUp(section, currentLinkIndex)" disabled="@(currentLinkIndex == 0)">&uarr;</button>
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveLinkDown(section, currentLinkIndex)" disabled="@(currentLinkIndex == section.Links.Count - 1)">&darr;</button>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveLink(section, currentLinkIndex)">&times;</button>
-                                                </div>
-                                            </div>
+                                            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2 align-center">
+                                                <MudTextField T="string" Placeholder="Label" @bind-Value="link.Label" Immediate="true" Class="flex-grow-1" />
+                                                <MudTextField T="string" Placeholder="URL" @bind-Value="link.Url" Immediate="true" Class="flex-grow-1" />
+                                                <MudTextField T="string" Placeholder="Description (optional)" @bind-Value="link.Description" Immediate="true" Class="flex-grow-1" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="link-move-up-btn" Disabled="@(currentLinkIndex == 0)" OnClick="() => MoveLinkUp(section, currentLinkIndex)" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="link-move-down-btn" Disabled="@(currentLinkIndex == section.Links.Count - 1)" OnClick="() => MoveLinkDown(section, currentLinkIndex)" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="link-remove-btn" OnClick="() => RemoveLink(section, currentLinkIndex)" />
+                                            </MudStack>
                                         }
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddLink(section)">+ Add Link</button>
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="link-add-btn" OnClick="() => AddLink(section)">+ Add Link</MudButton>
 
-                                        <div class="mt-3 text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveSectionUp(currentSectionIndex)" disabled="@(currentSectionIndex == 0)">&uarr; Section</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => MoveSectionDown(currentSectionIndex)" disabled="@(currentSectionIndex == editState.Payload.Sections.Count - 1)">&darr; Section</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveSection(currentSectionIndex)">Remove Section</button>
-                                        </div>
-                                    </div>
-                                </div>
+                                        <MudStack Row="true" Spacing="2" Class="mt-3" Justify="Justify.FlexEnd">
+                                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-move-up-btn" Disabled="@(currentSectionIndex == 0)" OnClick="() => MoveSectionUp(currentSectionIndex)">&uarr; Section</MudButton>
+                                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-move-down-btn" Disabled="@(currentSectionIndex == editState.Payload.Sections.Count - 1)" OnClick="() => MoveSectionDown(currentSectionIndex)">&darr; Section</MudButton>
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="section-remove-btn" OnClick="() => RemoveSection(currentSectionIndex)">Remove Section</MudButton>
+                                        </MudStack>
+                                    </MudCardContent>
+                                </MudCard>
                             }
-                            <button type="button" class="btn btn-sm btn-outline-secondary mb-3" @onclick="AddSection">+ Add Section</button>
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-add-btn mb-3" OnClick="AddSection">+ Add Section</MudButton>
 
-                            <div>
-                                <button type="submit" class="btn btn-primary" disabled="@isBusy">Save</button>
-                                <button type="button" class="btn btn-secondary" @onclick="CancelEdit" disabled="@isBusy">Cancel</button>
-                            </div>
+                            <MudStack Row="true" Spacing="2">
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusy" Class="listing-save-btn">Save</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Secondary" Disabled="@isBusy" Class="listing-cancel-btn" OnClick="CancelEdit">Cancel</MudButton>
+                            </MudStack>
                         </EditForm>
                     }
                 }
             }
-        </div>
+        </MudContainer>
     </Authorized>
 </AuthorizeView>
 

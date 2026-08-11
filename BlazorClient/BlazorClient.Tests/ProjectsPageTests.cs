@@ -8,7 +8,7 @@ using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class ProjectsPageTests : TestContext
+public class ProjectsPageTests : MudBunitTestContext
 {
     private const string PublicJson = """
         {"title":"Projects","sections":[{"heading":"WWWSection","lastUpdated":"04/2025","links":[{"label":"GitHubLink","url":"https://github.com/x"}]}]}
@@ -93,7 +93,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ New Listing", cut.Markup));
 
-        cut.Find("button.btn-primary.btn-sm").Click();
+        cut.Find("button.listing-new-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("Show publicly", cut.Markup));
 
         cut.Find("form").Submit();
@@ -116,7 +116,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("My List", cut.Markup));
 
-        cut.Find("button.btn-outline-primary").Click();
+        cut.Find("button.listing-edit-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("Show publicly", cut.Markup));
 
         cut.Find("form").Submit();
@@ -138,7 +138,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("My List", cut.Markup));
 
-        cut.Find("button.btn-outline-danger").Click();
+        cut.Find("button.listing-delete-btn").Click();
 
         cut.WaitForAssertion(() =>
             Assert.Contains(handler.Requests, r => r.Method == HttpMethod.Delete && r.RequestUri!.ToString().Contains("projectlistings/listing-1")));
@@ -157,10 +157,10 @@ public class ProjectsPageTests : TestContext
         cut.WaitForAssertion(() => Assert.Contains("Manage My Project Listings", cut.Markup));
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ New Listing", cut.Markup));
-        cut.Find("button.btn-primary.btn-sm").Click();
+        cut.Find("button.listing-new-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ Add Section", cut.Markup));
 
-        cut.Find("button.btn-outline-secondary.mb-3").Click();
+        cut.Find("button.section-add-btn").Click();
 
         var headingInputs = cut.FindAll("input[placeholder='Section heading']");
         Assert.Equal(2, headingInputs.Count);

@@ -1,12 +1,11 @@
 using BlazorApp.BlazorClient.Pages;
 using BlazorApp.Models;
 using BlazorClient.Tests.Helpers;
-using Bunit;
 using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class WorkExperienceSectionTests : TestContext
+public class WorkExperienceSectionTests : MudBunitTestContext
 {
     [Fact]
     public void RendersNothing_WhenWorkExperienceIsNull()
@@ -22,7 +21,7 @@ public class WorkExperienceSectionTests : TestContext
         var cut = RenderComponent<WorkExperienceSection>(p => p
             .Add(x => x.WorkExperienceInfo, TestData.Resume.WorkExperience));
 
-        cut.Find(".sectionheader").MarkupMatches("<div class=\"sectionheader\">Experience (XP)</div>");
+        Assert.Equal("Experience (XP)", cut.Find(".sectionheader").TextContent);
     }
 
     [Fact]

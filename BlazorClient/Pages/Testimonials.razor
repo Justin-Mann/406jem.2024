@@ -4,39 +4,39 @@
 
 <PageTitle>Testimonials</PageTitle>
 
-<div class="container">
-    <h2>Testimonials</h2>
-    <p>Leave a note — you must be logged in to post, but anyone can read them.</p>
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h4" Class="mb-2">Testimonials</MudText>
+    <MudText Class="mb-4">Leave a note — you must be logged in to post, but anyone can read them.</MudText>
 
     <AuthorizeView Context="authContext">
         <Authorized>
             <EditForm Model="newTestimonial" OnValidSubmit="HandleSubmitAsync">
-                <InputTextArea class="form-control" rows="3" @bind-Value="newTestimonial.Message" placeholder="Leave a note..." />
+                <MudTextField T="string" Lines="3" @bind-Value="newTestimonial.Message" Placeholder="Leave a note..." Class="mb-2" />
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <div class="alert alert-danger mt-2">@errorMessage</div>
+                    <MudAlert Severity="Severity.Error" Class="mt-2 mb-2">@errorMessage</MudAlert>
                 }
-                <button type="submit" class="btn btn-primary mt-2" disabled="@isBusy">Post</button>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusy" Class="mt-2">Post</MudButton>
             </EditForm>
         </Authorized>
         <NotAuthorized>
-            <p><a href="/login">Log in</a> or <a href="/register">register</a> to leave a testimonial.</p>
+            <MudText><MudLink Href="/login">Log in</MudLink> or <MudLink Href="/register">register</MudLink> to leave a testimonial.</MudText>
         </NotAuthorized>
     </AuthorizeView>
 
-    <hr />
+    <MudDivider Class="my-4" />
 
     @if (testimonials is null)
     {
-        <p>Loading...</p>
+        <MudText>Loading...</MudText>
     }
     else if (testimonials.Count == 0)
     {
-        <p>No testimonials yet — be the first.</p>
+        <MudText>No testimonials yet — be the first.</MudText>
     }
     else
     {
-        <ul class="list-unstyled">
+        <ul class="testimonial-list">
             @foreach (var testimonial in testimonials)
             {
                 <li class="mb-3">
@@ -45,14 +45,14 @@
                        backend's FunctionContextAuthExtensions.IsInRoleOrHigher. *@
                     <AuthorizeView Roles="admin,superadmin">
                         <Authorized>
-                            <button class="btn btn-sm btn-link text-danger" @onclick="() => DeleteTestimonialAsync(testimonial.Id)">Delete</button>
+                            <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Class="testimonial-delete-btn" OnClick="() => DeleteTestimonialAsync(testimonial.Id)">Delete</MudButton>
                         </Authorized>
                     </AuthorizeView>
                 </li>
             }
         </ul>
     }
-</div>
+</MudContainer>
 
 @code {
     private List<TestimonialItem>? testimonials;

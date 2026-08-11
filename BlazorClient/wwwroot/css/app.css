@@ -49,40 +49,76 @@ html, body {
 /* ========================
    Navigation
    ======================== */
+.jem-appbar {
+  box-shadow: none !important;
+}
+
 .top-menu-row {
   display: flex;
   justify-content: center;
   background-color: transparent;
   border: 0;
   font-family: Arial, sans-serif;
+  width: 100%;
 }
 
 .top-menu {
+  display: flex;
+  align-items: center;
   background-color: rgba(255, 255, 255, 0.85);
   box-shadow: 0 0 12px 12px rgba(255, 255, 255, 0.85);
   padding: 2px 8px;
   border-radius: var(--jem-radius);
 }
 
-.top-menu-row a {
-  opacity: 0.5;
+.top-menu .mud-nav-link,
+.top-menu .auth-status {
+  opacity: 0.6;
   text-decoration: none;
   font-weight: 700;
-  color: var(--jem-navy);
+  color: var(--jem-navy) !important;
   transition: color var(--jem-transition), opacity var(--jem-transition);
 }
 
-.top-menu-row a:hover {
+.top-menu .mud-nav-link:hover {
   opacity: 1;
-  color: var(--jem-blue);
+  color: var(--jem-blue) !important;
   text-decoration: none;
-  text-shadow: none;
 }
 
-.top-menu a.active {
-  color: var(--jem-navy);
+.top-menu .mud-nav-link.active {
+  color: var(--jem-navy) !important;
   font-weight: 800;
   opacity: 1;
+}
+
+.jem-nav-desktop {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.jem-nav-desktop .mud-nav-item {
+  padding: 0 6px;
+}
+
+.jem-nav-mobile-btn {
+  display: none;
+}
+
+.jem-nav-drawer .mud-nav-link.active {
+  color: var(--jem-blue) !important;
+  font-weight: 800;
+}
+
+@media screen and (max-width: 767px) {
+  .jem-nav-desktop {
+    display: none;
+  }
+
+  .jem-nav-mobile-btn {
+    display: inline-flex;
+  }
 }
 
 /* ========================
@@ -238,18 +274,31 @@ code {
   text-transform: uppercase;
   color: var(--jem-navy);
   font-family: 'caviar-bold', Arial, sans-serif;
+  font-size: 2.5rem;
+  line-height: 1.2;
 }
 
 .header #position {
   text-transform: uppercase;
   color: var(--jem-blue);
   font-style: italic;
+  font-size: 1.75rem;
 }
 
 .header #subtitle {
   color: var(--jem-text-muted);
   text-transform: uppercase;
   font-size: 0.9rem;
+}
+
+@media screen and (max-width: 767px) {
+  .header #name {
+    font-size: 1.75rem;
+  }
+
+  .header #position {
+    font-size: 1.25rem;
+  }
 }
 
 .header #simplegoal {
@@ -302,11 +351,10 @@ code {
   text-shadow: none;
 }
 
-.contactList i {
+.contactList .mud-icon-root {
   color: var(--jem-blue);
-  width: 18px;
-  text-align: center;
   margin-right: 6px;
+  vertical-align: middle;
 }
 
 /* ========================
@@ -465,24 +513,19 @@ ul.xpList li.workXpItem:hover .note {
 }
 
 /* ========================
-   Buttons
+   Testimonials / manage-listing lists
    ======================== */
-.btn-primary {
-  color: #fff;
-  background-color: var(--jem-blue);
-  border-color: var(--jem-navy);
+.testimonial-list,
+.manage-listing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
-.form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--jem-blue);
+.manage-listing-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--jem-border);
 }
-
-/* ========================
-   Utilities
-   ======================== */
-.float-right { float: right; }
-.float-left  { float: left; }
 
 /* ========================
    Blazor loading & error

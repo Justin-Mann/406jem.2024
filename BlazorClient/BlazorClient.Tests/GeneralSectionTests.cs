@@ -1,10 +1,10 @@
-using Bunit;
 using BlazorApp.BlazorClient.Pages;
+using BlazorClient.Tests.Helpers;
 using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class GeneralSectionTests : TestContext
+public class GeneralSectionTests : MudBunitTestContext
 {
     [Fact]
     public void RendersNothing_WhenSectionNameIsNull()
@@ -31,7 +31,7 @@ public class GeneralSectionTests : TestContext
             .Add(x => x.SectionName, "Profile")
             .Add(x => x.Items, new[] { "Detail oriented" }));
 
-        cut.Find(".sectionheader").MarkupMatches("<div class=\"sectionheader\">Profile</div>");
+        Assert.Equal("Profile", cut.Find(".sectionheader").TextContent);
     }
 
     [Fact]
