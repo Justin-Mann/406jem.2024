@@ -30,6 +30,12 @@ namespace ResumeFunctions.Auth.Dtos
     /// of another owner — a plain ResumeAdmin is always pinned to their own username.</summary>
     public record CreateOrUpdateResumeRequest(string? OwnerUserId, bool IsFeatured, DigitalResumeModel? Payload);
 
+    /// <summary>Result of a POST /resumes/{id}/parse call (#30). ParseSucceeded is false — with
+    /// the resume otherwise unchanged and still Draft — when text extraction or the AI call
+    /// failed or returned something unusable; this is a normal, non-error outcome the client
+    /// should fall back to manual entry for, not a request failure.</summary>
+    public record ParseResumeResponse(ResumeDto Resume, bool ParseSucceeded, string? Message);
+
     public record ProjectListingDto(string Id, string OwnerUserId, bool IsFeatured, ProjectListingModel? Payload, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
 
     public record CreateOrUpdateProjectListingRequest(string? OwnerUserId, bool IsFeatured, ProjectListingModel? Payload);

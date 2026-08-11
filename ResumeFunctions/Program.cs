@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ResumeFunctions.Auth.Identity;
 using ResumeFunctions.Auth.Middleware;
+using ResumeFunctions.Auth.Parsing;
 using ResumeFunctions.Auth.Security;
 using ResumeFunctions.Auth.Seeding;
 using ResumeFunctions.Auth.Storage;
@@ -41,6 +42,8 @@ var builder = new HostBuilder()
         services.AddSingleton<IResumeBlobStore, BlobResumeStore>();
         services.AddSingleton<IProjectListingStore, TableProjectListingStore>();
         services.AddSingleton<ISiteConfigStore, TableSiteConfigStore>();
+        services.AddSingleton<IPdfTextExtractor, PdfPigTextExtractor>();
+        services.AddSingleton<IResumeAiClient, AnthropicResumeAiClient>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IIdentityProvider, LocalPasswordIdentityProvider>();
         services.AddSingleton<IAuthTokenService, JwtAuthTokenService>();

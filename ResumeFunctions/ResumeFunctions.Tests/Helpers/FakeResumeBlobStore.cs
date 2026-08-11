@@ -16,6 +16,15 @@ public class FakeResumeBlobStore : IResumeBlobStore
         return Task.FromResult(blobName);
     }
 
+    public Task<Stream> DownloadAsync(string blobName, CancellationToken cancellationToken = default)
+    {
+        if (!Blobs.TryGetValue(blobName, out var blob))
+        {
+            throw new InvalidOperationException($"Blob '{blobName}' was not found.");
+        }
+        return Task.FromResult<Stream>(new MemoryStream(blob.Content));
+    }
+
     public Task<bool> DeleteAsync(string blobName, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(Blobs.Remove(blobName));
