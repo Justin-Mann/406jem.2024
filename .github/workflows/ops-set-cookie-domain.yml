@@ -1,0 +1,47 @@
+name: Ops - Set Auth CookieDomain on Production
+
+# One-off, manually-triggered utility to set Auth:CookieDomain=406jem.com on the
+# PRODUCTION slot only (never staging or local -- see AuthCookieService.cs's own doc
+# comment: a Domain=406jem.com Set-Cookie attribute is invalid, and silently rejected
+# by the browser, on a response from any host that isn't 406jem.com or a subdomain of
+# it -- staging's azurewebsites.net hostname doesn't qualify).
+#
+# Prerequisite: the api.406jem.com custom domain + managed cert must already be bound
+# to the production slot (done 2026-08-11) -- this setting is meaningless without it.
+#
+# Delete this workflow file once it has run successfully.
+#
+# Required GitHub secrets:
+#   AZURE_CREDENTIALS — service principal JSON (already used by deploy-functions.yml)
+#
+# Required GitHub repository variables:
+#   AZURE_RESOURCE_GROUP
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_NAME: 406resumeapi
+
+jobs:
+  set-app-setting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Auth:CookieDomain on production slot only
+        run: |
+          az functionapp config appsettings set \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+            --settings "Auth:CookieDomain=406jem.com" \
+            --output none
+
+      - name: Restart production slot to pick up the new setting
+        run: |
+          az functionapp restart \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_FUNCTIONAPP_NAME }}"
