@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ResumeFunctions.Auth.Cookies;
 using ResumeFunctions.Auth.Identity;
 using ResumeFunctions.Auth.Middleware;
 using ResumeFunctions.Auth.Security;
@@ -17,6 +18,7 @@ var builder = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults(workerBuilder =>
     {
         workerBuilder.UseMiddleware<JwtAuthenticationMiddleware>();
+        workerBuilder.UseMiddleware<CsrfProtectionMiddleware>();
     })
     .ConfigureServices((context, services) =>
     {
@@ -44,6 +46,7 @@ var builder = new HostBuilder()
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IIdentityProvider, LocalPasswordIdentityProvider>();
         services.AddSingleton<IAuthTokenService, JwtAuthTokenService>();
+        services.AddSingleton<AuthCookieService>();
         services.AddHostedService<AdminAccountSeeder>();
     });
 

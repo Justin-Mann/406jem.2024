@@ -1,7 +1,5 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using BlazorApp.Models;
-using Microsoft.JSInterop;
 
 namespace BlazorApp.BlazorClient.Services
 {
@@ -10,28 +8,45 @@ namespace BlazorApp.BlazorClient.Services
     /// Entra ID phase would add a second implementation of this same surface (e.g. redirecting
     /// through MSAL and exchanging the resulting token) without the rest of the app — pages,
     /// the auth-state provider, the gated Testimonials feature — needing to change.
+    ///
+    /// Since #47, the session lives in an httpOnly, Domain=406jem.com cookie set by the API and
+    /// shared by every browser-based client on the site - not in sessionStorage/a JS-readable
+    /// token. The cookie is deliberately unreadable from Blazor, so this service hydrates
+    /// "am I logged in, as whom" by asking GET /api/auth/me on startup.
     /// </summary>
     public class AuthenticationService
     {
         private readonly HttpClient _http;
-        private readonly IJSRuntime _js;
         private readonly JwtAuthenticationStateProvider _authStateProvider;
 
-        public AuthenticationService(HttpClient http, IJSRuntime js, JwtAuthenticationStateProvider authStateProvider)
+        public AuthenticationService(HttpClient http, JwtAuthenticationStateProvider authStateProvider)
         {
             _http = http;
-            _js = js;
             _authStateProvider = authStateProvider;
         }
 
-        /// <summary>Restores the Authorization header on app startup from a still-valid session token.</summary>
+        /// <summary>Hydrates auth state on app startup from the session cookie via GET /api/auth/me.</summary>
         public async Task InitializeAsync()
         {
-            var token = await _js.InvokeAsync<string?>("sessionStorage.getItem", JwtAuthenticationStateProvider.TokenStorageKey);
-            if (!string.IsNullOrWhiteSpace(token))
+            try
             {
-                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await _http.GetAsync("api/auth/me");
+                if (response.IsSuccessStatusCode)
+                {
+                    var me = await response.Content.ReadFromJsonAsync<MeResponse>();
+                    if (me is not null)
+                    {
+                        _authStateProvider.NotifyUserAuthenticated(me.Username, me.Role);
+                        return;
+                    }
+                }
             }
+            catch (HttpRequestException)
+            {
+                // API unreachable at startup - fall through to anonymous rather than blocking app load.
+            }
+
+            _authStateProvider.NotifyUserLoggedOut();
         }
 
         /// <returns>null on success, otherwise a user-facing error message.</returns>
@@ -51,23 +66,17 @@ namespace BlazorApp.BlazorClient.Services
             }
 
             var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-            if (result is null || string.IsNullOrEmpty(result.Token))
+            if (result is null || string.IsNullOrEmpty(result.Username))
             {
                 return "Unexpected response from server.";
             }
 
-            // sessionStorage (not localStorage) so the token is cleared when the tab closes,
-            // shrinking the exposure window on a shared machine. The 2-hour JWT expiry bounds it further.
-            await _js.InvokeVoidAsync("sessionStorage.setItem", JwtAuthenticationStateProvider.TokenStorageKey, result.Token);
-            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
-            _authStateProvider.NotifyUserAuthenticated(result.Token);
+            _authStateProvider.NotifyUserAuthenticated(result.Username, result.Role);
             return null;
         }
 
         public async Task LogoutAsync()
         {
-            await _js.InvokeVoidAsync("sessionStorage.removeItem", JwtAuthenticationStateProvider.TokenStorageKey);
-            _http.DefaultRequestHeaders.Authorization = null;
             _authStateProvider.NotifyUserLoggedOut();
 
             try
@@ -76,7 +85,7 @@ namespace BlazorApp.BlazorClient.Services
             }
             catch (HttpRequestException)
             {
-                // Logout is a client-side token discard; a failed notify-the-server call
+                // Logout is a client-side session clear; a failed notify-the-server call
                 // shouldn't stop the user from being logged out locally.
             }
         }

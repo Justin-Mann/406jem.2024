@@ -10,10 +10,14 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
-  token: string;
   username: string;
   role: string;
   expiresAtUtc: string;
+}
+
+export interface MeResponse {
+  username: string;
+  role: string;
 }
 
 export interface ErrorResponse {

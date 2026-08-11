@@ -1,31 +1,36 @@
 using BlazorApp.BlazorClient.Services;
 using BlazorClient.Tests.Helpers;
-using Bunit;
 using System.Net;
+using System.Net.Http;
 using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class AuthenticationServiceTests : TestContext
+public class AuthenticationServiceTests
 {
-    private AuthenticationService BuildService(string json, HttpStatusCode status = HttpStatusCode.OK)
+    private static AuthenticationService BuildService(string json, HttpStatusCode status = HttpStatusCode.OK)
     {
         var handler = new FakeHttpHandler(json, status);
         var http = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
-        var authStateProvider = new JwtAuthenticationStateProvider(JSInterop.JSRuntime);
-        return new AuthenticationService(http, JSInterop.JSRuntime, authStateProvider);
+        var authStateProvider = new JwtAuthenticationStateProvider();
+        return new AuthenticationService(http, authStateProvider);
+    }
+
+    private static (AuthenticationService service, JwtAuthenticationStateProvider provider) BuildServiceWithRoutes(RoutedFakeHttpHandler handler)
+    {
+        var http = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        var authStateProvider = new JwtAuthenticationStateProvider();
+        return (new AuthenticationService(http, authStateProvider), authStateProvider);
     }
 
     [Fact]
-    public async Task LoginAsync_ReturnsNull_AndStoresToken_OnSuccess()
+    public async Task LoginAsync_ReturnsNull_AndAuthenticatesUser_OnSuccess()
     {
-        JSInterop.SetupVoid("sessionStorage.setItem", _ => true).SetVoidResult();
-        var service = BuildService("""{"token":"abc.def.ghi","username":"jane","role":"visitor","expiresAtUtc":"2099-01-01T00:00:00Z"}""");
+        var service = BuildService("""{"username":"jane","role":"visitor","expiresAtUtc":"2099-01-01T00:00:00Z"}""");
 
         var error = await service.LoginAsync("jane", "password123");
 
         Assert.Null(error);
-        JSInterop.VerifyInvoke("sessionStorage.setItem");
     }
 
     [Fact]
@@ -59,14 +64,45 @@ public class AuthenticationServiceTests : TestContext
     }
 
     [Fact]
-    public async Task LogoutAsync_ClearsStoredToken()
+    public async Task LogoutAsync_NotifiesLoggedOut()
     {
-        JSInterop.SetupVoid("sessionStorage.removeItem", _ => true).SetVoidResult();
-        JSInterop.SetupVoid("sessionStorage.setItem", _ => true).SetVoidResult();
-        var service = BuildService("""{"message":"ok"}""", HttpStatusCode.NoContent);
+        var handler = new RoutedFakeHttpHandler()
+            .When(HttpMethod.Get, "api/auth/me", """{"username":"jane","role":"visitor"}""")
+            .When(HttpMethod.Post, "api/auth/logout", "{}", HttpStatusCode.NoContent);
+        var (service, provider) = BuildServiceWithRoutes(handler);
+        await service.InitializeAsync();
 
         await service.LogoutAsync();
 
-        JSInterop.VerifyInvoke("sessionStorage.removeItem");
+        var state = await provider.GetAuthenticationStateAsync();
+        Assert.False(state.User.Identity?.IsAuthenticated ?? false);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_HydratesAuthenticatedState_WhenMeReturnsUser()
+    {
+        var handler = new RoutedFakeHttpHandler()
+            .When(HttpMethod.Get, "api/auth/me", """{"username":"jane","role":"admin"}""");
+        var (service, provider) = BuildServiceWithRoutes(handler);
+
+        await service.InitializeAsync();
+
+        var state = await provider.GetAuthenticationStateAsync();
+        Assert.True(state.User.Identity?.IsAuthenticated);
+        Assert.Equal("jane", state.User.Identity!.Name);
+        Assert.True(state.User.IsInRole("admin"));
+    }
+
+    [Fact]
+    public async Task InitializeAsync_LeavesAnonymous_WhenMeReturns401()
+    {
+        var handler = new RoutedFakeHttpHandler()
+            .When(HttpMethod.Get, "api/auth/me", """{"message":"Not logged in."}""", HttpStatusCode.Unauthorized);
+        var (service, provider) = BuildServiceWithRoutes(handler);
+
+        await service.InitializeAsync();
+
+        var state = await provider.GetAuthenticationStateAsync();
+        Assert.False(state.User.Identity?.IsAuthenticated ?? false);
     }
 }

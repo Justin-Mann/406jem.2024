@@ -11,5 +11,5 @@ public class TestHttpResponseData : HttpResponseData
     public override HttpStatusCode StatusCode { get; set; }
     public override HttpHeadersCollection Headers { get; set; } = new HttpHeadersCollection();
     public override Stream Body { get; set; } = new MemoryStream();
-    public override HttpCookies Cookies { get; } = null!;
+    public override HttpCookies Cookies { get; } = new TestHttpCookies();
 }
