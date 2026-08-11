@@ -16,7 +16,7 @@ builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<SessionCookieHandler>();
     handler.InnerHandler = new HttpClientHandler();
-    return new HttpClient(handler) { BaseAddress = new Uri(builder.Configuration["API_Prefix"] ?? "https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net") };
+    return new HttpClient(handler) { BaseAddress = new Uri(builder.Configuration["API_Prefix"] ?? "https://api.406jem.com") };
 });
 
 builder.Services.AddAuthorizationCore();

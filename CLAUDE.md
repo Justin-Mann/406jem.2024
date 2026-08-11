@@ -32,7 +32,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Auth (`Services/`):** see the shared "User Accounts (Phase 1)" and "Cross-client cookie session (#47)" sections below — `JwtAuthenticationStateProvider` (custom `AuthenticationStateProvider`; since #47 just holds whatever state `AuthenticationService` last told it, no token decoding), `AuthenticationService` (register/login/logout HTTP calls; hydrates on startup via `GET /api/auth/me`), `SessionCookieHandler` (`DelegatingHandler` that sets fetch credentials + the CSRF header on every request), all registered scoped in `Program.cs`
 - **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs (`jmResume.4.2025.pdf`, `jmResume.7.2024.pdf`), favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
-- **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally)
+- **Backend URL:** `https://api.406jem.com` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally) — custom domain in front of `406resumeapi`, required for #47's cross-subdomain cookie session (same registrable domain as `406jem.com`/`angular.406jem.com`); underlying `406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` still resolves too
 - **API calls:** `GET /api/resumes/myresume` in `Pages/DigitalResume.razor`; `/api/auth/*` and `/api/testimonials*` — see Auth section
 - **Tests:** `BlazorClient.Tests/` — bUnit 1.34.4 (xUnit) project, tests covering ContactSection, DigitalResumePage, GeneralSection, WorkExperienceSection, and `AuthenticationService`
   - bUnit gotcha: `JSInterop.SetupVoid(...)` (unlike real JS interop) does **not** auto-complete — the awaited `InvokeVoidAsync` call hangs forever unless you chain `.SetVoidResult()`. Cost a live debugging session (dotnet test hung indefinitely with no error) before being traced to this.
@@ -64,7 +64,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models; `app/interfaces/auth.interface.ts` — auth/testimonial request/response shapes
 - **Styles:** `src/styles.css` — global; each component has its own `.css`
 - **Config:** `angular.json`, `tsconfig.json`
-- **Backend URL:** `https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` (in `src/environments/environment.prod.ts`)
+- **Backend URL:** `https://api.406jem.com` (in `src/environments/environment.prod.ts`) — see BlazorClient's Backend URL note above; same custom domain, same reason
 - **API calls:** `GET /api/resumes/myresume` in `resume-data.service.ts`; `/api/auth/*` and `/api/testimonials*` — see Auth section
 - **Tests:** Karma/Jasmine specs across all components, the data services, `AuthService`, and `authInterceptor`; run with `npx ng test --watch=false --browsers=ChromeHeadless`
 
@@ -73,7 +73,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Framework:** .NET 10 / `Microsoft.NET.Sdk`
 - **Azure app name:** `406resumeapi`
 - **Deploy:** Azure Functions App Service (workflow: `deploy-functions.yml`)
-- **Live URL:** https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net
+- **Live URL:** https://api.406jem.com (custom domain, bound 2026-08-11 for #47's cross-subdomain cookie session — same registrable domain as `406jem.com`/`angular.406jem.com`; underlying `406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` still resolves too)
 - **Staging slot:** `staging` — deployed to before production; URL set in repo variable `AZURE_FUNCTIONS_STAGING_URL`
 - **Key packages:** `Microsoft.Azure.Functions.Worker` 2.52.0, `Microsoft.Azure.Functions.Worker.Extensions.Http` 3.3.0, `Microsoft.Azure.Functions.Worker.Sdk` 2.0.7, Newtonsoft.Json 13.0.3, `Azure.Data.Tables` 12.11.0, `System.IdentityModel.Tokens.Jwt` 8.22.0
 - **Entry:** `Program.cs` — `new HostBuilder().ConfigureFunctionsWorkerDefaults(...)`, plus `ConfigureServices` registering `WorkerOptions.Serializer` as `JsonObjectSerializer(JsonSerializerDefaults.Web)` so HTTP response bodies are camelCase (see Wire serialization below), the `Auth/` DI services below, and `JwtAuthenticationMiddleware` as a global `IFunctionsWorkerMiddleware`
@@ -141,7 +141,7 @@ Both frontend clients maintain visual/functional parity:
 StaticData/Resumes/JustinMann_062024.json
             ↓
   ResumeFunctions (Azure Functions, isolated worker)
-  GET https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net/api/resumes/myresume
+  GET https://api.406jem.com/api/resumes/myresume
             ↓
   BlazorClient (https://406jem.com)  |  AngularClient (https://angular.406jem.com)
 ```
@@ -210,7 +210,7 @@ stage5 (label: needs-revision, or PR review changes_requested) → addresses fee
 |----------|------|-----------|
 | Blazor frontend | Azure Static Web App | https://406jem.com |
 | Angular frontend | Azure Static Web App | https://angular.406jem.com |
-| Resume API (production) | Azure Functions App | `406resumeapi` → https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net |
+| Resume API (production) | Azure Functions App | `406resumeapi` → https://api.406jem.com (custom domain; underlying https://406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net still resolves) |
 | Resume API (staging) | Azure Functions Slot | `406resumeapi/staging` — URL in repo variable `AZURE_FUNCTIONS_STAGING_URL` |
 | User accounts / testimonials storage | Azure Table Storage | Reuses the storage account already backing `AzureWebJobsStorage` for `406resumeapi` — no separate resource |
 
