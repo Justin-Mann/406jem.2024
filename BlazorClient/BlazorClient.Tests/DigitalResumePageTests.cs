@@ -1,8 +1,10 @@
 using BlazorApp.BlazorClient.Pages;
+using BlazorApp.Models;
 using BlazorClient.Tests.Helpers;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace BlazorClient.Tests;
@@ -80,5 +82,39 @@ public class DigitalResumePageTests : TestContext
         var cut = RenderComponent<DigitalResume>();
 
         cut.WaitForAssertion(() => Assert.DoesNotContain("Give it a Second", cut.Markup));
+    }
+
+    [Fact]
+    public void RendersContactButton_WithMailtoHref_WhenEmailPresent()
+    {
+        RegisterHttpClient(TestData.ResumeJson);
+
+        var cut = RenderComponent<DigitalResume>();
+
+        cut.WaitForAssertion(() =>
+        {
+            var button = cut.Find("#contact-me-button");
+            Assert.Equal("mailto:jane@example.com", button.GetAttribute("href"));
+        });
+    }
+
+    [Fact]
+    public void HidesContactButton_WhenNoEmailContactEntry()
+    {
+        var resumeWithoutEmail = new DigitalResumeModel
+        {
+            Id = TestData.Resume.Id,
+            FName = TestData.Resume.FName,
+            LName = TestData.Resume.LName,
+            Position = TestData.Resume.Position,
+            SimpleGoal = TestData.Resume.SimpleGoal,
+            Contact = [new ContactItem { Type = ContactTypeEnum.Phone, DisplayValue = "555-1234" }]
+        };
+        RegisterHttpClient(JsonSerializer.Serialize(resumeWithoutEmail));
+
+        var cut = RenderComponent<DigitalResume>();
+
+        cut.WaitForAssertion(() => Assert.Contains("Jane", cut.Markup));
+        Assert.Empty(cut.FindAll("#contact-me-button"));
     }
 }

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DigitalResumeComponent } from './digital-resume.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
-import { ResumeData } from '../interfaces/resume.interface';
+import { ResumeData, ContactTypeEnum } from '../interfaces/resume.interface';
 import { of, throwError } from 'rxjs';
 
 const mockResume: ResumeData = {
@@ -14,7 +14,10 @@ const mockResume: ResumeData = {
   simpleGoal: 'Build great software.',
   logoFile: '/img/logo.png',
   profile: ['Detail oriented', 'Team player'],
-  contact: [],
+  contact: [
+    { type: ContactTypeEnum.Phone, displayValue: '555-1234' },
+    { type: ContactTypeEnum.Email, displayValue: 'jane@example.com', mailTo: 'jane@example.com' }
+  ],
   education: [],
   workExperience: [],
   customSections: []
@@ -78,5 +81,23 @@ describe('DigitalResumeComponent', () => {
 
     expect(component.isLoading()).toBeFalse();
     expect(component.resumeData()).toBeNull();
+  });
+
+  it('should render a contact button with a mailto href when an email contact exists', () => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const button = compiled.querySelector('#contact-me-button');
+    expect(button).toBeTruthy();
+    expect(button?.getAttribute('href')).toBe('mailto:jane@example.com');
+  });
+
+  it('should not render a contact button when there is no email contact entry', () => {
+    dataServiceSpy.fetchResumeData.and.returnValue(of({ ...mockResume, contact: [{ type: ContactTypeEnum.Phone, displayValue: '555-1234' }] }));
+
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('#contact-me-button')).toBeFalsy();
   });
 });
