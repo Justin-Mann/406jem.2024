@@ -22,6 +22,11 @@ namespace ResumeFunctions.Auth.Models
         public string Role { get; set; } = AccountRoles.Visitor;
         public DateTimeOffset CreatedAtUtc { get; set; }
 
+        // Public-facing label for #45's resume-poster directory - a username alone isn't a
+        // great public label. Optional, with the effective display name (Username fallback)
+        // computed where it's read rather than backfilled, so existing rows need no migration.
+        public string DisplayName { get; set; } = string.Empty;
+
         // Persisted (not in-memory) failed-login tracking so lockout holds even when the
         // Consumption plan scales this Functions app out across multiple instances.
         public int FailedLoginAttempts { get; set; }

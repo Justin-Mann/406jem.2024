@@ -49,4 +49,9 @@ namespace ResumeFunctions.Auth.Dtos
     public record SiteConfigDto(string? PublicResumeOwnerId, string? PublicProjectsOwnerId);
 
     public record UpdateSiteConfigRequest(string? PublicResumeOwnerId, string? PublicProjectsOwnerId);
+
+    /// <summary>#45's public resume-poster directory entry - name only, never an email address.</summary>
+    public record ResumePosterDto(string Id, string DisplayName);
+
+    public record ContactPosterRequest(string? Message, string? ReplyToEmail);
 }

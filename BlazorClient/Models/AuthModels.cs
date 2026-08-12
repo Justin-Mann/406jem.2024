@@ -29,4 +29,11 @@ namespace BlazorApp.Models
         public string Message { get; set; } = string.Empty;
         public DateTimeOffset CreatedAtUtc { get; set; }
     }
+
+    /// <summary>#45's public resume-poster directory entry - name only, never an email address.</summary>
+    public class ResumePosterItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+    }
 }

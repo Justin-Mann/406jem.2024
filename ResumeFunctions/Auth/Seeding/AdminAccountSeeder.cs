@@ -59,6 +59,10 @@ namespace ResumeFunctions.Auth.Seeding
                 return;
             }
 
+            // Optional - #45's resume-poster directory falls back to Username when this isn't
+            // set, so leaving Auth:AdminDisplayName unconfigured is fine, not an error.
+            var displayName = _configuration["Auth:AdminDisplayName"];
+
             var existing = await _userStore.FindByUsernameAsync(username, cancellationToken);
             if (existing is null)
             {
@@ -68,6 +72,7 @@ namespace ResumeFunctions.Auth.Seeding
                     Email = _configuration["Auth:AdminEmail"] ?? string.Empty,
                     PasswordHash = _passwordHasher.Hash(password),
                     Role = AccountRoles.SuperAdmin,
+                    DisplayName = string.IsNullOrWhiteSpace(displayName) ? string.Empty : displayName.Trim(),
                     CreatedAtUtc = DateTimeOffset.UtcNow,
                 };
 
@@ -76,13 +81,26 @@ namespace ResumeFunctions.Auth.Seeding
                 return;
             }
 
-            if (existing.Role != AccountRoles.SuperAdmin)
+            var roleChanged = existing.Role != AccountRoles.SuperAdmin;
+            if (roleChanged)
             {
                 // Only the role changes — never touch PasswordHash on an existing account, or
                 // every cold start would reset whatever password the account currently has.
                 existing.Role = AccountRoles.SuperAdmin;
+            }
+
+            // Backfills DisplayName for an account seeded before #45 added the field, without
+            // ever overwriting one an operator has since set some other way.
+            if (string.IsNullOrWhiteSpace(existing.DisplayName) && !string.IsNullOrWhiteSpace(displayName))
+            {
+                existing.DisplayName = displayName.Trim();
+                roleChanged = true; // reuse the same "needs a write" flag below
+            }
+
+            if (roleChanged)
+            {
                 await _userStore.UpdateAsync(existing, cancellationToken);
-                _logger.LogInformation("Promoted account '{Username}' to SuperAdmin.", username);
+                _logger.LogInformation("Updated seeded SuperAdmin account '{Username}'.", username);
             }
         }
 

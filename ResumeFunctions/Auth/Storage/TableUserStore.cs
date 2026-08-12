@@ -60,5 +60,16 @@ namespace ResumeFunctions.Auth.Storage
         {
             await _tableClient.UpdateEntityAsync(user, user.ETag, TableUpdateMode.Replace, cancellationToken);
         }
+
+        public async Task<IReadOnlyList<UserAccountEntity>> ListAsync(CancellationToken cancellationToken = default)
+        {
+            var results = new List<UserAccountEntity>();
+            await foreach (var entity in _tableClient.QueryAsync<UserAccountEntity>(
+                u => u.PartitionKey == UserAccountEntity.PartitionKeyValue, cancellationToken: cancellationToken))
+            {
+                results.Add(entity);
+            }
+            return results;
+        }
     }
 }

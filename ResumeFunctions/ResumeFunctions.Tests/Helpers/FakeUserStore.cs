@@ -30,4 +30,9 @@ public class FakeUserStore : IUserStore
         _users[user.Username.Trim().ToLowerInvariant()] = user;
         return Task.CompletedTask;
     }
+
+    public Task<IReadOnlyList<UserAccountEntity>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<UserAccountEntity>>(_users.Values.ToList());
+    }
 }

@@ -1,0 +1,7 @@
+h2 {
+  color: var(--jem-navy, #1e2d5a);
+}
+
+.contact-form-card {
+  margin: 0.5rem 0 1rem;
+}
