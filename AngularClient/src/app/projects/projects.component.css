@@ -1,19 +1,17 @@
-.project-menu-list-group a {
-  font-weight: 600;
-  color: var(--jem-navy, #1e2d5a);
-  opacity: 0.85;
-  transition: opacity 0.2s ease, color 0.2s ease;
-  text-decoration: none;
+.project-menu-list-group .mat-mdc-list-item {
+  --mat-list-list-item-label-text-color: var(--jem-navy, #1e2d5a);
+  --mat-list-list-item-label-text-weight: 600;
 }
 
-.project-menu-list-group a:hover {
-  opacity: 1;
-  color: var(--jem-blue, #245a8e);
-  text-shadow: none;
+.project-menu-list-group .mat-mdc-list-item:hover {
+  --mat-list-list-item-label-text-color: var(--jem-blue, #245a8e);
 }
 
-.project-menu-list-group ul li.list-group-item-description {
-  font-size: 0.65em;
-  text-align: left;
+.project-menu-list-group .list-group-item-description {
+  font-size: 0.8em;
   color: var(--jem-text-muted, #5a6070);
+}
+
+.manage-projects-panel {
+  padding-bottom: 24px;
 }

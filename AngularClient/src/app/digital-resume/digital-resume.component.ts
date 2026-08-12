@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
 import { ResumeData } from '../interfaces/resume.interface';
@@ -12,6 +13,7 @@ import { WorkExperienceSectionComponent } from "./work-experience-section/work-e
   selector: 'app-digital-resume',
   standalone: true,
   imports: [
+    MatButtonModule,
     SpinnerComponent,
     ContactSectionComponent,
     EducationSectionComponent,

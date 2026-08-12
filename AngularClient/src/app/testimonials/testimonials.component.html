@@ -3,33 +3,43 @@
   <p>Leave a note — you must be logged in to post, but anyone can read them.</p>
 
   @if (authService.isAuthenticated()) {
-    <form (ngSubmit)="onSubmit()" #testimonialForm="ngForm">
-      <textarea class="form-control" rows="3" name="message" [(ngModel)]="newMessage" placeholder="Leave a note..." required></textarea>
-      @if (errorMessage()) {
-        <div class="alert alert-danger mt-2">{{ errorMessage() }}</div>
-      }
-      <button type="submit" class="btn btn-primary mt-2" [disabled]="isBusy() || testimonialForm.invalid">Post</button>
-    </form>
+    <mat-card appearance="outlined" class="jem-mat-card testimonial-form-card">
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()" #testimonialForm="ngForm">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Leave a note...</mat-label>
+            <textarea matInput rows="3" name="message" [(ngModel)]="newMessage" required></textarea>
+          </mat-form-field>
+          @if (errorMessage()) {
+            <div class="alert alert-danger mt-2">{{ errorMessage() }}</div>
+          }
+          <button mat-flat-button type="submit" [disabled]="isBusy() || testimonialForm.invalid">Post</button>
+        </form>
+      </mat-card-content>
+    </mat-card>
   } @else {
     <p><a routerLink="/login">Log in</a> or <a routerLink="/register">register</a> to leave a testimonial.</p>
   }
 
-  <hr />
+  <mat-divider class="my-3"></mat-divider>
 
   @if (testimonials() === null) {
     <p>Loading...</p>
   } @else if (testimonials()!.length === 0) {
     <p>No testimonials yet — be the first.</p>
   } @else {
-    <ul class="list-unstyled">
+    <mat-list>
       @for (testimonial of testimonials()!; track testimonial.id) {
-        <li class="mb-3">
-          <strong>{{ testimonial.authorUsername }}</strong> — {{ testimonial.message }}
-          @if (authService.isAdmin()) {
-            <button class="btn btn-sm btn-link text-danger" (click)="onDelete(testimonial.id)">Delete</button>
-          }
-        </li>
+        <mat-list-item [lines]="2">
+          <span matListItemTitle>{{ testimonial.authorUsername }}</span>
+          <span matListItemLine>
+            {{ testimonial.message }}
+            @if (authService.isAdmin()) {
+              <button mat-button color="warn" (click)="onDelete(testimonial.id)">Delete</button>
+            }
+          </span>
+        </mat-list-item>
       }
-    </ul>
+    </mat-list>
   }
 </div>

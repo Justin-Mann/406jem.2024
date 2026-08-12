@@ -1,19 +1,3 @@
-.sectionheader {
-  border-bottom: 2px solid var(--jem-navy, #1e2d5a);
-  font-family: Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--jem-navy, #1e2d5a);
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-}
-
-.sectionbody {
-  padding: 4px 0;
-  font-family: Arial, sans-serif;
-  font-size: 15px;
-}
-
 .eduList {
   list-style: none;
   padding: 0 0 0 4px;

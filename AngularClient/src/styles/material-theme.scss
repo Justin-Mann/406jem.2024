@@ -1,0 +1,68 @@
+// Angular Material M3 theme, customized to the 406JEM brand — see CLAUDE.md
+// "Shared Design Language". This intentionally does NOT use Material's stock
+// Roboto/purple defaults: color and typography tokens are overridden below to
+// reuse the site's existing --jem-* custom properties (defined in styles.css)
+// as the single source of truth, and Caviar Dreams is mapped onto Material's
+// "brand" typescale roles (display/headline/title-large) exactly like the
+// rest of the site already uses it for headings.
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$blue-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: (
+        plain-family: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        brand-family: 'caviar, "Helvetica Neue", Helvetica, Arial, sans-serif',
+      ),
+      density: 0,
+    ),
+    $overrides: (
+      primary: var(--jem-blue),
+      on-primary: #fff,
+      primary-container: var(--jem-note-bg),
+      on-primary-container: var(--jem-navy),
+      inverse-primary: var(--jem-blue-light),
+      secondary: var(--jem-navy),
+      on-secondary: #fff,
+      secondary-container: var(--jem-border),
+      on-secondary-container: var(--jem-navy),
+      tertiary: var(--jem-blue-light),
+      on-tertiary: #fff,
+      tertiary-container: var(--jem-note-bg),
+      on-tertiary-container: var(--jem-navy),
+      background: var(--jem-bg),
+      on-background: var(--jem-text),
+      surface: var(--jem-bg),
+      on-surface: var(--jem-text),
+      on-surface-variant: var(--jem-text-muted),
+      surface-container-lowest: #fff,
+      surface-container-low: var(--jem-bg),
+      surface-container: var(--jem-card-bg),
+      surface-container-high: var(--jem-note-bg),
+      surface-container-highest: var(--jem-border),
+      surface-bright: var(--jem-card-bg),
+      inverse-surface: var(--jem-navy),
+      inverse-on-surface: #fff,
+      outline: var(--jem-border),
+      outline-variant: var(--jem-border),
+    )
+  );
+}
+
+// Material's default elevation shadows read as "busier" than the rest of the
+// site (which uses a single, much softer --jem-shadow). Flatten the low
+// elevation levels used by cards/toolbars/menus so mat- components keep the
+// same understated feel as .jem-card instead of stock Material's heavier
+// drop shadows.
+html {
+  --mat-sys-level0: none;
+  --mat-sys-level1: var(--jem-shadow);
+  --mat-sys-level2: var(--jem-shadow-hover);
+}

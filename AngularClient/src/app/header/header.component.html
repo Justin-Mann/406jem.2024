@@ -1,60 +1,53 @@
 <header>
-    <div class="container">
-        <div class="row">
+    <mat-toolbar class="jem-toolbar">
+        <button mat-icon-button class="menu-icon" (click)="toggleMenu()" [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'">
+            <i [class]="menuIcon()"></i>
+        </button>
 
-            <div class="col-12 text-center">
-                <div class="menu-icon" (click)="toggleMenu()">
-                    <i [class]="menuIcon()"></i>
+        <nav class="jem_menu" [class.mobile_menu]="menuOpen()">
+            <a mat-button [routerLink]="['/home']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                Home
+            </a>
+            <a mat-button [routerLink]="['/digitalresume']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                Digital Resume
+            </a>
+            <a mat-button [routerLink]="['/projects']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                Current Projects
+            </a>
+            <a mat-button [routerLink]="['/testimonials']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                Testimonials
+            </a>
+            @if (authService.isAuthenticated()) {
+                <span class="nav-item auth-status">
+                    Hi, {{ authService.username() }}
+                </span>
+                <button mat-button class="nav-item" (click)="logout()">
+                    Log Out
+                </button>
+            } @else {
+                <a mat-button [routerLink]="['/login']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                    Log In
+                </a>
+                <a mat-button [routerLink]="['/register']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
+                    Register
+                </a>
+            }
+        </nav>
+    </mat-toolbar>
+
+    @if (!isResumePage()) {
+        <div class="container">
+            <div class="row logo">
+                <div class="col-4">
+                    <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
                 </div>
-                <div class="jem_menu" [class.mobile_menu]="menuOpen()">
-                    <ul>
-                        <li [routerLink]="['/home']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                            Home
-                        </li>
-                        <li [routerLink]="['/digitalresume']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                            Digital Resume
-                        </li>
-                        <li [routerLink]="['/projects']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                            Current Projects
-                        </li>
-                        <li [routerLink]="['/testimonials']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                            Testimonials
-                        </li>
-                        @if (authService.isAuthenticated()) {
-                            <li class="nav-item auth-status">
-                                Hi, {{ authService.username() }}
-                            </li>
-                            <li class="nav-item" (click)="logout()">
-                                Log Out
-                            </li>
-                        } @else {
-                            <li [routerLink]="['/login']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                                Log In
-                            </li>
-                            <li [routerLink]="['/register']" [routerLinkActive]="['active']" class="nav-item" (click)="closeMenu()">
-                                Register
-                            </li>
-                        }
-                    </ul>
+                <div class="col-4 text-capitalize text-center jem-title-header">
+                    <div class="h1">406JEM</div>
+                </div>
+                <div class="col-4">
+                    <img src="assets/img/bojack-samuri_82x100_fr.png" alt="" class="float-left">
                 </div>
             </div>
-
-            <div class="col-12">
-                @if (!isResumePage()) {
-                    <div class="row logo">
-                        <div class="col-4">
-                            <img src="assets/img/bojack-samuri_82x100_fl.png" alt="" class="float-right">
-                        </div>
-                        <div class="col-4 text-capitalize text-center jem-title-header">
-                            <div class="h1">406JEM</div>
-                        </div>
-                        <div class="col-4">
-                            <img src="assets/img/bojack-samuri_82x100_fr.png" alt="" class="float-left">
-                        </div>
-                    </div>
-                }
-            </div>
-
         </div>
-    </div>
+    }
 </header>

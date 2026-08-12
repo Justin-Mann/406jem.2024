@@ -1,20 +1,24 @@
 @if (eduItems()) {
-  <div class="sectionheader">Education</div>
-  <div class="sectionbody">
-    <ul class="eduList">
-      @for (item of eduItems()!; track item.name) {
-        <li class="eduListing">
-          <div class="schoolName">{{ item.name }}</div>
-          @if (item.degree) {
-            <div class="degree">
-              <img src="assets/img/academic-degree-3-16.png" alt="Degree" /> {{ item.degreeName }} – {{ item.degreeYear }}
-            </div>
-          }
-          @for (aos of (item.areasOfStudy ?? []); track aos) {
-            <div class="areaOfStudy">{{ aos }}</div>
-          }
-        </li>
-      }
-    </ul>
-  </div>
+  <mat-card appearance="outlined" class="jem-mat-card resume-section-card">
+    <mat-card-header>
+      <mat-card-title>Education</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="eduList">
+        @for (item of eduItems()!; track item.name) {
+          <li class="eduListing">
+            <div class="schoolName">{{ item.name }}</div>
+            @if (item.degree) {
+              <div class="degree">
+                <img src="assets/img/academic-degree-3-16.png" alt="Degree" /> {{ item.degreeName }} – {{ item.degreeYear }}
+              </div>
+            }
+            @for (aos of (item.areasOfStudy ?? []); track aos) {
+              <div class="areaOfStudy">{{ aos }}</div>
+            }
+          </li>
+        }
+      </ul>
+    </mat-card-content>
+  </mat-card>
 }

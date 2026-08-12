@@ -2,54 +2,53 @@ header {
   padding: 8px 0 0;
 }
 
+/* ── Toolbar ────────────────────────────────────────────────── */
+.jem-toolbar {
+  background: transparent;
+  color: var(--jem-navy, #1e2d5a);
+  justify-content: center;
+  padding: 0 12px;
+}
+
 /* ── Nav menu ───────────────────────────────────────────────── */
-.jem_menu ul {
-  padding: 0;
-  margin: 0;
+.jem_menu {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 0;
 }
 
-.jem_menu ul li {
-  list-style-type: none;
+.jem_menu .nav-item {
   color: var(--jem-navy, #1e2d5a);
-  opacity: 0.45;
+  opacity: 0.6;
   font-weight: 700;
-  font-size: 17px;
-  padding: 6px 18px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: opacity 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
-  user-select: none;
+  font-size: 15px;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-.jem_menu ul li:hover {
+.jem_menu .nav-item.auth-status {
+  opacity: 0.85;
+  padding: 0 12px;
+  cursor: default;
+}
+
+.jem_menu a.nav-item:hover,
+.jem_menu button.nav-item:hover {
   opacity: 1;
   color: var(--jem-blue, #245a8e);
-  text-shadow: 0 0 6px rgba(83, 243, 0, 0.72);
 }
 
-.jem_menu ul li.active {
+.jem_menu .nav-item.active-link {
   color: var(--jem-navy, #1e2d5a);
   opacity: 1;
-  font-weight: 900;
   pointer-events: none;
-  cursor: default;
-  text-shadow: none;
 }
 
 /* ── Hamburger icon ─────────────────────────────────────────── */
 .menu-icon {
   display: none;
-  font-size: 36px;
-  padding: 8px 12px;
-  cursor: pointer;
+  font-size: 22px;
   color: var(--jem-navy, #1e2d5a);
-  transition: color 0.2s ease;
-}
-.menu-icon:hover {
-  color: var(--jem-blue, #245a8e);
 }
 
 /* ── Logo row ───────────────────────────────────────────────── */
@@ -76,8 +75,12 @@ header {
 }
 
 @media screen and (max-width: 900px) {
+  .jem-toolbar {
+    justify-content: space-between;
+  }
+
   .menu-icon {
-    display: block;
+    display: inline-flex;
   }
 
   .jem_menu {
@@ -86,6 +89,10 @@ header {
     top: 56px;
     width: 280px;
     height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-top: 8px;
     background-color: #fff;
     border-left: 1px solid var(--jem-border, #d0d8ea);
     border-top: 3px solid var(--jem-blue, #245a8e);
@@ -98,14 +105,9 @@ header {
     right: 0;
   }
 
-  .jem_menu ul {
-    flex-direction: column;
-    gap: 0;
-    padding-top: 8px;
-  }
-
-  .jem_menu ul li {
+  .jem_menu .nav-item {
     display: block;
+    width: 100%;
     text-align: left;
     padding: 14px 24px;
     border-bottom: 1px solid var(--jem-border, #d0d8ea);

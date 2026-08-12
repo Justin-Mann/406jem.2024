@@ -12,28 +12,30 @@
         <div class="row justify-content-center g-4">
             @for (section of listing()!.sections; track section.heading) {
                 <div class="col-sm-4 col-12">
-                    <div class="card jem-card text-center h-100">
-                        <div class="card-header">{{ section.heading }}</div>
-                        <div class="card-body">
-                            <ul class="list-group project-menu-list-group">
+                    <mat-card appearance="outlined" class="jem-mat-card h-100">
+                        <mat-card-header>
+                            <mat-card-title>{{ section.heading }}</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <mat-nav-list class="project-menu-list-group" dense>
                                 @for (link of section.links; track link.url) {
                                     @if (!link.description) {
-                                        <a class="list-group-item list-group-item-action" [href]="link.url" [title]="link.label" target="_new">{{ link.label }}</a>
+                                        <a mat-list-item [href]="link.url" [title]="link.label" target="_new">
+                                            <span matListItemTitle>{{ link.label }}</span>
+                                        </a>
                                     } @else {
-                                        <li class="list-group-item">
-                                            <a [href]="link.url" [title]="link.label" target="_new">{{ link.label }}</a>
-                                            <ul>
-                                                <li class="list-group-item-description">{{ link.description }}</li>
-                                            </ul>
-                                        </li>
+                                        <a mat-list-item [href]="link.url" [title]="link.label" target="_new">
+                                            <span matListItemTitle>{{ link.label }}</span>
+                                            <span matListItemLine class="list-group-item-description">{{ link.description }}</span>
+                                        </a>
                                     }
                                 }
-                            </ul>
-                        </div>
+                            </mat-nav-list>
+                        </mat-card-content>
                         @if (section.lastUpdated) {
-                            <div class="card-footer">Last Updated {{ section.lastUpdated }}</div>
+                            <div class="jem-mat-card-footer">Last Updated {{ section.lastUpdated }}</div>
                         }
-                    </div>
+                    </mat-card>
                 </div>
             }
         </div>
@@ -42,11 +44,11 @@
 
 @if (authService.isAdmin()) {
     <div class="container manage-projects-panel">
-        <hr />
+        <mat-divider></mat-divider>
         @if (!showManagePanel()) {
-            <button class="btn btn-outline-secondary btn-sm" (click)="openManagePanel()">Manage My Project Listings</button>
+            <button mat-stroked-button class="mt-3" (click)="openManagePanel()">Manage My Project Listings</button>
         } @else {
-            <h3>Manage My Project Listings</h3>
+            <h3 class="mt-3">Manage My Project Listings</h3>
 
             @if (errorMessage()) {
                 <div class="alert alert-danger">{{ errorMessage() }}</div>
@@ -58,70 +60,88 @@
                 @if (mine()!.length === 0) {
                     <p>You don't have any project listings yet.</p>
                 } @else {
-                    <ul class="list-group mb-3">
+                    <mat-list class="mb-3">
                         @for (item of mine()!; track item.id) {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
+                            <mat-list-item>
+                                <span matListItemTitle>
                                     {{ item.payload?.title || '(untitled)' }}
                                     @if (item.isFeatured) {
                                         <span class="badge bg-success ms-2">Public</span>
                                     }
                                 </span>
-                                <span>
-                                    <button class="btn btn-sm btn-outline-primary" (click)="startEdit(item)">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" [disabled]="isBusy()" (click)="deleteListing(item.id)">Delete</button>
+                                <span matListItemMeta>
+                                    <button mat-button (click)="startEdit(item)">Edit</button>
+                                    <button mat-button color="warn" [disabled]="isBusy()" (click)="deleteListing(item.id)">Delete</button>
                                 </span>
-                            </li>
+                            </mat-list-item>
                         }
-                    </ul>
+                    </mat-list>
                 }
-                <button class="btn btn-primary btn-sm" (click)="startNew()">+ New Listing</button>
+                <button mat-flat-button (click)="startNew()">+ New Listing</button>
             } @else {
                 <form (ngSubmit)="save()" #listingForm="ngForm">
-                    <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        <input class="form-control" name="title" [(ngModel)]="editState()!.payload.title" />
-                    </div>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="isFeatured" name="isFeatured" [(ngModel)]="editState()!.isFeatured" />
-                        <label class="form-check-label" for="isFeatured">Show publicly (Featured)</label>
-                    </div>
+                    <mat-form-field appearance="outline" class="w-100 mb-2">
+                        <mat-label>Title</mat-label>
+                        <input matInput name="title" [(ngModel)]="editState()!.payload.title" />
+                    </mat-form-field>
+                    <mat-checkbox class="mb-3 d-block" name="isFeatured" [(ngModel)]="editState()!.isFeatured">Show publicly (Featured)</mat-checkbox>
 
                     @for (section of editState()!.payload.sections; track $index; let sectionIndex = $index) {
-                        <div class="card mb-3">
-                            <div class="card-body">
+                        <mat-card appearance="outlined" class="mb-3">
+                            <mat-card-content>
                                 <div class="mb-2 d-flex gap-2">
-                                    <input class="form-control" placeholder="Section heading" [name]="'heading' + sectionIndex" [(ngModel)]="section.heading" />
-                                    <input class="form-control" placeholder="Last updated (e.g. 08/2026)" [name]="'lastUpdated' + sectionIndex" [(ngModel)]="section.lastUpdated" />
+                                    <mat-form-field appearance="outline" class="flex-fill">
+                                        <mat-label>Section heading</mat-label>
+                                        <input matInput [name]="'heading' + sectionIndex" [(ngModel)]="section.heading" />
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="flex-fill">
+                                        <mat-label>Last updated (e.g. 08/2026)</mat-label>
+                                        <input matInput [name]="'lastUpdated' + sectionIndex" [(ngModel)]="section.lastUpdated" />
+                                    </mat-form-field>
                                 </div>
 
                                 @for (link of section.links; track $index; let linkIndex = $index) {
                                     <div class="row g-2 mb-2 align-items-center">
-                                        <div class="col-sm-3"><input class="form-control" placeholder="Label" [name]="'label' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.label" /></div>
-                                        <div class="col-sm-3"><input class="form-control" placeholder="URL" [name]="'url' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.url" /></div>
-                                        <div class="col-sm-4"><input class="form-control" placeholder="Description (optional)" [name]="'description' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.description" /></div>
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Label</mat-label>
+                                                <input matInput [name]="'label' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.label" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>URL</mat-label>
+                                                <input matInput [name]="'url' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.url" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Description (optional)</mat-label>
+                                                <input matInput [name]="'description' + sectionIndex + '-' + linkIndex" [(ngModel)]="link.description" />
+                                            </mat-form-field>
+                                        </div>
                                         <div class="col-sm-2 text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="linkIndex === 0" (click)="moveLinkUp(section, linkIndex)">&uarr;</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="linkIndex === section.links.length - 1" (click)="moveLinkDown(section, linkIndex)">&darr;</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLink(section, linkIndex)">&times;</button>
+                                            <button type="button" mat-icon-button [disabled]="linkIndex === 0" (click)="moveLinkUp(section, linkIndex)" title="Move up"><i class="bi bi-arrow-up"></i></button>
+                                            <button type="button" mat-icon-button [disabled]="linkIndex === section.links.length - 1" (click)="moveLinkDown(section, linkIndex)" title="Move down"><i class="bi bi-arrow-down"></i></button>
+                                            <button type="button" mat-icon-button color="warn" (click)="removeLink(section, linkIndex)" title="Remove link"><i class="bi bi-x-lg"></i></button>
                                         </div>
                                     </div>
                                 }
-                                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLink(section)">+ Add Link</button>
+                                <button type="button" mat-button (click)="addLink(section)">+ Add Link</button>
 
                                 <div class="mt-3 text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="sectionIndex === 0" (click)="moveSectionUp(sectionIndex)">&uarr; Section</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="sectionIndex === editState()!.payload.sections.length - 1" (click)="moveSectionDown(sectionIndex)">&darr; Section</button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeSection(sectionIndex)">Remove Section</button>
+                                    <button type="button" mat-button [disabled]="sectionIndex === 0" (click)="moveSectionUp(sectionIndex)">&uarr; Section</button>
+                                    <button type="button" mat-button [disabled]="sectionIndex === editState()!.payload.sections.length - 1" (click)="moveSectionDown(sectionIndex)">&darr; Section</button>
+                                    <button type="button" mat-button color="warn" (click)="removeSection(sectionIndex)">Remove Section</button>
                                 </div>
-                            </div>
-                        </div>
+                            </mat-card-content>
+                        </mat-card>
                     }
-                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" (click)="addSection()">+ Add Section</button>
+                    <button type="button" mat-stroked-button class="mb-3" (click)="addSection()">+ Add Section</button>
 
                     <div>
-                        <button type="submit" class="btn btn-primary" [disabled]="isBusy()">Save</button>
-                        <button type="button" class="btn btn-secondary" [disabled]="isBusy()" (click)="cancelEdit()">Cancel</button>
+                        <button type="submit" mat-flat-button [disabled]="isBusy()">Save</button>
+                        <button type="button" mat-button [disabled]="isBusy()" (click)="cancelEdit()">Cancel</button>
                     </div>
                 </form>
             }

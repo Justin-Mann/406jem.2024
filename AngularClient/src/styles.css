@@ -126,6 +126,61 @@ a:hover {
   padding: 8px 16px;
 }
 
+/* ── Material cards (mat-card, brand-matched) ──────────────────
+   Angular Material's own elevation/spacing defaults read as busier
+   than the rest of the site; these classes keep mat-card visually in
+   line with the pre-existing .jem-card look (thin border, soft hover
+   lift, no heavy shadow). Used on pages that were migrated to
+   mat-card instead of the plain Bootstrap .card.jem-card markup. */
+.jem-mat-card {
+  text-align: center;
+  border-radius: var(--jem-radius) !important;
+  transition: box-shadow var(--jem-transition), transform var(--jem-transition);
+}
+.jem-mat-card:hover {
+  box-shadow: var(--jem-shadow-hover);
+  transform: translateY(-2px);
+}
+.jem-mat-card .mat-mdc-card-header {
+  padding: 12px 16px 0;
+}
+.jem-mat-card .mat-mdc-card-title {
+  font-family: caviar, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+.jem-mat-card .mat-mdc-card-title a {
+  color: var(--jem-navy);
+  text-decoration: none;
+}
+.jem-mat-card .mat-mdc-card-title a:hover {
+  color: var(--jem-blue);
+  text-shadow: none;
+}
+.jem-mat-card .mat-mdc-card-content {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--jem-text);
+}
+.jem-mat-card-footer {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--jem-text-muted);
+  border-top: 1px solid var(--jem-border);
+  padding: 8px 16px;
+}
+
+/* Resume section cards (contact/education/profile/xp/custom) stay
+   left-aligned and stacked, unlike the centered home/project cards. */
+.resume-section-card {
+  text-align: left;
+  margin-bottom: 16px;
+}
+.resume-section-card .mat-mdc-card-title {
+  font-size: 18px;
+}
+
 /* ── Project list groups ────────────────────────────────────── */
 .project-menu-list-group {
   font-family: Arial, sans-serif;

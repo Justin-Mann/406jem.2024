@@ -1,3 +1,4 @@
-h2 {
-  color: var(--jem-navy, #1e2d5a);
+.auth-card .mat-mdc-form-field {
+  display: block;
+  margin-bottom: 8px;
 }
