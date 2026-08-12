@@ -10,5 +10,6 @@ export const routes: Routes = [
     { path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent) },
     { path: 'register', loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent) },
     { path: 'testimonials', loadComponent: () => import('./testimonials/testimonials.component').then(m => m.TestimonialsComponent) },
+    { path: 'resume-posters', loadComponent: () => import('./resume-posters/resume-posters.component').then(m => m.ResumePostersComponent) },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];

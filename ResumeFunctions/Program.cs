@@ -40,6 +40,7 @@ var builder = new HostBuilder()
             new BlobServiceClient(context.Configuration["AzureWebJobsStorage"] ?? "UseDevelopmentStorage=true"));
 
         services.AddSingleton<IUserStore, TableUserStore>();
+        services.AddSingleton<IContactRateLimitStore, TableContactRateLimitStore>();
         services.AddSingleton<ITestimonialStore, TableTestimonialStore>();
         services.AddSingleton<IResumeStore, TableResumeStore>();
         services.AddSingleton<IResumeBlobStore, BlobResumeStore>();

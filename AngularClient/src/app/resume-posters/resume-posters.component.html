@@ -1,0 +1,44 @@
+<div class="container">
+  <h2>Contact a Resume Poster</h2>
+  <p>Reach out directly to one of our registered resume posters — your message is relayed by email without ever exposing their address.</p>
+
+  @if (posters() === null) {
+    <p>Loading...</p>
+  } @else if (posters()!.length === 0) {
+    <p>No resume posters are registered yet.</p>
+  } @else {
+    <mat-list>
+      @for (poster of posters()!; track poster.id) {
+        <mat-list-item>
+          <span matListItemTitle>{{ poster.displayName }}</span>
+          <button mat-button color="primary" (click)="toggleForm(poster.id)" [attr.aria-expanded]="openPosterId() === poster.id">
+            {{ openPosterId() === poster.id ? 'Close' : 'Contact' }}
+          </button>
+        </mat-list-item>
+        @if (openPosterId() === poster.id) {
+          <mat-card appearance="outlined" class="jem-mat-card contact-form-card">
+            <mat-card-content>
+              <form (ngSubmit)="onSubmit(poster.id)" #contactForm="ngForm">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Your email</mat-label>
+                  <input matInput type="email" name="replyToEmail" [(ngModel)]="replyToEmail" required email>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Message</mat-label>
+                  <textarea matInput rows="4" name="message" [(ngModel)]="message" required></textarea>
+                </mat-form-field>
+                @if (errorMessage()) {
+                  <div class="alert alert-danger mt-2">{{ errorMessage() }}</div>
+                }
+                @if (successMessage()) {
+                  <div class="alert alert-success mt-2">{{ successMessage() }}</div>
+                }
+                <button mat-flat-button type="submit" [disabled]="isBusy() || contactForm.invalid">Send</button>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        }
+      }
+    </mat-list>
+  }
+</div>

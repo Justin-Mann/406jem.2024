@@ -30,3 +30,14 @@ export interface Testimonial {
   message: string;
   createdAtUtc: string;
 }
+
+/** #45's public resume-poster directory entry - name only, never an email address. */
+export interface ResumePoster {
+  id: string;
+  displayName: string;
+}
+
+export interface ContactPosterRequest {
+  message: string;
+  replyToEmail: string;
+}

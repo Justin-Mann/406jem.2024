@@ -1,0 +1,107 @@
+@page "/resume-posters"
+@using BlazorApp.Models
+@inject HttpClient Http
+
+<PageTitle>Contact a Resume Poster</PageTitle>
+
+<div class="container">
+    <h2>Contact a Resume Poster</h2>
+    <p>Reach out directly to one of our registered resume posters — your message is relayed by email without ever exposing their address.</p>
+
+    @if (posters is null)
+    {
+        <p>Loading...</p>
+    }
+    else if (posters.Count == 0)
+    {
+        <p>No resume posters are registered yet.</p>
+    }
+    else
+    {
+        <ul class="list-unstyled">
+            @foreach (var poster in posters)
+            {
+                <li class="mb-3">
+                    <strong>@poster.DisplayName</strong>
+                    <button class="btn btn-sm btn-link" @onclick="() => ToggleForm(poster.Id)">
+                        @(openPosterId == poster.Id ? "Close" : "Contact")
+                    </button>
+
+                    @if (openPosterId == poster.Id)
+                    {
+                        <EditForm Model="contactModel" OnValidSubmit="() => HandleSubmitAsync(poster.Id)">
+                            <DataAnnotationsValidator />
+                            <InputText class="form-control mb-2" @bind-Value="contactModel.ReplyToEmail" placeholder="Your email" />
+                            <InputTextArea class="form-control" rows="4" @bind-Value="contactModel.Message" placeholder="Your message..." />
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger mt-2">@errorMessage</div>
+                            }
+                            @if (!string.IsNullOrEmpty(successMessage))
+                            {
+                                <div class="alert alert-success mt-2">@successMessage</div>
+                            }
+                            <button type="submit" class="btn btn-primary mt-2" disabled="@isBusy">Send</button>
+                        </EditForm>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private List<ResumePosterItem>? posters;
+    private string? openPosterId;
+    private readonly ContactModel contactModel = new();
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posters = await Http.GetFromJsonAsync<List<ResumePosterItem>>("api/resume-posters");
+    }
+
+    private void ToggleForm(string posterId)
+    {
+        errorMessage = null;
+        successMessage = null;
+        contactModel.Message = string.Empty;
+        contactModel.ReplyToEmail = string.Empty;
+        openPosterId = openPosterId == posterId ? null : posterId;
+    }
+
+    private async Task HandleSubmitAsync(string posterId)
+    {
+        isBusy = true;
+        errorMessage = null;
+        successMessage = null;
+
+        var response = await Http.PostAsJsonAsync($"api/resume-posters/{posterId}/contact",
+            new { message = contactModel.Message, replyToEmail = contactModel.ReplyToEmail });
+
+        if (response.IsSuccessStatusCode)
+        {
+            successMessage = "Message sent!";
+            contactModel.Message = string.Empty;
+            contactModel.ReplyToEmail = string.Empty;
+        }
+        else
+        {
+            errorMessage = "Could not send your message. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private class ContactModel
+    {
+        [Required]
+        public string Message { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string ReplyToEmail { get; set; } = string.Empty;
+    }
+}
