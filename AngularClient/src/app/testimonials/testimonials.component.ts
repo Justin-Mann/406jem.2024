@@ -1,6 +1,12 @@
 import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
 import { TestimonialsDataService } from '../services/data/testimonials-data.service';
 import { AuthService } from '../services/auth/auth.service';
 import { Testimonial } from '../interfaces/auth.interface';
@@ -8,7 +14,7 @@ import { Testimonial } from '../interfaces/auth.interface';
 @Component({
   selector: 'app-testimonials',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatListModule, MatDividerModule],
   templateUrl: './testimonials.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './testimonials.component.css'

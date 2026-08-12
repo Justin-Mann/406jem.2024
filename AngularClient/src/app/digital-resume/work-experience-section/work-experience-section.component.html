@@ -1,23 +1,31 @@
 @if (xpItems()) {
-  <div class="sectionheader">Experience (XP)</div>
-  <div class="sectionbody">
-    <ul class="xpList">
-      @for (workItem of xpItems()!; track workItem.companyName) {
-        <li class="workXpItem">
-          <span class="companyName">{{ workItem.companyName }}</span> — <span class="position">{{ workItem.position }}</span><br />
-          <span class="timeFrame">{{ workItem.startDate }} – {{ workItem.endDate }}</span><br />
-          @if (workItem.bulletList) {
-            <ul class="jobXpList">
-              @for (bli of workItem.bulletList; track bli) {
-                <li>{{ bli }}</li>
-              }
-            </ul>
-          }
-          @if (workItem.note) {
-            <span class="note">{{ workItem.note }}</span>
-          }
-        </li>
-      }
-    </ul>
-  </div>
+  <mat-card appearance="outlined" class="jem-mat-card resume-section-card">
+    <mat-card-header>
+      <mat-card-title>Experience (XP)</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="xpList">
+        @for (workItem of xpItems()!; track workItem.companyName) {
+          <li class="workXpItem">
+            <mat-card appearance="outlined" class="jem-mat-card xp-card">
+              <mat-card-content>
+                <span class="companyName">{{ workItem.companyName }}</span> — <span class="position">{{ workItem.position }}</span><br />
+                <span class="timeFrame">{{ workItem.startDate }} – {{ workItem.endDate }}</span><br />
+                @if (workItem.bulletList) {
+                  <ul class="jobXpList">
+                    @for (bli of workItem.bulletList; track bli) {
+                      <li>{{ bli }}</li>
+                    }
+                  </ul>
+                }
+                @if (workItem.note) {
+                  <span class="note">{{ workItem.note }}</span>
+                }
+              </mat-card-content>
+            </mat-card>
+          </li>
+        }
+      </ul>
+    </mat-card-content>
+  </mat-card>
 }

@@ -1,5 +1,12 @@
 import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDividerModule } from '@angular/material/divider';
 import { ProjectListingsDataService } from '../services/data/project-listings-data.service';
 import { AuthService } from '../services/auth/auth.service';
 import { CreateOrUpdateProjectListingRequest, ProjectLink, ProjectListing, ProjectListingDto, ProjectSection } from '../interfaces/project-listing.interface';
@@ -13,7 +20,16 @@ interface ListingEditState {
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatListModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatDividerModule
+  ],
   templateUrl: './projects.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './projects.component.css'
