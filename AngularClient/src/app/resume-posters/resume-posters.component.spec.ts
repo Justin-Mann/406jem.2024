@@ -5,7 +5,8 @@ import { ResumePostersDataService } from '../services/data/resume-posters-data.s
 import { ResumePoster } from '../interfaces/auth.interface';
 
 const posters: ResumePoster[] = [
-  { id: 'jane', displayName: 'Jane Doe' }
+  { id: 'jane', displayName: 'Jane Doe' },
+  { id: 'john', displayName: 'John Smith' }
 ];
 
 describe('ResumePostersComponent', () => {
@@ -89,6 +90,19 @@ describe('ResumePostersComponent', () => {
     component.onSubmit('jane');
 
     expect(component.errorMessage()).toBe('Could not send your message. Please try again.');
+  });
+
+  it('clears the draft message and reply email when switching to a different poster', () => {
+    fixture.detectChanges();
+
+    component.toggleForm('jane');
+    component.replyToEmail = 'visitor@example.com';
+    component.message = 'Draft for Jane';
+
+    component.toggleForm('john');
+
+    expect(component.message).toBe('');
+    expect(component.replyToEmail).toBe('');
   });
 
   it('does not submit when the message or reply email is blank', () => {

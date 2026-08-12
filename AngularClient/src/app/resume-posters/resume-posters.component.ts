@@ -37,6 +37,8 @@ export class ResumePostersComponent implements OnInit {
   toggleForm(posterId: string): void {
     this.errorMessage.set(null);
     this.successMessage.set(null);
+    this.message = '';
+    this.replyToEmail = '';
     this.openPosterId.set(this.openPosterId() === posterId ? null : posterId);
   }
 

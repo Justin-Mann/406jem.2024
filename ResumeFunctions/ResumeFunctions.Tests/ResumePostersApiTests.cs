@@ -172,6 +172,22 @@ public class ResumePostersApiTests
     }
 
     [Fact]
+    public async Task Contact_HtmlEncodesVisitorSuppliedMessage_ButLeavesPlaintextBodyUnescaped()
+    {
+        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane-real@example.com"));
+        var context = TestFunctionContextFactory.Create();
+        var (_, request) = BuildRequest(context, new { Message = "<script>alert(1)</script>", ReplyToEmail = "visitor@example.com" }, "POST");
+
+        var result = await _api.Contact(request, "jane");
+
+        Assert.Equal(HttpStatusCode.Accepted, result.StatusCode);
+        var sent = Assert.Single(_emailSender.SentMessages);
+        Assert.DoesNotContain("<script>", sent.HtmlBody);
+        Assert.Contains("&lt;script&gt;", sent.HtmlBody);
+        Assert.Contains("<script>alert(1)</script>", sent.TextBody);
+    }
+
+    [Fact]
     public async Task Contact_Returns202_ForSuperAdmin()
     {
         _userStore.FindByUsernameAsync("root").Returns(MakeUser("root", AccountRoles.SuperAdmin, "root-real@example.com"));

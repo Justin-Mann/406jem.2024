@@ -104,12 +104,22 @@ namespace ResumeFunctions
                 return await ErrorResponse(req, HttpStatusCode.TooManyRequests, "Too many contact requests. Please try again later.");
             }
 
-            var values = new Dictionary<string, string>
-            {
-                ["replyToEmail"] = replyToEmail,
-                ["message"] = message,
-            };
-            var (html, text) = EmailTemplates.Render(HtmlTemplate, TextTemplate, values);
+            var (html, _) = EmailTemplates.Render(
+                HtmlTemplate,
+                TextTemplate,
+                new Dictionary<string, string>
+                {
+                    ["replyToEmail"] = WebUtility.HtmlEncode(replyToEmail),
+                    ["message"] = WebUtility.HtmlEncode(message),
+                });
+            var (_, text) = EmailTemplates.Render(
+                HtmlTemplate,
+                TextTemplate,
+                new Dictionary<string, string>
+                {
+                    ["replyToEmail"] = replyToEmail,
+                    ["message"] = message,
+                });
 
             await _emailSender.SendAsync(poster.Email, $"New message from {replyToEmail} via 406jem.com", html, text);
             _logger.LogInformation("Relayed a contact-form message to resume poster '{PosterId}'.", poster.Username);

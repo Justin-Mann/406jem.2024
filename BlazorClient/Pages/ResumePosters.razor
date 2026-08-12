@@ -30,6 +30,7 @@
                     @if (openPosterId == poster.Id)
                     {
                         <EditForm Model="contactModel" OnValidSubmit="() => HandleSubmitAsync(poster.Id)">
+                            <DataAnnotationsValidator />
                             <InputText class="form-control mb-2" @bind-Value="contactModel.ReplyToEmail" placeholder="Your email" />
                             <InputTextArea class="form-control" rows="4" @bind-Value="contactModel.Message" placeholder="Your message..." />
                             @if (!string.IsNullOrEmpty(errorMessage))
@@ -66,6 +67,8 @@
     {
         errorMessage = null;
         successMessage = null;
+        contactModel.Message = string.Empty;
+        contactModel.ReplyToEmail = string.Empty;
         openPosterId = openPosterId == posterId ? null : posterId;
     }
 
@@ -94,7 +97,11 @@
 
     private class ContactModel
     {
+        [Required]
         public string Message { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
         public string ReplyToEmail { get; set; } = string.Empty;
     }
 }
