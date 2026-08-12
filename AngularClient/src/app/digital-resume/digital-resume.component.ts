@@ -1,8 +1,8 @@
-import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { ResumeDataService } from '../services/data/resume-data.service';
-import { ResumeData } from '../interfaces/resume.interface';
+import { ResumeData, ContactTypeEnum } from '../interfaces/resume.interface';
 import { ContactSectionComponent } from './contact-section/contact-section.component';
 import { EducationSectionComponent } from "./education-section/education-section.component";
 import { CustomSectionsComponent } from "./custom-sections/custom-sections.component";
@@ -31,6 +31,13 @@ export class DigitalResumeComponent implements OnInit {
   resumeData = signal<ResumeData | null>(null);
   isLoading = signal(true);
   readonly logoUrl = 'assets/img/bojack-samuri_82x100_fl.png';
+
+  contactEmail = computed(() => {
+    const email = this.resumeData()?.contact?.find(
+      c => c.type === ContactTypeEnum.Email && !!c.mailTo
+    );
+    return email?.mailTo ?? null;
+  });
 
   ngOnInit(): void {
     this.dataService.fetchResumeData().subscribe({
