@@ -13,5 +13,9 @@ namespace ResumeFunctions.Auth
         // New top role introduced in #28: can CRUD any owner's resumes/project listings and
         // is the only role that can change SiteConfig (what's actually public).
         public const string SuperAdmin = "superadmin";
+
+        /// <summary>Shared by #45's resume-poster directory (listing and contact-relay) so the
+        /// "who counts as a poster" rule lives in one place rather than two API classes.</summary>
+        public static bool IsResumePosterRole(string role) => role == ResumeAdmin || role == SuperAdmin;
     }
 }

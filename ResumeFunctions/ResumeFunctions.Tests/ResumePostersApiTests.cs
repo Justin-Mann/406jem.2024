@@ -16,14 +16,11 @@ namespace ResumeFunctions.Tests;
 public class ResumePostersApiTests
 {
     private readonly IUserStore _userStore = Substitute.For<IUserStore>();
-    private readonly FakeEmailSender _emailSender = new();
-    private readonly IContactRateLimitStore _rateLimitStore = Substitute.For<IContactRateLimitStore>();
     private readonly ResumePostersApi _api;
 
     public ResumePostersApiTests()
     {
-        _rateLimitStore.TryRecordAttemptAsync(Arg.Any<string>()).Returns(true);
-        _api = new ResumePostersApi(Substitute.For<ILogger<ResumePostersApi>>(), _userStore, _emailSender, _rateLimitStore);
+        _api = new ResumePostersApi(Substitute.For<ILogger<ResumePostersApi>>(), _userStore);
     }
 
     private static (TestHttpResponseData response, TestHttpRequestData request) BuildRequest(
@@ -89,114 +86,5 @@ public class ResumePostersApiTests
         using var reader = new StreamReader(response.Body);
         var raw = await reader.ReadToEndAsync();
         Assert.DoesNotContain("@example.com", raw);
-    }
-
-    [Fact]
-    public async Task Contact_Returns404_WhenPosterDoesNotExist()
-    {
-        _userStore.FindByUsernameAsync("nobody").Returns((UserAccountEntity?)null);
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "hi", ReplyToEmail = "a@b.com" }, "POST");
-
-        var result = await _api.Contact(request, "nobody");
-
-        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-    }
-
-    [Fact]
-    public async Task Contact_Returns404_WhenUserExistsButIsNotAResumePoster()
-    {
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.Visitor, "jane@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "hi", ReplyToEmail = "a@b.com" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-        Assert.Empty(_emailSender.SentMessages);
-    }
-
-    [Fact]
-    public async Task Contact_Returns400_WhenMessageIsMissing()
-    {
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "   ", ReplyToEmail = "a@b.com" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-    }
-
-    [Fact]
-    public async Task Contact_Returns400_WhenReplyToEmailIsInvalid()
-    {
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "hi", ReplyToEmail = "not-an-email" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-        Assert.Empty(_emailSender.SentMessages);
-    }
-
-    [Fact]
-    public async Task Contact_Returns429_WhenRateLimited()
-    {
-        _rateLimitStore.TryRecordAttemptAsync(Arg.Any<string>()).Returns(false);
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "hi", ReplyToEmail = "a@b.com" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, result.StatusCode);
-        Assert.Empty(_emailSender.SentMessages);
-    }
-
-    [Fact]
-    public async Task Contact_Returns202_AndRelaysEmailToTheAdminsRealAddress_ForResumeAdmin()
-    {
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane-real@example.com", "Jane Doe"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "Loved your resume!", ReplyToEmail = "visitor@example.com" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.Accepted, result.StatusCode);
-        var sent = Assert.Single(_emailSender.SentMessages);
-        Assert.Equal("jane-real@example.com", sent.To);
-        Assert.Contains("visitor@example.com", sent.HtmlBody);
-        Assert.Contains("Loved your resume!", sent.HtmlBody);
-    }
-
-    [Fact]
-    public async Task Contact_HtmlEncodesVisitorSuppliedMessage_ButLeavesPlaintextBodyUnescaped()
-    {
-        _userStore.FindByUsernameAsync("jane").Returns(MakeUser("jane", AccountRoles.ResumeAdmin, "jane-real@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "<script>alert(1)</script>", ReplyToEmail = "visitor@example.com" }, "POST");
-
-        var result = await _api.Contact(request, "jane");
-
-        Assert.Equal(HttpStatusCode.Accepted, result.StatusCode);
-        var sent = Assert.Single(_emailSender.SentMessages);
-        Assert.DoesNotContain("<script>", sent.HtmlBody);
-        Assert.Contains("&lt;script&gt;", sent.HtmlBody);
-        Assert.Contains("<script>alert(1)</script>", sent.TextBody);
-    }
-
-    [Fact]
-    public async Task Contact_Returns202_ForSuperAdmin()
-    {
-        _userStore.FindByUsernameAsync("root").Returns(MakeUser("root", AccountRoles.SuperAdmin, "root-real@example.com"));
-        var context = TestFunctionContextFactory.Create();
-        var (_, request) = BuildRequest(context, new { Message = "hi", ReplyToEmail = "visitor@example.com" }, "POST");
-
-        var result = await _api.Contact(request, "root");
-
-        Assert.Equal(HttpStatusCode.Accepted, result.StatusCode);
-        Assert.Single(_emailSender.SentMessages);
     }
 }
