@@ -30,6 +30,11 @@
                 "glob": "favicon.ico",
                 "input": "src",
                 "output": ""
+              },
+              {
+                "glob": "staticwebapp.config.json",
+                "input": ".",
+                "output": ""
               }
             ],
             "styles": [
