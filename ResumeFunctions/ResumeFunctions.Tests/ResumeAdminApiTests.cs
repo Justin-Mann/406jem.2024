@@ -195,6 +195,101 @@ public class ResumeAdminApiTests
     }
 
     [Fact]
+    public async Task Publish_Returns401_WhenNotLoggedIn()
+    {
+        var context = TestFunctionContextFactory.Create();
+        var (_, request) = BuildRequest(context, method: "POST");
+
+        var result = await _api.Publish(request, context, "does-not-exist");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Publish_Returns404_ForUnknownId()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildRequest(context, method: "POST");
+
+        var result = await _api.Publish(request, context, "does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Publish_Returns403_WhenNotOwnerAndNotSuperAdmin()
+    {
+        var janeContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, uploadRequest) = BuildUploadRequest(janeContext, ValidPdfBytes);
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Upload(uploadRequest, janeContext));
+
+        var bobContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("bob", AccountRoles.ResumeAdmin));
+        var (_, publishRequest) = BuildRequest(bobContext, method: "POST");
+
+        var result = await _api.Publish(publishRequest, bobContext, created!.Id);
+
+        Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Publish_TransitionsDraftToPublished_ForOwner()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, uploadRequest) = BuildUploadRequest(context, ValidPdfBytes);
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Upload(uploadRequest, context));
+        Assert.Equal("Draft", created!.Status);
+
+        var (_, publishRequest) = BuildRequest(context, method: "POST");
+        var result = await _api.Publish(publishRequest, context, created.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        var dto = await ReadBody<ResumeDto>((TestHttpResponseData)result);
+        Assert.Equal("Published", dto!.Status);
+
+        var stored = await _store.FindByIdAsync(created.Id);
+        Assert.Equal(ResumeFunctions.Auth.Models.ResumeEntity.StatusPublished, stored!.Status);
+    }
+
+    [Fact]
+    public async Task Publish_Returns200_ForSuperAdmin_EvenWhenNotOwner()
+    {
+        var janeContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, uploadRequest) = BuildUploadRequest(janeContext, ValidPdfBytes);
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Upload(uploadRequest, janeContext));
+
+        var superContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("root", AccountRoles.SuperAdmin));
+        var (_, publishRequest) = BuildRequest(superContext, method: "POST");
+
+        var result = await _api.Publish(publishRequest, superContext, created!.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        var dto = await ReadBody<ResumeDto>((TestHttpResponseData)result);
+        Assert.Equal("Published", dto!.Status);
+    }
+
+    [Fact]
+    public async Task Publish_IsNoOp_WhenAlreadyPublished()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (createResponse, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.Equal("Published", created!.Status);
+
+        var beforePublish = await _store.FindByIdAsync(created.Id);
+        var originalUpdatedAt = beforePublish!.UpdatedAtUtc;
+
+        var (_, publishRequest) = BuildRequest(context, method: "POST");
+        var result = await _api.Publish(publishRequest, context, created.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        var dto = await ReadBody<ResumeDto>((TestHttpResponseData)result);
+        Assert.Equal("Published", dto!.Status);
+
+        var stored = await _store.FindByIdAsync(created.Id);
+        Assert.Equal(originalUpdatedAt, stored!.UpdatedAtUtc);
+    }
+
+    [Fact]
     public async Task Delete_Returns403_WhenNotOwnerAndNotSuperAdmin()
     {
         var janeContext = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));

@@ -227,6 +227,41 @@ namespace ResumeFunctions
             return response;
         }
 
+        [Function("publishResume")]
+        public async Task<HttpResponseData> Publish(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "resumes/{id}/publish")] HttpRequestData req,
+            FunctionContext context,
+            string id)
+        {
+            var user = context.GetAuthenticatedUser();
+            if (user is null || !context.IsInRoleOrHigher(AccountRoles.ResumeAdmin))
+            {
+                return await Forbidden(req, user);
+            }
+
+            var existing = await _resumeStore.FindByIdAsync(id);
+            if (existing is null)
+            {
+                return await ErrorResponse(req, HttpStatusCode.NotFound, "Resume not found.");
+            }
+
+            if (!context.IsOwnerOrSuperAdmin(existing.OwnerUserId))
+            {
+                return await ErrorResponse(req, HttpStatusCode.Forbidden, "You can only manage your own resumes.");
+            }
+
+            if (existing.Status != ResumeEntity.StatusPublished)
+            {
+                existing.Status = ResumeEntity.StatusPublished;
+                existing.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                await _resumeStore.UpdateAsync(existing);
+            }
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(ToDto(existing));
+            return response;
+        }
+
         [Function("deleteResume")]
         public async Task<HttpResponseData> Delete(
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "resumes/{id}")] HttpRequestData req,
