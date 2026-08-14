@@ -7,17 +7,22 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Enable verbose filesystem logging
+      - name: Fetch Anthropic:ApiKey value into env (masked)
         run: |
-          az webapp log config --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --application-logging filesystem --level verbose
+          KEY=$(az functionapp config appsettings list --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='Anthropic:ApiKey'].value" -o tsv)
+          echo "::add-mask::$KEY"
+          echo "DIAG_ANTHROPIC_KEY=$KEY" >> "$GITHUB_ENV"
 
-      - name: Stream live logs for 75s (trigger the parse call from elsewhere during this window)
-        run: |
-          timeout 75 az webapp log tail --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" > tail.log 2>&1 || true
-          echo "----- CAPTURED LOG -----"
-          cat tail.log
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run diagnostic call against the real Anthropic API
+        run: dotnet run --project tools/DiagTool/DiagTool.csproj
