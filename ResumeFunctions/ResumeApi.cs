@@ -14,17 +14,20 @@ namespace ResumeFunctions
         private readonly string _resumeDataPath;
         private readonly ISiteConfigStore? _siteConfigStore;
         private readonly IResumeStore? _resumeStore;
+        private readonly IResumeSnapshotStore? _resumeSnapshotStore;
 
         public ResumeApi(
             ILogger<ResumeApi> logger,
             string? resumeDataPath = null,
             ISiteConfigStore? siteConfigStore = null,
-            IResumeStore? resumeStore = null)
+            IResumeStore? resumeStore = null,
+            IResumeSnapshotStore? resumeSnapshotStore = null)
         {
             _logger = logger;
             _resumeDataPath = resumeDataPath ?? Path.Combine(AppContext.BaseDirectory, "StaticData", "Resumes", "JustinMann_062024.json");
             _siteConfigStore = siteConfigStore;
             _resumeStore = resumeStore;
+            _resumeSnapshotStore = resumeSnapshotStore;
         }
 
         [Function("resumes")]
@@ -55,9 +58,11 @@ namespace ResumeFunctions
 
         /// <summary>
         /// Resolves the public resume through SiteConfig (#28) — null if no SiteConfig row
-        /// exists yet, no owner is configured, or the configured owner has no featured resume,
-        /// in which case GetResume and GetAllResumes both fall back to the pre-#28 static-file
-        /// behavior.
+        /// exists yet or no owner is configured, in which case GetResume and GetAllResumes both
+        /// fall back to the pre-#28 static-file behavior. Once an owner is resolved, prefers the
+        /// live Table Storage lookup; if that can't resolve a featured resume (store unhealthy,
+        /// or none marked featured yet), falls back to that owner's durable snapshot (#39)
+        /// before the caller falls back to the static file.
         /// </summary>
         private async Task<DigitalResumeModel?> TryGetFeaturedResumeAsync()
         {
@@ -67,20 +72,41 @@ namespace ResumeFunctions
             }
 
             var config = await _siteConfigStore.GetAsync();
-            if (string.IsNullOrWhiteSpace(config?.PublicResumeOwnerId))
+            var ownerId = config?.PublicResumeOwnerId;
+            if (string.IsNullOrWhiteSpace(ownerId))
             {
                 return null;
             }
 
-            var featured = await _resumeStore.FindFeaturedByOwnerAsync(config!.PublicResumeOwnerId!);
-            if (featured is null)
+            var featured = await _resumeStore.FindFeaturedByOwnerAsync(ownerId!);
+            if (featured is not null)
+            {
+                var live = DeserializeOrNull(featured.PayloadJson);
+                if (live is not null)
+                {
+                    return live;
+                }
+            }
+
+            if (_resumeSnapshotStore is null)
+            {
+                return null;
+            }
+
+            var snapshotJson = await _resumeSnapshotStore.GetAsync(ownerId!);
+            return snapshotJson is null ? null : DeserializeOrNull(snapshotJson);
+        }
+
+        private static DigitalResumeModel? DeserializeOrNull(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
             {
                 return null;
             }
 
             try
             {
-                return JsonSerializer.Deserialize<DigitalResumeModel>(featured.PayloadJson);
+                return JsonSerializer.Deserialize<DigitalResumeModel>(json);
             }
             catch (JsonException)
             {

@@ -24,6 +24,7 @@ public class ResumeApiSiteConfigTests : IDisposable
     private readonly string _dataPath;
     private readonly FakeSiteConfigStore _siteConfigStore = new();
     private readonly FakeResumeStore _resumeStore = new();
+    private readonly FakeResumeSnapshotStore _snapshotStore = new();
     private readonly ResumeApi _api;
     private readonly FunctionContext _functionContext;
 
@@ -39,7 +40,7 @@ public class ResumeApiSiteConfigTests : IDisposable
         _functionContext = Substitute.For<FunctionContext>();
         _functionContext.InstanceServices.Returns(services.BuildServiceProvider());
 
-        _api = new ResumeApi(Substitute.For<ILogger<ResumeApi>>(), _dataPath, _siteConfigStore, _resumeStore);
+        _api = new ResumeApi(Substitute.For<ILogger<ResumeApi>>(), _dataPath, _siteConfigStore, _resumeStore, _snapshotStore);
     }
 
     private (TestHttpResponseData response, TestHttpRequestData request) BuildRequest()
@@ -147,6 +148,70 @@ public class ResumeApiSiteConfigTests : IDisposable
         var resumes = await JsonSerializer.DeserializeAsync<DigitalResumeModel[]>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         Assert.Single(resumes!);
         Assert.Equal("Alice", resumes![0].FName);
+    }
+
+    [Fact]
+    public async Task GetResume_FallsBackToOwnersSnapshot_WhenConfiguredOwnerHasNoLiveFeaturedResume()
+    {
+        await _snapshotStore.SaveAsync("alice", JsonSerializer.Serialize(new DigitalResumeModel { FName = "SnapshotAlice" }));
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetResume(request);
+
+        response.Body.Position = 0;
+        var resume = await JsonSerializer.DeserializeAsync<DigitalResumeModel>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Equal("SnapshotAlice", resume!.FName);
+    }
+
+    [Fact]
+    public async Task GetResume_PrefersLiveFeaturedResume_OverOwnersSnapshot()
+    {
+        await _resumeStore.AddAsync(new ResumeEntity
+        {
+            OwnerUserId = "alice",
+            IsFeatured = true,
+            PayloadJson = JsonSerializer.Serialize(new DigitalResumeModel { FName = "LiveAlice" }),
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        await _snapshotStore.SaveAsync("alice", JsonSerializer.Serialize(new DigitalResumeModel { FName = "SnapshotAlice" }));
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetResume(request);
+
+        response.Body.Position = 0;
+        var resume = await JsonSerializer.DeserializeAsync<DigitalResumeModel>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Equal("LiveAlice", resume!.FName);
+    }
+
+    [Fact]
+    public async Task GetResume_FallsBackToStaticFile_WhenConfiguredOwnerHasNoLiveResumeAndNoSnapshot()
+    {
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetResume(request);
+
+        response.Body.Position = 0;
+        var resume = await JsonSerializer.DeserializeAsync<DigitalResumeModel>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Equal("Jane", resume!.FName);
+    }
+
+    [Fact]
+    public async Task GetAllResumes_FallsBackToOwnersSnapshot_WrappedInArray_WhenConfiguredOwnerHasNoLiveFeaturedResume()
+    {
+        await _snapshotStore.SaveAsync("alice", JsonSerializer.Serialize(new DigitalResumeModel { FName = "SnapshotAlice" }));
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetAllResumes(request);
+
+        response.Body.Position = 0;
+        var resumes = await JsonSerializer.DeserializeAsync<DigitalResumeModel[]>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Single(resumes!);
+        Assert.Equal("SnapshotAlice", resumes![0].FName);
     }
 
     public void Dispose()

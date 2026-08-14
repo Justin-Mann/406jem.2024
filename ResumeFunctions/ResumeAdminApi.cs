@@ -27,12 +27,18 @@ namespace ResumeFunctions
         private readonly ILogger<ResumeAdminApi> _logger;
         private readonly IResumeStore _resumeStore;
         private readonly IResumeBlobStore _resumeBlobStore;
+        private readonly IResumeSnapshotStore _resumeSnapshotStore;
 
-        public ResumeAdminApi(ILogger<ResumeAdminApi> logger, IResumeStore resumeStore, IResumeBlobStore resumeBlobStore)
+        public ResumeAdminApi(
+            ILogger<ResumeAdminApi> logger,
+            IResumeStore resumeStore,
+            IResumeBlobStore resumeBlobStore,
+            IResumeSnapshotStore resumeSnapshotStore)
         {
             _logger = logger;
             _resumeStore = resumeStore;
             _resumeBlobStore = resumeBlobStore;
+            _resumeSnapshotStore = resumeSnapshotStore;
         }
 
         [Function("listMyResumes")]
@@ -100,6 +106,7 @@ namespace ResumeFunctions
 
             await _resumeStore.AddAsync(resume);
             _logger.LogInformation("Resume created for owner '{Owner}' by '{Username}'.", requestedOwner, owner);
+            await TrySaveSnapshotAsync(resume);
 
             var response = req.CreateResponse(HttpStatusCode.Created);
             await response.WriteAsJsonAsync(ToDto(resume));
@@ -221,6 +228,7 @@ namespace ResumeFunctions
             }
 
             await _resumeStore.UpdateAsync(existing);
+            await TrySaveSnapshotAsync(existing);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(ToDto(existing));
@@ -287,6 +295,26 @@ namespace ResumeFunctions
 
             await _resumeStore.DeleteAsync(id);
             return req.CreateResponse(HttpStatusCode.NoContent);
+        }
+
+        /// <summary>Refreshes the owner's fallback snapshot (#39) after their featured resume's
+        /// content changes. Best-effort — a snapshot write failure is logged and swallowed here
+        /// so it can never fail the resume save/publish call that triggered it.</summary>
+        private async Task TrySaveSnapshotAsync(ResumeEntity resume)
+        {
+            if (!resume.IsFeatured || string.IsNullOrWhiteSpace(resume.PayloadJson))
+            {
+                return;
+            }
+
+            try
+            {
+                await _resumeSnapshotStore.SaveAsync(resume.OwnerUserId, resume.PayloadJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to write fallback snapshot for owner '{Owner}'; the resume save itself succeeded.", resume.OwnerUserId);
+            }
         }
 
         private async Task ClearOtherFeaturedAsync(string ownerUserId, string? excludeId)
