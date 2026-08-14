@@ -12,22 +12,32 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Find App Insights resource
+      - name: List all App Insights resources in the resource group
         id: ai
         run: |
+          az resource list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --resource-type "microsoft.insights/components" -o table
           NAME=$(az resource list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --resource-type "microsoft.insights/components" --query "[0].name" -o tsv)
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "Found App Insights resource: $NAME"
+          echo "Using App Insights resource: $NAME"
 
       - name: Confirm Anthropic:ApiKey app setting is present (name only, not value)
         run: |
-          az functionapp config appsettings list --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='Anthropic:ApiKey'].name" -o tsv
+          az functionapp config appsettings list --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='Anthropic:ApiKey' || name=='APPLICATIONINSIGHTS_CONNECTION_STRING' || name=='APPINSIGHTS_INSTRUMENTATIONKEY'].name" -o tsv
 
-      - name: Query recent traces/exceptions mentioning Anthropic
+      - name: Query ALL recent traces/exceptions (sanity check logs are flowing at all)
         if: steps.ai.outputs.name != ''
         run: |
           az monitor app-insights query \
             --app "${{ steps.ai.outputs.name }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
-            --analytics-query "union traces, exceptions | where timestamp > ago(2h) | where message has 'Anthropic' or innermostMessage has 'Anthropic' or outerMessage has 'Anthropic' or details has 'Anthropic' | order by timestamp desc | take 20 | project timestamp, message, innermostMessage, outerMessage, details" \
+            --analytics-query "union traces, exceptions | where timestamp > ago(3h) | order by timestamp desc | take 30 | project timestamp, itemType, message, innermostMessage=iif(itemType=='exception', tostring(details[0].outerMessage), ''), cloud_RoleName" \
+            -o table
+
+      - name: Query recent traces/exceptions mentioning Anthropic or resume parse
+        if: steps.ai.outputs.name != ''
+        run: |
+          az monitor app-insights query \
+            --app "${{ steps.ai.outputs.name }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --analytics-query "union traces, exceptions | where timestamp > ago(3h) | where message has 'Anthropic' or message has 'resume' or tostring(details) has 'Anthropic' | order by timestamp desc | take 30 | project timestamp, itemType, message, details=tostring(details)" \
             -o table
