@@ -148,7 +148,12 @@ namespace ResumeFunctions.Auth.Parsing
                   "items": {
                     "type": "object",
                     "properties": {
-                      "type": { "type": ["string", "null"], "enum": ["Phone", "Website", "Email", null] },
+                      "type": {
+                        "anyOf": [
+                          { "type": "string", "enum": ["Phone", "Website", "Email"] },
+                          { "type": "null" }
+                        ]
+                      },
                       "displayValue": { "type": ["string", "null"] },
                       "url": { "type": ["string", "null"] },
                       "mailTo": { "type": ["string", "null"] }
@@ -185,8 +190,10 @@ namespace ResumeFunctions.Auth.Parsing
                           "properties": {
                             "value": { "type": ["string", "null"] },
                             "type": {
-                              "type": ["string", "null"],
-                              "enum": ["Lang", "Win", "Comp", "CompNetwork", "Cloud", "RDB", "DDB", "DataLang", null]
+                              "anyOf": [
+                                { "type": "string", "enum": ["Lang", "Win", "Comp", "CompNetwork", "Cloud", "RDB", "DDB", "DataLang"] },
+                                { "type": "null" }
+                              ]
                             }
                           },
                           "required": ["value", "type"],
