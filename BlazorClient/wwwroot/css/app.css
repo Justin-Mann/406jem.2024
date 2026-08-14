@@ -166,6 +166,10 @@ html, body {
   font-size: 22px;
 }
 
+.jem-home-header {
+  align-items: center;
+}
+
 .jem-title-header h1 {
   font-size: 5rem;
 }
@@ -516,6 +520,7 @@ ul.xpList li.workXpItem:hover .note {
    Testimonials / manage-listing lists
    ======================== */
 .testimonial-list,
+.resume-poster-list,
 .manage-listing-list {
   list-style: none;
   padding: 0;

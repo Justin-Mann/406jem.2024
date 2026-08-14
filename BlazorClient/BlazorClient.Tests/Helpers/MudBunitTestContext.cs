@@ -13,5 +13,6 @@ public abstract class MudBunitTestContext : TestContext
     protected MudBunitTestContext()
     {
         Services.AddMudServices();
+        JSInterop.Mode = JSRuntimeMode.Loose;
     }
 }

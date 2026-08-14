@@ -34,12 +34,12 @@
                                 {
                                     @if (string.IsNullOrEmpty(link.Description))
                                     {
-                                        <li><MudLink Href="@link.Url" Title="@link.Label" Target="_new">@link.Label</MudLink></li>
+                                        <li><MudLink Href="@link.Url" title="@link.Label" Target="_new">@link.Label</MudLink></li>
                                     }
                                     else
                                     {
                                         <li>
-                                            <MudLink Href="@link.Url" Title="@link.Label" Target="_new">@link.Label</MudLink>
+                                            <MudLink Href="@link.Url" title="@link.Label" Target="_new">@link.Label</MudLink>
                                             <ul>
                                                 <li class="list-group-item-description">@link.Description</li>
                                             </ul>
@@ -113,13 +113,14 @@
                     }
                     else
                     {
-                        <EditForm Model="editState" OnValidSubmit="SaveAsync">
-                            <MudTextField T="string" Label="Title" @bind-Value="editState.Payload.Title" Immediate="true" Class="mb-3 listing-title-input" />
-                            <MudCheckBox T="bool" Label="Show publicly (Featured)" @bind-Value="editState.IsFeatured" Class="mb-3 listing-featured-checkbox" />
+                        var state = editState;
+                        <EditForm Model="state" OnValidSubmit="SaveAsync">
+                            <MudTextField T="string" Label="Title" @bind-Value="state.Payload.Title" Immediate="true" Class="mb-3 listing-title-input" />
+                            <MudCheckBox T="bool" Label="Show publicly (Featured)" @bind-Value="state.IsFeatured" Class="mb-3 listing-featured-checkbox" />
 
-                            @for (var sectionIndex = 0; sectionIndex < editState.Payload.Sections.Count; sectionIndex++)
+                            @for (var sectionIndex = 0; sectionIndex < state.Payload.Sections.Count; sectionIndex++)
                             {
-                                var section = editState.Payload.Sections[sectionIndex];
+                                var section = state.Payload.Sections[sectionIndex];
                                 var currentSectionIndex = sectionIndex;
                                 <MudCard Class="mb-3" Elevation="0" Outlined="true">
                                     <MudCardContent>
@@ -145,7 +146,7 @@
 
                                         <MudStack Row="true" Spacing="2" Class="mt-3" Justify="Justify.FlexEnd">
                                             <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-move-up-btn" Disabled="@(currentSectionIndex == 0)" OnClick="() => MoveSectionUp(currentSectionIndex)">&uarr; Section</MudButton>
-                                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-move-down-btn" Disabled="@(currentSectionIndex == editState.Payload.Sections.Count - 1)" OnClick="() => MoveSectionDown(currentSectionIndex)">&darr; Section</MudButton>
+                                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="section-move-down-btn" Disabled="@(currentSectionIndex == state.Payload.Sections.Count - 1)" OnClick="() => MoveSectionDown(currentSectionIndex)">&darr; Section</MudButton>
                                             <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="section-remove-btn" OnClick="() => RemoveSection(currentSectionIndex)">Remove Section</MudButton>
                                         </MudStack>
                                     </MudCardContent>

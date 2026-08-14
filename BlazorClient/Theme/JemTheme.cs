@@ -41,13 +41,13 @@ public static class JemTheme
         Typography = new Typography
         {
             Default = new Default { FontFamily = BodyFontFamily },
-            H1 = new H1 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            H2 = new H2 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            H3 = new H3 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            H4 = new H4 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            H5 = new H5 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            H6 = new H6 { FontFamily = HeadingFontFamily, FontWeight = "700" },
-            Button = new Button { FontFamily = BodyFontFamily, FontWeight = "700", TextTransform = "none" },
+            H1 = new H1 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            H2 = new H2 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            H3 = new H3 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            H4 = new H4 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            H5 = new H5 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            H6 = new H6 { FontFamily = HeadingFontFamily, FontWeight = 700 },
+            Button = new Button { FontFamily = BodyFontFamily, FontWeight = 700, TextTransform = "none" },
         },
         LayoutProperties = new LayoutProperties
         {

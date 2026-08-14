@@ -1,6 +1,7 @@
 using BlazorApp.BlazorClient.Pages;
 using BlazorApp.Models;
 using BlazorClient.Tests.Helpers;
+using Bunit;
 using Xunit;
 
 namespace BlazorClient.Tests;
