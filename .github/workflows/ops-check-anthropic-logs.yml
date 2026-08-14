@@ -1,0 +1,33 @@
+name: ops-check-anthropic-logs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Find App Insights resource
+        id: ai
+        run: |
+          NAME=$(az resource list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --resource-type "microsoft.insights/components" --query "[0].name" -o tsv)
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "Found App Insights resource: $NAME"
+
+      - name: Confirm Anthropic:ApiKey app setting is present (name only, not value)
+        run: |
+          az functionapp config appsettings list --name 406resumeapi --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='Anthropic:ApiKey'].name" -o tsv
+
+      - name: Query recent traces/exceptions mentioning Anthropic
+        if: steps.ai.outputs.name != ''
+        run: |
+          az monitor app-insights query \
+            --app "${{ steps.ai.outputs.name }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --analytics-query "union traces, exceptions | where timestamp > ago(2h) | where message has 'Anthropic' or innermostMessage has 'Anthropic' or outerMessage has 'Anthropic' or details has 'Anthropic' | order by timestamp desc | take 20 | project timestamp, message, innermostMessage, outerMessage, details" \
+            -o table
