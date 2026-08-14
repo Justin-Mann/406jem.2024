@@ -320,6 +320,52 @@ public class ResumeAdminApiTests
     }
 
     [Fact]
+    public async Task Delete_RemovesOwnersSnapshot_WhenDeletedResumeWasFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Delete_LeavesOwnersSnapshotIntact_WhenDeletedResumeWasNotFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, featuredRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        await _api.Create(featuredRequest, context);
+
+        var (_, otherRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "POST");
+        var other = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(otherRequest, context));
+
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, other!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Delete_Returns204_EvenWhenSnapshotDeleteFails()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+
+        _snapshotStore.ThrowOnDelete = true;
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+
+    [Fact]
     public async Task Create_MarkingFeatured_UnsetsPreviouslyFeaturedResumeForSameOwner()
     {
         var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));

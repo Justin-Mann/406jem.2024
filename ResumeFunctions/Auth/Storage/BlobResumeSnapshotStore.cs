@@ -46,5 +46,11 @@ namespace ResumeFunctions.Auth.Storage
                 return null;
             }
         }
+
+        public async Task DeleteAsync(string ownerUserId, CancellationToken cancellationToken = default)
+        {
+            var blobClient = _containerClient.GetBlobClient(BlobName(ownerUserId));
+            await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+        }
     }
 }

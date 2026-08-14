@@ -294,28 +294,16 @@ namespace ResumeFunctions
             }
 
             await _resumeStore.DeleteAsync(id);
+            if (existing.IsFeatured)
+            {
+                await ResumeSnapshotHelper.TryDeleteSnapshotAsync(_resumeSnapshotStore, _logger, existing.OwnerUserId);
+            }
+
             return req.CreateResponse(HttpStatusCode.NoContent);
         }
 
-        /// <summary>Refreshes the owner's fallback snapshot (#39) after their featured resume's
-        /// content changes. Best-effort — a snapshot write failure is logged and swallowed here
-        /// so it can never fail the resume save/publish call that triggered it.</summary>
-        private async Task TrySaveSnapshotAsync(ResumeEntity resume)
-        {
-            if (!resume.IsFeatured || string.IsNullOrWhiteSpace(resume.PayloadJson))
-            {
-                return;
-            }
-
-            try
-            {
-                await _resumeSnapshotStore.SaveAsync(resume.OwnerUserId, resume.PayloadJson);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to write fallback snapshot for owner '{Owner}'; the resume save itself succeeded.", resume.OwnerUserId);
-            }
-        }
+        private Task TrySaveSnapshotAsync(ResumeEntity resume) =>
+            ResumeSnapshotHelper.TrySaveSnapshotAsync(_resumeSnapshotStore, _logger, resume);
 
         private async Task ClearOtherFeaturedAsync(string ownerUserId, string? excludeId)
         {

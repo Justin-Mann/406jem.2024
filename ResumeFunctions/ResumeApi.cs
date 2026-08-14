@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using ResumeFunctions.Auth.Models;
 using ResumeFunctions.Auth.Storage;
 using ResumeFunctions.Models;
 using System.Net;
@@ -62,7 +63,9 @@ namespace ResumeFunctions
         /// fall back to the pre-#28 static-file behavior. Once an owner is resolved, prefers the
         /// live Table Storage lookup; if that can't resolve a featured resume (store unhealthy,
         /// or none marked featured yet), falls back to that owner's durable snapshot (#39)
-        /// before the caller falls back to the static file.
+        /// before the caller falls back to the static file. Both the live and snapshot lookups
+        /// are individually try/caught so an actual store exception (not just a null/empty
+        /// result) falls through the chain the same way a missing row would.
         /// </summary>
         private async Task<DigitalResumeModel?> TryGetFeaturedResumeAsync()
         {
@@ -78,7 +81,7 @@ namespace ResumeFunctions
                 return null;
             }
 
-            var featured = await _resumeStore.FindFeaturedByOwnerAsync(ownerId!);
+            var featured = await TryFindFeaturedAsync(ownerId!);
             if (featured is not null)
             {
                 var live = DeserializeOrNull(featured.PayloadJson);
@@ -93,8 +96,34 @@ namespace ResumeFunctions
                 return null;
             }
 
-            var snapshotJson = await _resumeSnapshotStore.GetAsync(ownerId!);
+            var snapshotJson = await TryGetSnapshotAsync(ownerId!);
             return snapshotJson is null ? null : DeserializeOrNull(snapshotJson);
+        }
+
+        private async Task<ResumeEntity?> TryFindFeaturedAsync(string ownerId)
+        {
+            try
+            {
+                return await _resumeStore!.FindFeaturedByOwnerAsync(ownerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Live resume store lookup failed for owner '{Owner}'; falling back to snapshot/static file.", ownerId);
+                return null;
+            }
+        }
+
+        private async Task<string?> TryGetSnapshotAsync(string ownerId)
+        {
+            try
+            {
+                return await _resumeSnapshotStore!.GetAsync(ownerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Fallback snapshot lookup failed for owner '{Owner}'; falling back to static file.", ownerId);
+                return null;
+            }
         }
 
         private static DigitalResumeModel? DeserializeOrNull(string? json)

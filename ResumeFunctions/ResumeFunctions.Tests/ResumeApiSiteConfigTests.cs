@@ -200,6 +200,37 @@ public class ResumeApiSiteConfigTests : IDisposable
     }
 
     [Fact]
+    public async Task GetResume_FallsBackToOwnersSnapshot_WhenLiveStoreLookupThrows()
+    {
+        _resumeStore.ThrowOnFindFeatured = true;
+        await _snapshotStore.SaveAsync("alice", JsonSerializer.Serialize(new DigitalResumeModel { FName = "SnapshotAlice" }));
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        await _api.GetResume(request);
+
+        response.Body.Position = 0;
+        var resume = await JsonSerializer.DeserializeAsync<DigitalResumeModel>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Equal("SnapshotAlice", resume!.FName);
+    }
+
+    [Fact]
+    public async Task GetResume_FallsBackToStaticFile_WhenLiveStoreAndSnapshotLookupBothThrow()
+    {
+        _resumeStore.ThrowOnFindFeatured = true;
+        _snapshotStore.ThrowOnGet = true;
+        await _siteConfigStore.SetAsync("alice", null);
+
+        var (response, request) = BuildRequest();
+        var result = await _api.GetResume(request);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        response.Body.Position = 0;
+        var resume = await JsonSerializer.DeserializeAsync<DigitalResumeModel>(response.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.Equal("Jane", resume!.FName);
+    }
+
+    [Fact]
     public async Task GetAllResumes_FallsBackToOwnersSnapshot_WrappedInArray_WhenConfiguredOwnerHasNoLiveFeaturedResume()
     {
         await _snapshotStore.SaveAsync("alice", JsonSerializer.Serialize(new DigitalResumeModel { FName = "SnapshotAlice" }));

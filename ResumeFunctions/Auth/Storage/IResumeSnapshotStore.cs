@@ -14,5 +14,10 @@ namespace ResumeFunctions.Auth.Storage
 
         /// <returns>null if no snapshot has ever been saved for this owner.</returns>
         Task<string?> GetAsync(string ownerUserId, CancellationToken cancellationToken = default);
+
+        /// <summary>Removes the owner's snapshot, if one exists. Used when their currently-featured
+        /// resume is deleted, so the (now stale) snapshot can't resurrect deleted content via the
+        /// fallback chain.</summary>
+        Task DeleteAsync(string ownerUserId, CancellationToken cancellationToken = default);
     }
 }
