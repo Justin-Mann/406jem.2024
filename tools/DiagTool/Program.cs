@@ -1,6 +1,6 @@
-using Anthropic;
-using Anthropic.Models.Messages;
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using ResumeFunctions.Auth.Parsing;
 
 var apiKey = Environment.GetEnvironmentVariable("DIAG_ANTHROPIC_KEY");
 if (string.IsNullOrWhiteSpace(apiKey))
@@ -9,49 +9,26 @@ if (string.IsNullOrWhiteSpace(apiKey))
     return;
 }
 
-const string SchemaJson = """
-    {
-      "type": "object",
-      "properties": {
-        "fName": { "type": ["string", "null"] }
-      },
-      "required": ["fName"],
-      "additionalProperties": false
-    }
-    """;
+var pdfPath = args.Length > 0 ? args[0] : "jmResume.8.2025.pdf";
+using var pdfStream = File.OpenRead(pdfPath);
 
-using var document = JsonDocument.Parse(SchemaJson);
-var schema = document.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.Clone());
+using var loggerFactory = LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Debug));
 
-try
+var extractor = new PdfPigTextExtractor();
+var text = extractor.ExtractText(pdfStream);
+Console.WriteLine($"DIAG: extracted {text.Length} characters of text from PDF.");
+
+var config = new ConfigurationBuilder()
+    .AddInMemoryCollection(new Dictionary<string, string?> { ["Anthropic:ApiKey"] = apiKey })
+    .Build();
+
+var client = new AnthropicResumeAiClient(config, loggerFactory.CreateLogger<AnthropicResumeAiClient>());
+var result = await client.ExtractResumeJsonAsync(text);
+
+Console.WriteLine("DIAG: Succeeded = " + result.Succeeded);
+Console.WriteLine("DIAG: ErrorMessage = " + result.ErrorMessage);
+Console.WriteLine("DIAG: Json length = " + (result.Json?.Length ?? -1));
+if (!string.IsNullOrEmpty(result.Json))
 {
-    AnthropicClient client = new() { ApiKey = apiKey };
-
-    var response = await client.Messages.Create(new MessageCreateParams
-    {
-        Model = "claude-haiku-4-5-20251001",
-        MaxTokens = 200,
-        System = "Extract the first name.",
-        OutputConfig = new OutputConfig
-        {
-            Format = new JsonOutputFormat { Schema = schema },
-        },
-        Messages = [new() { Role = Role.User, Content = "My name is Justin Mann." }],
-    });
-
-    Console.WriteLine("DIAG: SUCCESS");
-    Console.WriteLine("StopReason: " + response.StopReason);
-    var text = response.Content.Select(b => b.Value).OfType<TextBlock>().FirstOrDefault()?.Text;
-    Console.WriteLine("Text: " + text);
-}
-catch (Exception ex)
-{
-    Console.WriteLine("DIAG: EXCEPTION");
-    Console.WriteLine(ex.GetType().FullName);
-    Console.WriteLine(ex.Message);
-    Console.WriteLine(ex.ToString());
-    if (ex.InnerException is not null)
-    {
-        Console.WriteLine("INNER: " + ex.InnerException);
-    }
+    Console.WriteLine("DIAG: Json (first 500 chars) = " + result.Json[..Math.Min(500, result.Json.Length)]);
 }
