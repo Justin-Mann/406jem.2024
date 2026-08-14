@@ -16,7 +16,7 @@ namespace ResumeFunctions.Auth.Parsing
     /// </summary>
     public class AnthropicResumeAiClient : IResumeAiClient
     {
-        private const string ModelId = "claude-haiku-4-5";
+        private const string ModelId = "claude-haiku-4-5-20251001";
         private const int MaxOutputTokens = 8000;
 
         // Guards against a pathological upload (e.g. an accidentally-huge PDF) blowing past
