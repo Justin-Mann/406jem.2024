@@ -86,14 +86,29 @@ jobs:
             9. Add the label "ready-for-review" to the issue to trigger Stage 4.
             10. Post a comment summarizing what was changed.
 
-            IMPORTANT — no background/async work: this job runs as a single synchronous step in
-            a GitHub Actions run. There is no mechanism for you to be "notified later" or to
-            resume this conversation after the job ends — once your turn ends, this job ends,
-            uncommitted and unpushed. If you delegate any part of the implementation to a
-            sub-agent (e.g. splitting Blazor and Angular work), you MUST wait for it to actually
-            finish and incorporate its result within this same run before ending your turn.
-            Never end your turn describing work as "in progress" or something you'll "continue
-            once notified" — for a large issue, either complete it fully in this run (waiting on
-            every sub-agent call to actually return), or commit and push whatever real, working
-            subset you did finish and say so plainly in your summary comment, rather than ending
-            with nothing committed at all.
+            DO NOT dispatch any background/async sub-agents in this job. This has already failed
+            twice on this exact repository: the agent spawned sub-agents (e.g. one for Blazor,
+            one for Angular), said it would "wait" or "be notified" when they finished, and then
+            ended its turn immediately anyway — the job completed with is_error:false (reported
+            as a success) but zero commits, zero pushed changes, and the PR untouched. This is
+            not a hypothetical risk to guard against, it is the confirmed, repeated failure mode
+            for this specific job.
+
+            The reason: this job is ONE synchronous step in a GitHub Actions run. It does not
+            have the always-on session, background-task scheduler, or completion-notification
+            mechanism that an interactive Claude Code session has. If a tool call here supports
+            a "background" or "async" mode, DO NOT USE IT — always call tools in blocking/
+            synchronous mode and wait for the actual result before your next action. If you use
+            any sub-agent/Task-style delegation at all, it must run to completion and return its
+            result to you within this same turn before you do anything else.
+
+            For an issue this large (full-stack UI across both BlazorClient and AngularClient
+            plus a nav/header restructure), implement it yourself, directly and sequentially,
+            file by file — do not try to parallelize the two frontends via sub-agents. If you
+            genuinely cannot finish the entire issue in one run, that is fine: commit and push
+            whatever complete, working, buildable subset you finished (e.g. just the Blazor
+            side, or just the backend pieces), say exactly what's done and what's left in your
+            summary comment, and still add "ready-for-review" so Stage 4 can review the partial
+            work and Stage 5 can pick up the rest — a real partial commit is always better than
+            zero commits. Ending this job with nothing committed is the one outcome to avoid
+            above all else.
