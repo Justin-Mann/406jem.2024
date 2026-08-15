@@ -1,42 +1,56 @@
-﻿@page "/"
+@page "/"
 
 <PageTitle>406JEM</PageTitle>
 
-<div class="container">
-	<div class="row">
-		<div class="col-4">
-			<img class="float-right" src="img/bojack-samuri_82x100_fl.png" />
-		</div>
-		<div class="col-4 text-capitalize text-center jem-title-header"><h1>406JEM</h1></div>
-		<div class="col-4">
-			<img class="float-left" src="img/bojack-samuri_82x100_fr.png" />
-		</div>
-	</div>
-	<div class="row home-page-text-block">
-		<p class="pretty-text text-center page-note">
-			Hello..<br/>I'm Justin & this is just a space for my resume and whatever interesting projects I might be working on ATM.  <br /><br />
-			I work as a remote full stack webapp dev with an emphasis on backend development. I work mainly with C# (all things .NET) and have accumulated quite a bit of Azure Cloud experience.  <br /><br />
-			As far as side projects go I have a few. You can see listings of some of them, as well as other digital resources on the <a href="/projects">Projects</a> page.  <br /><br />
-		</p>
-		<div class="row"><br/><br/></div>
-		<div class="row">
-			<div class="col col-1"></div>
-			<div class="col card jem-card col-sm-4 col-12 text-center">
-				<div class="card-header"><a href="/digitalresume">Resume</a></div>
-				<div class="card-body">
-					My most recent resume in digital format.  There is also a downloadable PDF linked on this page as well.
-				</div>
-				<div class="card-footer">Last Updated 04/2025</div>
-			</div>
-			<div class="col col-2"></div>
-			<div class="col card jem-card col-sm-4 col-12 text-center">
-				<div class="card-header"><a href="/projects">Projects</a></div>
-				<div class="card-body">
-					There are some various resources related to my professional activities avaliable here.
-				</div>
-				<div class="card-footer">Last Updated 04/2025</div>
-			</div>
-			<div class="col col-1"></div>
-		</div>
-	</div>
-</div>
+<MudContainer MaxWidth="MaxWidth.Large" Class="jem-home">
+    <MudGrid Justify="Justify.Center" Class="jem-home-header">
+        <MudItem xs="4" Class="d-flex justify-end">
+            <MudImage Src="img/bojack-samuri_82x100_fl.png" Alt="" />
+        </MudItem>
+        <MudItem xs="4" Class="jem-title-header d-flex justify-center">
+            <MudText Typo="Typo.h1">406JEM</MudText>
+        </MudItem>
+        <MudItem xs="4" Class="d-flex justify-start">
+            <MudImage Src="img/bojack-samuri_82x100_fr.png" Alt="" />
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Class="home-page-text-block" Justify="Justify.Center">
+        <MudItem xs="12">
+            <MudText Class="pretty-text page-note" Align="Align.Center">
+                Hello..<br />I'm Justin & this is just a space for my resume and whatever interesting projects I might be working on ATM. <br /><br />
+                I work as a remote full stack webapp dev with an emphasis on backend development. I work mainly with C# (all things .NET) and have accumulated quite a bit of Azure Cloud experience. <br /><br />
+                As far as side projects go I have a few. You can see listings of some of them, as well as other digital resources on the <MudLink Href="/projects">Projects</MudLink> page. <br /><br />
+            </MudText>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Justify="Justify.Center" Class="mt-4">
+        <MudItem xs="12" sm="4">
+            <MudCard Class="jem-card" Elevation="0">
+                <MudCardHeader Class="card-header">
+                    <CardHeaderContent>
+                        <MudLink Href="/digitalresume" Class="card-title-link">Resume</MudLink>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="card-body">
+                    My most recent resume in digital format. There is also a downloadable PDF linked on this page as well.
+                </MudCardContent>
+                <MudCardActions Class="card-footer">Last Updated 04/2025</MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Class="jem-card" Elevation="0">
+                <MudCardHeader Class="card-header">
+                    <CardHeaderContent>
+                        <MudLink Href="/projects" Class="card-title-link">Projects</MudLink>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="card-body">
+                    There are some various resources related to my professional activities avaliable here.
+                </MudCardContent>
+                <MudCardActions Class="card-footer">Last Updated 04/2025</MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

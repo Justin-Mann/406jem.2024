@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using BlazorApp.BlazorClient.Pages;
 using BlazorClient.Tests.Helpers;
 using Bunit;
@@ -8,7 +9,7 @@ using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class ProjectsPageTests : TestContext
+public class ProjectsPageTests : MudBunitTestContext
 {
     private const string PublicJson = """
         {"title":"Projects","sections":[{"heading":"WWWSection","lastUpdated":"04/2025","links":[{"label":"GitHubLink","url":"https://github.com/x"}]}]}
@@ -93,7 +94,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ New Listing", cut.Markup));
 
-        cut.Find("button.btn-primary.btn-sm").Click();
+        cut.Find("button.listing-new-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("Show publicly", cut.Markup));
 
         cut.Find("form").Submit();
@@ -116,7 +117,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("My List", cut.Markup));
 
-        cut.Find("button.btn-outline-primary").Click();
+        cut.Find("button.listing-edit-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("Show publicly", cut.Markup));
 
         cut.Find("form").Submit();
@@ -138,7 +139,7 @@ public class ProjectsPageTests : TestContext
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("My List", cut.Markup));
 
-        cut.Find("button.btn-outline-danger").Click();
+        cut.Find("button.listing-delete-btn").Click();
 
         cut.WaitForAssertion(() =>
             Assert.Contains(handler.Requests, r => r.Method == HttpMethod.Delete && r.RequestUri!.ToString().Contains("projectlistings/listing-1")));
@@ -146,9 +147,9 @@ public class ProjectsPageTests : TestContext
     }
 
     [Fact]
-    public void Admin_ReordersSections_WhenMoveDownClicked()
+    public async Task Admin_ReordersSections_WhenMoveDownClicked()
     {
-        RegisterHttpClient();
+        var handler = RegisterHttpClient();
         var authContext = this.AddTestAuthorization();
         authContext.SetAuthorized("admin");
         authContext.SetRoles("admin");
@@ -157,23 +158,33 @@ public class ProjectsPageTests : TestContext
         cut.WaitForAssertion(() => Assert.Contains("Manage My Project Listings", cut.Markup));
         cut.Find("button").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ New Listing", cut.Markup));
-        cut.Find("button.btn-primary.btn-sm").Click();
+        cut.Find("button.listing-new-btn").Click();
         cut.WaitForAssertion(() => Assert.Contains("+ Add Section", cut.Markup));
 
-        cut.Find("button.btn-outline-secondary.mb-3").Click();
+        cut.Find("button.section-add-btn").Click();
 
         var headingInputs = cut.FindAll("input[placeholder='Section heading']");
         Assert.Equal(2, headingInputs.Count);
 
-        headingInputs[0].Change("First");
+        // bUnit's simulated oninput/onchange events don't reflect back into the
+        // DOM's "value" attribute (Blazor skips re-applying it to avoid clobbering
+        // user-typed input), so the reorder is verified via the submitted payload
+        // rather than reading the inputs back after the swap.
+        headingInputs[0].Input("First");
         headingInputs = cut.FindAll("input[placeholder='Section heading']");
-        headingInputs[1].Change("Second");
+        headingInputs[1].Input("Second");
 
         var moveDownButtons = cut.FindAll("button").Where(b => b.TextContent.Contains("Section") && b.TextContent.Contains("↓")).ToList();
         moveDownButtons[0].Click();
 
-        headingInputs = cut.FindAll("input[placeholder='Section heading']");
-        Assert.Equal("Second", headingInputs[0].GetAttribute("value"));
-        Assert.Equal("First", headingInputs[1].GetAttribute("value"));
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() => Assert.Contains(handler.Requests, r => r.Method == HttpMethod.Post));
+        var postRequest = handler.Requests.First(r => r.Method == HttpMethod.Post);
+        var body = JsonDocument.Parse(await postRequest.Content!.ReadAsStringAsync());
+        var headings = body.RootElement.GetProperty("payload").GetProperty("sections")
+            .EnumerateArray().Select(s => s.GetProperty("heading").GetString()).ToList();
+
+        Assert.Equal(new[] { "Second", "First" }, headings);
     }
 }

@@ -8,6 +8,8 @@ public class FakeResumeStore : IResumeStore
 {
     private readonly Dictionary<string, ResumeEntity> _resumes = new();
 
+    public bool ThrowOnFindFeatured { get; set; }
+
     public Task<IReadOnlyList<ResumeEntity>> ListByOwnerAsync(string ownerUserId, CancellationToken cancellationToken = default)
     {
         var owner = ownerUserId.Trim().ToLowerInvariant();
@@ -23,6 +25,11 @@ public class FakeResumeStore : IResumeStore
 
     public Task<ResumeEntity?> FindFeaturedByOwnerAsync(string ownerUserId, CancellationToken cancellationToken = default)
     {
+        if (ThrowOnFindFeatured)
+        {
+            throw new InvalidOperationException("Simulated live resume store failure.");
+        }
+
         var owner = ownerUserId.Trim().ToLowerInvariant();
         var featured = _resumes.Values.FirstOrDefault(r => r.OwnerUserId == owner && r.IsFeatured);
         return Task.FromResult(featured);

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class DigitalResumePageTests : TestContext
+public class DigitalResumePageTests : MudBunitTestContext
 {
     private void RegisterHttpClient(string json, HttpStatusCode status = HttpStatusCode.OK)
     {

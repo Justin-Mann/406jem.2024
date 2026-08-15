@@ -5,35 +5,29 @@
 
 <PageTitle>Register</PageTitle>
 
-<div class="container">
-    <div class="row">
-        <div class="col col-sm-6 col-12 offset-sm-3">
-            <h2>Create an Account</h2>
-            <EditForm Model="model" OnValidSubmit="HandleRegisterAsync">
-                <DataAnnotationsValidator />
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <InputText id="username" class="form-control" @bind-Value="model.Username" />
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <InputText id="email" class="form-control" @bind-Value="model.Email" />
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <InputText id="password" type="password" class="form-control" @bind-Value="model.Password" />
-                    <div class="form-text">At least 8 characters.</div>
-                </div>
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger">@errorMessage</div>
-                }
-                <button type="submit" class="btn btn-primary" disabled="@isBusy">Register</button>
-            </EditForm>
-            <p class="mt-3">Already have an account? <a href="/login">Log in</a></p>
-        </div>
-    </div>
-</div>
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" sm="8">
+            <MudCard Class="jem-card" Elevation="0">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5" Class="mb-4">Create an Account</MudText>
+                    <EditForm Model="model" OnValidSubmit="HandleRegisterAsync">
+                        <DataAnnotationsValidator />
+                        <MudTextField T="string" Label="Username" @bind-Value="model.Username" For="@(() => model.Username)" Class="mb-3" />
+                        <MudTextField T="string" Label="Email" @bind-Value="model.Email" For="@(() => model.Email)" Class="mb-3" />
+                        <MudTextField T="string" Label="Password" InputType="InputType.Password" @bind-Value="model.Password" For="@(() => model.Password)" HelperText="At least 8 characters." Class="mb-3" />
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessage</MudAlert>
+                        }
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusy">Register</MudButton>
+                    </EditForm>
+                    <MudText Class="mt-3">Already have an account? <MudLink Href="/login">Log in</MudLink></MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
     private readonly RegisterModel model = new();

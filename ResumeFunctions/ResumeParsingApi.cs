@@ -33,19 +33,22 @@ namespace ResumeFunctions
         private readonly IResumeBlobStore _resumeBlobStore;
         private readonly IPdfTextExtractor _pdfTextExtractor;
         private readonly IResumeAiClient _resumeAiClient;
+        private readonly IResumeSnapshotStore _resumeSnapshotStore;
 
         public ResumeParsingApi(
             ILogger<ResumeParsingApi> logger,
             IResumeStore resumeStore,
             IResumeBlobStore resumeBlobStore,
             IPdfTextExtractor pdfTextExtractor,
-            IResumeAiClient resumeAiClient)
+            IResumeAiClient resumeAiClient,
+            IResumeSnapshotStore resumeSnapshotStore)
         {
             _logger = logger;
             _resumeStore = resumeStore;
             _resumeBlobStore = resumeBlobStore;
             _pdfTextExtractor = pdfTextExtractor;
             _resumeAiClient = resumeAiClient;
+            _resumeSnapshotStore = resumeSnapshotStore;
         }
 
         [Function("parseResume")]
@@ -89,9 +92,10 @@ namespace ResumeFunctions
         }
 
         /// <summary>Extracts text, calls the AI, and — on success — updates and persists
-        /// <paramref name="resume"/> in place. On any failure the resume is left exactly as it
-        /// was (still Draft, Payload untouched) and a human-readable reason is returned; nothing
-        /// here throws out to the caller.</summary>
+        /// <paramref name="resume"/> in place, refreshing its owner's fallback snapshot (#39) if
+        /// this resume is the one currently featured. On any failure the resume is left exactly
+        /// as it was (still Draft, Payload untouched) and a human-readable reason is returned;
+        /// nothing here throws out to the caller.</summary>
         private async Task<(bool ParseSucceeded, string? Message)> TryParseAsync(ResumeEntity resume)
         {
             string text;
@@ -138,6 +142,7 @@ namespace ResumeFunctions
             resume.PayloadJson = JsonSerializer.Serialize(payload);
             resume.UpdatedAtUtc = DateTimeOffset.UtcNow;
             await _resumeStore.UpdateAsync(resume);
+            await ResumeSnapshotHelper.TrySaveSnapshotAsync(_resumeSnapshotStore, _logger, resume);
 
             _logger.LogInformation("Resume '{Id}' parsed successfully via AI extraction.", resume.RowKey);
             return (true, null);

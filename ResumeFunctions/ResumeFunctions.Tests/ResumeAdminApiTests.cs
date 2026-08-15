@@ -16,11 +16,12 @@ public class ResumeAdminApiTests
 {
     private readonly FakeResumeStore _store = new();
     private readonly FakeResumeBlobStore _blobStore = new();
+    private readonly FakeResumeSnapshotStore _snapshotStore = new();
     private readonly ResumeAdminApi _api;
 
     public ResumeAdminApiTests()
     {
-        _api = new ResumeAdminApi(Substitute.For<ILogger<ResumeAdminApi>>(), _store, _blobStore);
+        _api = new ResumeAdminApi(Substitute.For<ILogger<ResumeAdminApi>>(), _store, _blobStore, _snapshotStore);
     }
 
     private static (TestHttpResponseData response, TestHttpRequestData request) BuildRequest(
@@ -195,6 +196,36 @@ public class ResumeAdminApiTests
     }
 
     [Fact]
+    public async Task Update_UnfeaturingOnlyResume_RemovesOwnersSnapshot()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, updateRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "PUT");
+        var result = await _api.Update(updateRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Update_KeepsSnapshot_WhenResumeStaysFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, updateRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = new { FName = "Updated" } }, "PUT");
+        var result = await _api.Update(updateRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
     public async Task Publish_Returns401_WhenNotLoggedIn()
     {
         var context = TestFunctionContextFactory.Create();
@@ -319,6 +350,52 @@ public class ResumeAdminApiTests
     }
 
     [Fact]
+    public async Task Delete_RemovesOwnersSnapshot_WhenDeletedResumeWasFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Delete_LeavesOwnersSnapshotIntact_WhenDeletedResumeWasNotFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, featuredRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        await _api.Create(featuredRequest, context);
+
+        var (_, otherRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "POST");
+        var other = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(otherRequest, context));
+
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, other!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Delete_Returns204_EvenWhenSnapshotDeleteFails()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+
+        _snapshotStore.ThrowOnDelete = true;
+        var (_, deleteRequest) = BuildRequest(context, method: "DELETE");
+        var result = await _api.Delete(deleteRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+    }
+
+    [Fact]
     public async Task Create_MarkingFeatured_UnsetsPreviouslyFeaturedResumeForSameOwner()
     {
         var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
@@ -332,6 +409,62 @@ public class ResumeAdminApiTests
 
         var stillFeatured = await _store.FindByIdAsync(first.Id);
         Assert.False(stillFeatured!.IsFeatured);
+    }
+
+    [Fact]
+    public async Task Create_MarkingFeatured_WritesFallbackSnapshotForOwner()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+
+        await _api.Create(request, context);
+
+        var snapshot = await _snapshotStore.GetAsync("jane");
+        Assert.NotNull(snapshot);
+        var payload = JsonSerializer.Deserialize<JsonElement>(snapshot!);
+        Assert.Equal("Jane", payload.GetProperty("FName").GetString());
+    }
+
+    [Fact]
+    public async Task Create_NotFeatured_DoesNotWriteSnapshot()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "POST");
+
+        await _api.Create(request, context);
+
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Update_MarkingFeatured_RefreshesSnapshotWithLatestContent()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+
+        var (_, updateRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = new { FName = "Updated", LName = "Doe" } }, "PUT");
+        await _api.Update(updateRequest, context, created!.Id);
+
+        var snapshot = await _snapshotStore.GetAsync("jane");
+        Assert.NotNull(snapshot);
+        var payload = JsonSerializer.Deserialize<JsonElement>(snapshot!);
+        Assert.Equal("Updated", payload.GetProperty("FName").GetString());
+    }
+
+    [Fact]
+    public async Task Create_MarkingFeatured_Returns201_EvenWhenSnapshotWriteFails()
+    {
+        _snapshotStore.ThrowOnSave = true;
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, request) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+
+        var result = await _api.Create(request, context);
+
+        Assert.Equal(HttpStatusCode.Created, result.StatusCode);
+        var stored = await _store.ListByOwnerAsync("jane");
+        Assert.Single(stored);
+        Assert.True(stored[0].IsFeatured);
     }
 
     [Fact]

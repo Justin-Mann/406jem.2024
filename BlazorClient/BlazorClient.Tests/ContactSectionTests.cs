@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BlazorClient.Tests;
 
-public class ContactSectionTests : TestContext
+public class ContactSectionTests : MudBunitTestContext
 {
     [Fact]
     public void RendersNothing_WhenContactInfoIsNull()
@@ -22,7 +22,7 @@ public class ContactSectionTests : TestContext
         var cut = RenderComponent<ContactSection>(p => p
             .Add(x => x.ContactInfo, TestData.Resume.Contact));
 
-        cut.Find(".sectionheader").MarkupMatches("<div class=\"sectionheader\">Contact</div>");
+        Assert.Equal("Contact", cut.Find(".sectionheader").TextContent);
     }
 
     [Fact]

@@ -1,4 +1,11 @@
-﻿<CascadingAuthenticationState>
+﻿@using BlazorApp.BlazorClient.Theme
+
+<MudThemeProvider Theme="JemTheme.Default" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

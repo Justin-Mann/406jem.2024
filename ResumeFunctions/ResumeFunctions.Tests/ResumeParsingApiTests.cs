@@ -5,6 +5,7 @@ using ResumeFunctions.Auth;
 using ResumeFunctions.Auth.Dtos;
 using ResumeFunctions.Auth.Models;
 using ResumeFunctions.Auth.Parsing;
+using ResumeFunctions.Auth.Storage;
 using ResumeFunctions.Tests.Helpers;
 using System.Net;
 using System.Text;
@@ -50,6 +51,7 @@ public class ResumeParsingApiTests
 
     private readonly FakeResumeStore _resumeStore = new();
     private readonly FakeResumeBlobStore _blobStore = new();
+    private readonly FakeResumeSnapshotStore _snapshotStore = new();
 
     private static (TestHttpResponseData response, TestHttpRequestData request) BuildRequest(FunctionContext context, string method = "POST")
     {
@@ -65,7 +67,7 @@ public class ResumeParsingApiTests
     }
 
     private ResumeParsingApi BuildApi(IResumeAiClient aiClient, IPdfTextExtractor? pdfTextExtractor = null) =>
-        new(Substitute.For<ILogger<ResumeParsingApi>>(), _resumeStore, _blobStore, pdfTextExtractor ?? new PdfPigTextExtractor(), aiClient);
+        new(Substitute.For<ILogger<ResumeParsingApi>>(), _resumeStore, _blobStore, pdfTextExtractor ?? new PdfPigTextExtractor(), aiClient, _snapshotStore);
 
     private async Task<ResumeEntity> SeedDraftResumeAsync(string owner)
     {
@@ -202,6 +204,39 @@ public class ResumeParsingApiTests
         var stored = await _resumeStore.FindByIdAsync(resume.RowKey);
         Assert.NotEqual(string.Empty, stored!.PayloadJson);
         Assert.Equal(ResumeEntity.StatusDraft, stored.Status);
+    }
+
+    [Fact]
+    public async Task Parse_RefreshesOwnersSnapshot_WhenParsedResumeIsFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var resume = await SeedDraftResumeAsync("jane");
+        resume.IsFeatured = true;
+        await _resumeStore.UpdateAsync(resume);
+        await _snapshotStore.SaveAsync("jane", JsonSerializer.Serialize(new { FName = "Stale" }));
+        var (_, request) = BuildRequest(context);
+        var api = BuildApi(FakeResumeAiClient.ReturningJson(WellFormedAiJson));
+
+        var result = await api.Parse(request, context, resume.RowKey);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        var stored = await _resumeStore.FindByIdAsync(resume.RowKey);
+        var snapshotJson = await _snapshotStore.GetAsync("jane");
+        Assert.Equal(stored!.PayloadJson, snapshotJson);
+    }
+
+    [Fact]
+    public async Task Parse_DoesNotWriteSnapshot_WhenParsedResumeIsNotFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var resume = await SeedDraftResumeAsync("jane"); // not featured
+        var (_, request) = BuildRequest(context);
+        var api = BuildApi(FakeResumeAiClient.ReturningJson(WellFormedAiJson));
+
+        var result = await api.Parse(request, context, resume.RowKey);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
     }
 
     [Fact]
