@@ -9,6 +9,9 @@ on:
 jobs:
   iterate-on-label:
     if: github.event_name == 'issues' && github.event.label.name == 'needs-revision'
+    concurrency:
+      group: stage5-iterate-${{ github.event.issue.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -52,6 +55,9 @@ jobs:
 
   iterate-on-review:
     if: github.event_name == 'pull_request_review' && github.event.review.state == 'changes_requested'
+    concurrency:
+      group: stage5-iterate-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write

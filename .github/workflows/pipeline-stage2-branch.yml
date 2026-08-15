@@ -7,6 +7,9 @@ on:
 jobs:
   create-branch-pr:
     if: github.event.label.name == 'ready-for-branch'
+    concurrency:
+      group: stage2-branch-${{ github.event.issue.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write

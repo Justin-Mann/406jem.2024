@@ -7,6 +7,9 @@ on:
 jobs:
   review:
     if: github.event.label.name == 'ready-for-review'
+    concurrency:
+      group: stage4-review-${{ github.event.issue.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -50,6 +53,12 @@ jobs:
             4. Post a detailed review on the PR with specific inline comments where applicable.
             5. If checks are green AND the code is acceptable: approve the PR, add label
                "review-approved", and mark the PR ready for review (undraft).
-            6. If checks failed OR changes are needed: request changes on the PR, add label
-               "needs-revision" to the issue to trigger Stage 5.
+            6. If checks failed OR changes are needed: request changes on the PR, then update
+               the issue's labels by REMOVING "ready-for-review" AND adding "needs-revision"
+               in the same command (`gh issue edit <issue> --remove-label ready-for-review
+               --add-label needs-revision`) to trigger Stage 5. Removing "ready-for-review"
+               here is required, not optional: Stage 5 re-adds it later to loop back to this
+               stage, and GitHub only fires a new "labeled" webhook event when a label
+               transitions from absent to present. If "ready-for-review" is left in place,
+               Stage 5's later re-add is a silent no-op and the pipeline stalls with no error.
             7. Post a summary comment on the issue with your verdict.

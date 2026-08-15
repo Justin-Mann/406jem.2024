@@ -7,6 +7,9 @@ on:
 jobs:
   implement:
     if: github.event.label.name == 'ready-for-coding'
+    concurrency:
+      group: stage3-implement-${{ github.event.issue.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -49,10 +52,16 @@ jobs:
             Body:
             ${{ github.event.issue.body }}
 
-            Repository context:
-            - Blazor client (BlazorClient/): Blazor WASM on .NET 10, Blazorise Bootstrap5 + FontAwesome; deploys to Azure Static Web Apps
-            - Angular client (AngularClient/): Angular 22, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
-            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 10; the sole backend API, serves GET /resumes/myresume; deploys to Azure Functions (Consumption plan) at https://406resumeapi.azurewebsites.net
+            Repository context (high-level only — CLAUDE.md is the source of truth for current
+            tech stack, conventions, and endpoints; this list drifts as the codebase evolves, so
+            defer to CLAUDE.md wherever the two disagree):
+            - Blazor client (BlazorClient/): Blazor WASM on .NET 10; deploys to Azure Static Web Apps
+            - Angular client (AngularClient/): Angular, standalone components, signal-based inputs, @if/@for control flow; deploys to Azure Static Web Apps
+            - ResumeFunctions (ResumeFunctions/): Azure Functions v4 isolated worker on .NET 10; the
+              backend API — has grown well beyond a single endpoint (auth, testimonials, resume
+              admin CRUD, AI parsing, snapshots, and more), so check CLAUDE.md's ResumeFunctions
+              section for the current endpoint list rather than assuming; deploys to Azure Functions
+              at https://api.406jem.com (custom domain — required for cross-subdomain cookie auth)
             - Both frontend clients must be visually and functionally in sync
             - Shared design tokens: --jem-navy #1e2d5a, --jem-blue #245a8e, --jem-bg #f4f6fb
             - MobileClient (MobileClient/, if the issue calls for it): Kotlin Multiplatform + Compose
