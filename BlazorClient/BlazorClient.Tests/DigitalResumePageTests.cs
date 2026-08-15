@@ -32,6 +32,22 @@ public class DigitalResumePageTests : MudBunitTestContext
     }
 
     [Fact]
+    public void RendersResumeData_WhenApiReturnsNullId()
+    {
+        // Regression test: the API's DigitalResumeModel.Id is never populated (excluded from
+        // AI-parsing output, unset on manually-created resumes) so the wire payload always has
+        // "id": null. Id used to be declared as non-nullable `int` on this client's model,
+        // which made System.Text.Json throw on the whole payload -- not just the Id field --
+        // silently failing every resume load in production.
+        RegisterHttpClient("""{"id":null,"fName":"Jane","lName":"Doe","position":"Software Engineer"}""");
+
+        var cut = RenderComponent<DigitalResume>();
+
+        cut.WaitForAssertion(() => Assert.Contains("Jane", cut.Markup));
+        Assert.Contains("Software Engineer", cut.Markup);
+    }
+
+    [Fact]
     public void RendersResumeName_AfterApiLoad()
     {
         RegisterHttpClient(TestData.ResumeJson);
@@ -63,15 +79,24 @@ public class DigitalResumePageTests : MudBunitTestContext
     }
 
     [Fact]
-    public void ShowsLoadingMessage_WhenApiErrors()
+    public void ShowsNoResumeRecordsFound_WhenApiErrors()
     {
-        // API errors are caught; loadingMessageShow stays true since the catch block
-        // does not clear it, and Id (int) is never null so the else branch renders
         RegisterHttpClient("not json", HttpStatusCode.InternalServerError);
 
         var cut = RenderComponent<DigitalResume>();
 
-        cut.WaitForAssertion(() => Assert.Contains("Give it a Second", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("No Resume Records Found", cut.Markup));
+        Assert.DoesNotContain("Give it a Second", cut.Markup);
+    }
+
+    [Fact]
+    public void ShowsNoResumeRecordsFound_WhenApiReturnsNullBody()
+    {
+        RegisterHttpClient("null");
+
+        var cut = RenderComponent<DigitalResume>();
+
+        cut.WaitForAssertion(() => Assert.Contains("No Resume Records Found", cut.Markup));
     }
 
     [Fact]

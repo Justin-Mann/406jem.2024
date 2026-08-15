@@ -5,15 +5,15 @@
 
 <PageTitle>Digital Resume</PageTitle>
 
-@if (myResume.Id == null)
+@if (loadingMessageShow)
 {
-    <MudText Typo="Typo.h5" Align="Align.Center">No Resume Records Found.</MudText>
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="resume-loading-message">Give it a Second..<br />The API had to cold start.</MudText>
 }
 else
 {
-    @if (loadingMessageShow)
+    @if (loadFailed)
     {
-        <MudText Typo="Typo.h5" Align="Align.Center" Class="resume-loading-message">Give it a Second..<br />The API had to cold start.</MudText>
+        <MudText Typo="Typo.h5" Align="Align.Center">No Resume Records Found.</MudText>
     }
     else
     {
@@ -56,6 +56,7 @@ else
 @code {
     private DigitalResumeModel myResume = new DigitalResumeModel();
     private bool loadingMessageShow = true;
+    private bool loadFailed;
 
     private string? ContactEmail =>
         myResume.Contact?.FirstOrDefault(c => c.Type == ContactTypeEnum.Email && !string.IsNullOrWhiteSpace(c.MailTo))?.MailTo;
@@ -64,13 +65,25 @@ else
     {
         try
         {
-            myResume = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/resumes/myresume");
-            loadingMessageShow = false;
-            StateHasChanged();
+            var result = await Http.GetFromJsonAsync<DigitalResumeModel>("/api/resumes/myresume");
+            if (result is null)
+            {
+                loadFailed = true;
+            }
+            else
+            {
+                myResume = result;
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
+            loadFailed = true;
+        }
+        finally
+        {
+            loadingMessageShow = false;
+            StateHasChanged();
         }
     }
 }

@@ -6,7 +6,7 @@ public static class TestData
 {
     public static DigitalResumeModel Resume => new()
     {
-        Id = 1,
+        Id = "1",
         FName = "Jane",
         MName = "Q",
         LName = "Doe",
