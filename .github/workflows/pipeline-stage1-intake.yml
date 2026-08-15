@@ -22,7 +22,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
-          claude_args: "--permission-mode bypassPermissions"
+          claude_args: "--max-turns 15 --permission-mode bypassPermissions"
           show_full_output: true
           prompt: |
             You are Stage 1 of a multi-agent CI/CD pipeline for the 406jem.2026 repository.
@@ -41,3 +41,10 @@ jobs:
             5. Add the label "ready-for-branch" to signal Stage 2 to proceed.
 
             Be specific and technical. The downstream agents (branch creation, coding, review) will use your analysis.
+
+            Keep this pass lightweight: a handful of targeted greps/reads to confirm the affected
+            files and existing patterns is enough — you are analyzing and planning, not
+            implementing, so there's no need to read entire files end-to-end or explore the
+            codebase exhaustively. Stage 3 will read the full relevant code itself before writing
+            any changes. Budget for well under 15 turns; if you're still exploring past turn 10,
+            wrap up with what you have rather than continuing to dig.
