@@ -1,0 +1,358 @@
+<div class="container manage-resumes-page">
+    <h2 class="mt-3 mb-2">Manage Resumes</h2>
+
+    @if (!authService.isAdmin()) {
+        <p class="resume-access-required">Resume Admin access required.</p>
+    } @else {
+        <p class="mb-3">
+            Review and correct a parsed upload before publishing, enter a resume from scratch, or
+            re-open any of your existing resumes to edit them.
+        </p>
+
+        @if (errorMessage()) {
+            <div class="alert alert-danger">{{ errorMessage() }}</div>
+        }
+        @if (statusMessage()) {
+            <div class="alert alert-info">{{ statusMessage() }}</div>
+        }
+
+        @if (editState() === null) {
+            <div class="d-flex gap-2 align-items-center mb-3">
+                <button mat-flat-button class="resume-new-btn" (click)="startNew()">+ New Resume</button>
+                <label class="resume-upload-label mat-mdc-outlined-button">
+                    {{ uploadBusy() ? 'Uploading...' : 'Upload PDF' }}
+                    <input type="file" accept=".pdf,application/pdf" class="resume-upload-input" [disabled]="uploadBusy()" (change)="onFileSelected($event)" />
+                </label>
+            </div>
+
+            @if (resumes() === null) {
+                <p>Loading your resumes...</p>
+            } @else if (resumes()!.length === 0) {
+                <p>You don't have any resumes yet.</p>
+            } @else {
+                <ul class="resume-list mb-3">
+                    @for (resume of resumes()!; track resume.id) {
+                        <li class="resume-list-item d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                            <span>
+                                {{ resumeDisplayName(resume) }}
+                                <span class="badge ms-2" [class.bg-warning]="isDraft(resume)" [class.bg-success]="!isDraft(resume)">{{ resume.status }}</span>
+                                @if (resume.isFeatured) {
+                                    <span class="badge bg-info ms-1">Featured</span>
+                                }
+                            </span>
+                            <span>
+                                @if (isDraft(resume) && resume.originalFileName) {
+                                    <button mat-stroked-button class="resume-parse-btn" [disabled]="isBusy()" (click)="parse(resume.id)">Parse with AI</button>
+                                }
+                                <button mat-stroked-button class="resume-edit-btn" (click)="startEdit(resume)">Edit</button>
+                                @if (isDraft(resume)) {
+                                    <button mat-stroked-button color="primary" class="resume-publish-btn" [disabled]="isBusy()" (click)="publish(resume.id)">Publish</button>
+                                }
+                                <button mat-stroked-button color="warn" class="resume-delete-btn" [disabled]="isBusy()" (click)="deleteResume(resume.id)">Delete</button>
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+        } @else {
+            <form (ngSubmit)="save()" #resumeForm="ngForm" class="resume-edit-form">
+                <h3 class="mb-3">{{ editState()!.id === null ? 'New Resume' : 'Edit Resume' }}</h3>
+                @if (validationError()) {
+                    <div class="alert alert-warning resume-validation-error">{{ validationError() }}</div>
+                }
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Basic Info</h4>
+                        <div class="row g-2 mb-2">
+                            <div class="col-sm-4">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>First name *</mat-label>
+                                    <input matInput placeholder="First name" name="fName" class="resume-fname-input" [(ngModel)]="editState()!.payload.fName" />
+                                </mat-form-field>
+                            </div>
+                            <div class="col-sm-4">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Middle name</mat-label>
+                                    <input matInput name="mName" class="resume-mname-input" [(ngModel)]="editState()!.payload.mName" />
+                                </mat-form-field>
+                            </div>
+                            <div class="col-sm-4">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Last name *</mat-label>
+                                    <input matInput placeholder="Last name" name="lName" class="resume-lname-input" [(ngModel)]="editState()!.payload.lName" />
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-sm-6">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Position *</mat-label>
+                                    <input matInput placeholder="Position" name="position" class="resume-position-input" [(ngModel)]="editState()!.payload.position" />
+                                </mat-form-field>
+                            </div>
+                            <div class="col-sm-6">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Subtitle</mat-label>
+                                    <input matInput name="subtitle" class="resume-subtitle-input" [(ngModel)]="editState()!.payload.subtitle" />
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="w-100 mb-2">
+                            <mat-label>Simple goal</mat-label>
+                            <textarea matInput rows="2" name="simpleGoal" class="resume-simplegoal-input" [(ngModel)]="editState()!.payload.simpleGoal"></textarea>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-100 mb-2">
+                            <mat-label>Logo file (path)</mat-label>
+                            <input matInput name="logoFile" class="resume-logofile-input" [(ngModel)]="editState()!.payload.logoFile" />
+                        </mat-form-field>
+                        <mat-checkbox name="isFeatured" class="resume-featured-checkbox" [(ngModel)]="editState()!.isFeatured">Show publicly (Featured)</mat-checkbox>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Profile</h4>
+                        @for (bullet of editState()!.payload.profile; track $index; let i = $index) {
+                            <div class="d-flex gap-2 mb-2 align-items-center">
+                                <mat-form-field appearance="outline" class="flex-fill">
+                                    <input matInput placeholder="Bullet point" [name]="'profile' + i" [(ngModel)]="editState()!.payload.profile[i]" />
+                                </mat-form-field>
+                                <button type="button" mat-icon-button color="warn" class="profile-remove-btn" (click)="removeProfileBullet(i)"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        }
+                        <button type="button" mat-stroked-button class="profile-add-btn" (click)="addProfileBullet()">+ Add Bullet</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Work Experience</h4>
+                        @for (item of editState()!.payload.workExperience; track $index; let wi = $index) {
+                            <mat-card appearance="outlined" class="mb-2 workexp-item">
+                                <mat-card-content>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Company</mat-label>
+                                                <input matInput [name]="'company' + wi" [(ngModel)]="item.companyName" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Position</mat-label>
+                                                <input matInput [name]="'weposition' + wi" [(ngModel)]="item.position" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Start date</mat-label>
+                                                <input matInput [name]="'startDate' + wi" [(ngModel)]="item.startDate" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>End date</mat-label>
+                                                <input matInput [name]="'endDate' + wi" [(ngModel)]="item.endDate" />
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                    <mat-form-field appearance="outline" class="w-100 mb-2">
+                                        <mat-label>Note</mat-label>
+                                        <input matInput [name]="'note' + wi" [(ngModel)]="item.note" />
+                                    </mat-form-field>
+
+                                    <div class="fw-bold small mb-1">Bullets</div>
+                                    @for (bullet of item.bulletList; track $index; let bi = $index) {
+                                        <div class="d-flex gap-2 mb-2 align-items-center">
+                                            <mat-form-field appearance="outline" class="flex-fill">
+                                                <input matInput placeholder="Bullet point" [name]="'webullet' + wi + '-' + bi" [(ngModel)]="item.bulletList[bi]" />
+                                            </mat-form-field>
+                                            <button type="button" mat-icon-button color="warn" class="workexp-bullet-remove-btn" (click)="removeBullet(item, bi)"><i class="bi bi-x-lg"></i></button>
+                                        </div>
+                                    }
+                                    <button type="button" mat-stroked-button class="workexp-bullet-add-btn mb-2" (click)="addBullet(item)">+ Add Bullet</button>
+                                    <div class="text-end">
+                                        <button type="button" mat-stroked-button color="warn" class="workexp-remove-btn" (click)="removeWorkExperience(wi)">Remove Entry</button>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        }
+                        <button type="button" mat-stroked-button class="workexp-add-btn" (click)="addWorkExperience()">+ Add Work Experience</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Education</h4>
+                        @for (item of editState()!.payload.education; track $index; let ei = $index) {
+                            <mat-card appearance="outlined" class="mb-2 education-item">
+                                <mat-card-content>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-sm-4">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>School name</mat-label>
+                                                <input matInput [name]="'school' + ei" [(ngModel)]="item.name" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Degree name</mat-label>
+                                                <input matInput [name]="'degreeName' + ei" [(ngModel)]="item.degreeName" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Degree year</mat-label>
+                                                <input matInput [name]="'degreeYear' + ei" [(ngModel)]="item.degreeYear" />
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                    <mat-checkbox class="mb-2 d-block" [name]="'degree' + ei" [(ngModel)]="item.degree">Degree earned</mat-checkbox>
+
+                                    <div class="fw-bold small mb-1">Areas of study</div>
+                                    @for (area of item.areasOfStudy; track $index; let ai = $index) {
+                                        <div class="d-flex gap-2 mb-2 align-items-center">
+                                            <mat-form-field appearance="outline" class="flex-fill">
+                                                <input matInput placeholder="Area of study" [name]="'area' + ei + '-' + ai" [(ngModel)]="item.areasOfStudy[ai]" />
+                                            </mat-form-field>
+                                            <button type="button" mat-icon-button color="warn" class="education-area-remove-btn" (click)="removeAreaOfStudy(item, ai)"><i class="bi bi-x-lg"></i></button>
+                                        </div>
+                                    }
+                                    <button type="button" mat-stroked-button class="education-area-add-btn mb-2" (click)="addAreaOfStudy(item)">+ Add Area of Study</button>
+                                    <div class="text-end">
+                                        <button type="button" mat-stroked-button color="warn" class="education-remove-btn" (click)="removeEducation(ei)">Remove Entry</button>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        }
+                        <button type="button" mat-stroked-button class="education-add-btn" (click)="addEducation()">+ Add Education</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Contact</h4>
+                        @for (item of editState()!.payload.contact; track $index; let ci = $index) {
+                            <div class="row g-2 mb-2 align-items-center contact-item">
+                                <div class="col-sm-2">
+                                    <mat-form-field appearance="outline" class="w-100 contact-type-select">
+                                        <mat-label>Type</mat-label>
+                                        <mat-select [name]="'contactType' + ci" [(ngModel)]="item.type">
+                                            @for (t of contactTypes; track t.value) {
+                                                <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                                            }
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Display value</mat-label>
+                                        <input matInput [name]="'displayValue' + ci" [(ngModel)]="item.displayValue" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>URL (optional)</mat-label>
+                                        <input matInput [name]="'contactUrl' + ci" [(ngModel)]="item.url" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Mail to (optional)</mat-label>
+                                        <input matInput [name]="'mailTo' + ci" [(ngModel)]="item.mailTo" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-1">
+                                    <button type="button" mat-icon-button color="warn" class="contact-remove-btn" (click)="removeContact(ci)"><i class="bi bi-x-lg"></i></button>
+                                </div>
+                            </div>
+                        }
+                        <button type="button" mat-stroked-button class="contact-add-btn" (click)="addContact()">+ Add Contact</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Custom Sections</h4>
+                        @for (section of editState()!.payload.customSections; track $index; let si = $index) {
+                            <mat-card appearance="outlined" class="mb-2 customsection-item">
+                                <mat-card-content>
+                                    <mat-form-field appearance="outline" class="w-100 mb-2">
+                                        <mat-label>Section name</mat-label>
+                                        <input matInput [name]="'sectionName' + si" [(ngModel)]="section.name" />
+                                    </mat-form-field>
+                                    @for (citem of section.customItems; track $index; let cii = $index) {
+                                        <div class="row g-2 mb-2 align-items-center customitem-row">
+                                            <div class="col-sm-6">
+                                                <mat-form-field appearance="outline" class="w-100">
+                                                    <input matInput placeholder="Value" [name]="'citemValue' + si + '-' + cii" [(ngModel)]="citem.value" />
+                                                </mat-form-field>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <mat-form-field appearance="outline" class="w-100 customitem-type-select">
+                                                    <mat-label>Type</mat-label>
+                                                    <mat-select [name]="'citemType' + si + '-' + cii" [(ngModel)]="citem.type">
+                                                        @for (t of customTypes; track t.value) {
+                                                            <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                                                        }
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <button type="button" mat-icon-button color="warn" class="customitem-remove-btn" (click)="removeCustomItem(section, cii)"><i class="bi bi-x-lg"></i></button>
+                                            </div>
+                                        </div>
+                                    }
+                                    <button type="button" mat-stroked-button class="customitem-add-btn mb-2" (click)="addCustomItem(section)">+ Add Item</button>
+                                    <div class="text-end">
+                                        <button type="button" mat-stroked-button color="warn" class="customsection-remove-btn" (click)="removeCustomSection(si)">Remove Section</button>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        }
+                        <button type="button" mat-stroked-button class="customsection-add-btn" (click)="addCustomSection()">+ Add Custom Section</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card appearance="outlined" class="mb-3">
+                    <mat-card-content>
+                        <h4 class="mb-2">Skill Assessments</h4>
+                        @for (assessment of editState()!.payload.skillAssessments; track $index; let sai = $index) {
+                            <mat-card appearance="outlined" class="mb-2 skillassessment-item">
+                                <mat-card-content>
+                                    <mat-form-field appearance="outline" class="w-100 mb-2">
+                                        <mat-label>Assessor name</mat-label>
+                                        <input matInput [name]="'assessor' + sai" [(ngModel)]="assessment.assessorName" />
+                                    </mat-form-field>
+                                    @for (skill of assessment.skills; track $index; let ski = $index) {
+                                        <div class="d-flex gap-2 mb-2 align-items-center">
+                                            <mat-form-field appearance="outline" class="flex-fill">
+                                                <input matInput placeholder="Skill name" [name]="'skillName' + sai + '-' + ski" [(ngModel)]="skill.name" />
+                                            </mat-form-field>
+                                            <mat-form-field appearance="outline" class="skill-value-input">
+                                                <mat-label>Value</mat-label>
+                                                <input matInput type="number" [name]="'skillValue' + sai + '-' + ski" [(ngModel)]="skill.value" />
+                                            </mat-form-field>
+                                            <button type="button" mat-icon-button color="warn" class="skill-remove-btn" (click)="removeSkill(assessment, ski)"><i class="bi bi-x-lg"></i></button>
+                                        </div>
+                                    }
+                                    <button type="button" mat-stroked-button class="skill-add-btn mb-2" (click)="addSkill(assessment)">+ Add Skill</button>
+                                    <div class="text-end">
+                                        <button type="button" mat-stroked-button color="warn" class="skillassessment-remove-btn" (click)="removeSkillAssessment(sai)">Remove Assessment</button>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        }
+                        <button type="button" mat-stroked-button class="skillassessment-add-btn" (click)="addSkillAssessment()">+ Add Skill Assessment</button>
+                    </mat-card-content>
+                </mat-card>
+
+                <div>
+                    <button type="submit" mat-flat-button [disabled]="isBusy()" class="resume-save-btn">Save</button>
+                    <button type="button" mat-button [disabled]="isBusy()" class="resume-cancel-btn" (click)="cancelEdit()">Cancel</button>
+                </div>
+            </form>
+        }
+    }
+</div>

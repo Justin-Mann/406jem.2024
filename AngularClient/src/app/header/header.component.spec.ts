@@ -10,9 +10,11 @@ describe('HeaderComponent', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'username', 'logout']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'username', 'logout', 'isAdmin', 'isSuperAdmin']);
     authServiceSpy.isAuthenticated.and.returnValue(false);
     authServiceSpy.username.and.returnValue(null);
+    authServiceSpy.isAdmin.and.returnValue(false);
+    authServiceSpy.isSuperAdmin.and.returnValue(false);
 
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
@@ -43,5 +45,41 @@ describe('HeaderComponent', () => {
 
     expect(compiled.textContent).toContain('Hi, jane');
     expect(compiled.textContent).toContain('Log Out');
+  });
+
+  it('does not show the Admin menu for a non-admin visitor', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.admin-menu-trigger')).toBeNull();
+  });
+
+  it('shows the Admin menu trigger for a ResumeAdmin', () => {
+    authServiceSpy.isAdmin.and.returnValue(true);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.admin-menu-trigger')).not.toBeNull();
+  });
+
+  it('shows Manage Project Listings in the Admin menu for a SuperAdmin', () => {
+    authServiceSpy.isAdmin.and.returnValue(true);
+    authServiceSpy.isSuperAdmin.and.returnValue(true);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.admin-menu-trigger') as HTMLElement).click();
+    fixture.detectChanges();
+
+    expect(document.body.textContent).toContain('Manage Project Listings');
+  });
+
+  it('hides Manage Project Listings in the Admin menu for a plain ResumeAdmin', () => {
+    authServiceSpy.isAdmin.and.returnValue(true);
+    authServiceSpy.isSuperAdmin.and.returnValue(false);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.admin-menu-trigger') as HTMLElement).click();
+    fixture.detectChanges();
+
+    expect(document.body.textContent).toContain('Manage Resumes');
+    expect(document.body.textContent).not.toContain('Manage Project Listings');
   });
 });

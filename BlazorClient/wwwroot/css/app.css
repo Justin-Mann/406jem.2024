@@ -111,6 +111,13 @@ html, body {
   font-weight: 800;
 }
 
+/* Visually separates the role-gated Admin nav group (#31) from the public nav links. */
+.jem-nav-admin-group {
+  border-left: 2px solid var(--jem-border);
+  margin-left: 4px;
+  padding-left: 4px;
+}
+
 @media screen and (max-width: 767px) {
   .jem-nav-desktop {
     display: none;
@@ -119,6 +126,27 @@ html, body {
   .jem-nav-mobile-btn {
     display: inline-flex;
   }
+}
+
+/* ========================
+   Manage Resumes admin page (#31)
+   ======================== */
+.resume-upload-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 16px;
+  height: 32px;
+  font-size: 0.8125rem;
+  position: relative;
+}
+
+.resume-upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
 }
 
 /* ========================
