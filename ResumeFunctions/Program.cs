@@ -44,6 +44,7 @@ var builder = new HostBuilder()
         services.AddSingleton<ITestimonialStore, TableTestimonialStore>();
         services.AddSingleton<IResumeStore, TableResumeStore>();
         services.AddSingleton<IResumeBlobStore, BlobResumeStore>();
+        services.AddSingleton<IResumeSnapshotStore, BlobResumeSnapshotStore>();
         services.AddSingleton<IProjectListingStore, TableProjectListingStore>();
         services.AddSingleton<ISiteConfigStore, TableSiteConfigStore>();
         services.AddSingleton<IPdfTextExtractor, PdfPigTextExtractor>();

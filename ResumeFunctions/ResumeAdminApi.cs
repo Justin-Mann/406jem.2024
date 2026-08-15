@@ -27,12 +27,18 @@ namespace ResumeFunctions
         private readonly ILogger<ResumeAdminApi> _logger;
         private readonly IResumeStore _resumeStore;
         private readonly IResumeBlobStore _resumeBlobStore;
+        private readonly IResumeSnapshotStore _resumeSnapshotStore;
 
-        public ResumeAdminApi(ILogger<ResumeAdminApi> logger, IResumeStore resumeStore, IResumeBlobStore resumeBlobStore)
+        public ResumeAdminApi(
+            ILogger<ResumeAdminApi> logger,
+            IResumeStore resumeStore,
+            IResumeBlobStore resumeBlobStore,
+            IResumeSnapshotStore resumeSnapshotStore)
         {
             _logger = logger;
             _resumeStore = resumeStore;
             _resumeBlobStore = resumeBlobStore;
+            _resumeSnapshotStore = resumeSnapshotStore;
         }
 
         [Function("listMyResumes")]
@@ -100,6 +106,7 @@ namespace ResumeFunctions
 
             await _resumeStore.AddAsync(resume);
             _logger.LogInformation("Resume created for owner '{Owner}' by '{Username}'.", requestedOwner, owner);
+            await TrySaveSnapshotAsync(resume);
 
             var response = req.CreateResponse(HttpStatusCode.Created);
             await response.WriteAsJsonAsync(ToDto(resume));
@@ -211,6 +218,7 @@ namespace ResumeFunctions
                 return await BadRequest(req, "Payload is required.");
             }
 
+            var wasFeatured = existing.IsFeatured;
             existing.PayloadJson = JsonSerializer.Serialize(payload.Payload);
             existing.IsFeatured = payload.IsFeatured;
             existing.UpdatedAtUtc = DateTimeOffset.UtcNow;
@@ -221,6 +229,15 @@ namespace ResumeFunctions
             }
 
             await _resumeStore.UpdateAsync(existing);
+
+            if (existing.IsFeatured)
+            {
+                await TrySaveSnapshotAsync(existing);
+            }
+            else if (wasFeatured)
+            {
+                await ResumeSnapshotHelper.TryDeleteSnapshotAsync(_resumeSnapshotStore, _logger, existing.OwnerUserId);
+            }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(ToDto(existing));
@@ -286,8 +303,16 @@ namespace ResumeFunctions
             }
 
             await _resumeStore.DeleteAsync(id);
+            if (existing.IsFeatured)
+            {
+                await ResumeSnapshotHelper.TryDeleteSnapshotAsync(_resumeSnapshotStore, _logger, existing.OwnerUserId);
+            }
+
             return req.CreateResponse(HttpStatusCode.NoContent);
         }
+
+        private Task TrySaveSnapshotAsync(ResumeEntity resume) =>
+            ResumeSnapshotHelper.TrySaveSnapshotAsync(_resumeSnapshotStore, _logger, resume);
 
         private async Task ClearOtherFeaturedAsync(string ownerUserId, string? excludeId)
         {
