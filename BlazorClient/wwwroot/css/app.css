@@ -298,6 +298,11 @@ code {
 .header {
   border-bottom: 3px solid var(--jem-navy);
   position: relative;
+  /* MudGrid applies a negative top margin to every grid for its gutter-compensation
+     technique; as a sibling right after the PDF/Contact button MudGrid, that pulls this
+     row up over the buttons and its transparent mud-grid-item boxes silently swallow
+     clicks on them. Zero it out so this row starts below the button row instead. */
+  margin-top: 0;
   margin-bottom: 12px;
   padding-bottom: 8px;
 }
