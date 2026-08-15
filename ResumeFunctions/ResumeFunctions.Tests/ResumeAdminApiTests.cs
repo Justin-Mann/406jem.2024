@@ -196,6 +196,36 @@ public class ResumeAdminApiTests
     }
 
     [Fact]
+    public async Task Update_UnfeaturingOnlyResume_RemovesOwnersSnapshot()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, updateRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = false, Payload = SamplePayload }, "PUT");
+        var result = await _api.Update(updateRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Null(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
+    public async Task Update_KeepsSnapshot_WhenResumeStaysFeatured()
+    {
+        var context = TestFunctionContextFactory.Create(TestFunctionContextFactory.CreateUser("jane", AccountRoles.ResumeAdmin));
+        var (_, createRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = SamplePayload }, "POST");
+        var created = await ReadBody<ResumeDto>((TestHttpResponseData)await _api.Create(createRequest, context));
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+
+        var (_, updateRequest) = BuildRequest(context, new { OwnerUserId = (string?)null, IsFeatured = true, Payload = new { FName = "Updated" } }, "PUT");
+        var result = await _api.Update(updateRequest, context, created!.Id);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.NotNull(await _snapshotStore.GetAsync("jane"));
+    }
+
+    [Fact]
     public async Task Publish_Returns401_WhenNotLoggedIn()
     {
         var context = TestFunctionContextFactory.Create();

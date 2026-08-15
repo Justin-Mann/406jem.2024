@@ -218,6 +218,7 @@ namespace ResumeFunctions
                 return await BadRequest(req, "Payload is required.");
             }
 
+            var wasFeatured = existing.IsFeatured;
             existing.PayloadJson = JsonSerializer.Serialize(payload.Payload);
             existing.IsFeatured = payload.IsFeatured;
             existing.UpdatedAtUtc = DateTimeOffset.UtcNow;
@@ -228,7 +229,15 @@ namespace ResumeFunctions
             }
 
             await _resumeStore.UpdateAsync(existing);
-            await TrySaveSnapshotAsync(existing);
+
+            if (existing.IsFeatured)
+            {
+                await TrySaveSnapshotAsync(existing);
+            }
+            else if (wasFeatured)
+            {
+                await ResumeSnapshotHelper.TryDeleteSnapshotAsync(_resumeSnapshotStore, _logger, existing.OwnerUserId);
+            }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(ToDto(existing));
