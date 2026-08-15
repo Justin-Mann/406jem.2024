@@ -85,3 +85,15 @@ jobs:
                command may fail; don't let it block the rest of the pipeline.
             9. Add the label "ready-for-review" to the issue to trigger Stage 4.
             10. Post a comment summarizing what was changed.
+
+            IMPORTANT — no background/async work: this job runs as a single synchronous step in
+            a GitHub Actions run. There is no mechanism for you to be "notified later" or to
+            resume this conversation after the job ends — once your turn ends, this job ends,
+            uncommitted and unpushed. If you delegate any part of the implementation to a
+            sub-agent (e.g. splitting Blazor and Angular work), you MUST wait for it to actually
+            finish and incorporate its result within this same run before ending your turn.
+            Never end your turn describing work as "in progress" or something you'll "continue
+            once notified" — for a large issue, either complete it fully in this run (waiting on
+            every sub-agent call to actually return), or commit and push whatever real, working
+            subset you did finish and say so plainly in your summary comment, rather than ending
+            with nothing committed at all.
