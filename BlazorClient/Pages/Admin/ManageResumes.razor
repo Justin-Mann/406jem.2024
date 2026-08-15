@@ -1,0 +1,575 @@
+@page "/admin/resumes"
+@using BlazorApp.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient Http
+
+<PageTitle>Manage Resumes</PageTitle>
+
+@* SuperAdmin (#28) implies ResumeAdmin's "admin" permissions, mirroring the backend's
+   FunctionContextAuthExtensions.IsInRoleOrHigher - see Testimonials.razor/Projects.v2.razor. *@
+<AuthorizeView Roles="admin,superadmin" Context="authorizeContext">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="manage-resumes-page">
+            <MudText Typo="Typo.h4" Class="mb-2">Manage Resumes</MudText>
+            <MudText Class="mb-4">
+                Review and correct a parsed upload before publishing, enter a resume from scratch, or
+                re-open any of your existing resumes to edit them.
+            </MudText>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">@errorMessage</MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3">@statusMessage</MudAlert>
+            }
+
+            @if (editState is null)
+            {
+                <MudStack Row="true" Spacing="2" Class="mb-3 align-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="resume-new-btn" OnClick="StartNew">+ New Resume</MudButton>
+                    <label class="resume-upload-label mud-button-root mud-button-outlined mud-button-outlined-secondary">
+                        @(uploadBusy ? "Uploading..." : "Upload PDF")
+                        <InputFile OnChange="HandleFileChosen" accept=".pdf,application/pdf" class="resume-upload-input" disabled="@uploadBusy" />
+                    </label>
+                </MudStack>
+
+                @if (resumes is null)
+                {
+                    <MudText>Loading your resumes...</MudText>
+                }
+                else if (resumes.Count == 0)
+                {
+                    <MudText>You don't have any resumes yet.</MudText>
+                }
+                else
+                {
+                    <ul class="resume-list mb-3">
+                        @foreach (var resume in resumes)
+                        {
+                            <li class="resume-list-item d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
+                                <span>
+                                    @ResumeDisplayName(resume)
+                                    <MudChip T="string" Size="Size.Small" Color="@(resume.IsDraft ? Color.Warning : Color.Success)" Class="ms-2">@resume.Status</MudChip>
+                                    @if (resume.IsFeatured)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="ms-1">Featured</MudChip>
+                                    }
+                                </span>
+                                <span>
+                                    @if (resume.IsDraft && !string.IsNullOrEmpty(resume.OriginalFileName))
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" Class="resume-parse-btn" Disabled="@isBusy" OnClick="() => ParseAsync(resume.Id)">Parse with AI</MudButton>
+                                    }
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="resume-edit-btn" OnClick="() => StartEdit(resume)">Edit</MudButton>
+                                    @if (resume.IsDraft)
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" Class="resume-publish-btn" Disabled="@isBusy" OnClick="() => PublishAsync(resume.Id)">Publish</MudButton>
+                                    }
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="resume-delete-btn" Disabled="@isBusy" OnClick="() => DeleteAsync(resume.Id)">Delete</MudButton>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+            else
+            {
+                var state = editState;
+                <EditForm Model="state" OnValidSubmit="SaveAsync" class="resume-edit-form">
+                    <MudText Typo="Typo.h5" Class="mb-3">@(state.Id is null ? "New Resume" : "Edit Resume")</MudText>
+                    @if (!string.IsNullOrEmpty(validationError))
+                    {
+                        <MudAlert Severity="Severity.Warning" Class="mb-3 resume-validation-error">@validationError</MudAlert>
+                    }
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Basic Info</MudText>
+                            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2">
+                                <MudTextField T="string" Label="First name *" Placeholder="First name" @bind-Value="state.Payload.FName" Immediate="true" Class="resume-fname-input" />
+                                <MudTextField T="string" Label="Middle name" @bind-Value="state.Payload.MName" Immediate="true" Class="resume-mname-input" />
+                                <MudTextField T="string" Label="Last name *" Placeholder="Last name" @bind-Value="state.Payload.LName" Immediate="true" Class="resume-lname-input" />
+                            </MudStack>
+                            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2">
+                                <MudTextField T="string" Label="Position *" Placeholder="Position" @bind-Value="state.Payload.Position" Immediate="true" Class="resume-position-input" />
+                                <MudTextField T="string" Label="Subtitle" @bind-Value="state.Payload.Subtitle" Immediate="true" Class="resume-subtitle-input" />
+                            </MudStack>
+                            <MudTextField T="string" Label="Simple goal" @bind-Value="state.Payload.SimpleGoal" Immediate="true" Lines="2" Class="mb-2 resume-simplegoal-input" />
+                            <MudTextField T="string" Label="Logo file (path)" @bind-Value="state.Payload.LogoFile" Immediate="true" Class="mb-2 resume-logofile-input" />
+                            <MudCheckBox T="bool" Label="Show publicly (Featured)" @bind-Value="state.IsFeatured" Class="resume-featured-checkbox" />
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Profile</MudText>
+                            @for (var i = 0; i < state.Payload.Profile.Count; i++)
+                            {
+                                var index = i;
+                                <MudStack Row="true" Spacing="2" Class="mb-2 align-center">
+                                    <MudTextField T="string" Placeholder="Bullet point" @bind-Value="state.Payload.Profile[index]" Immediate="true" Class="flex-grow-1" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="profile-remove-btn" OnClick="() => RemoveProfileBullet(index)" />
+                                </MudStack>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="profile-add-btn" OnClick="AddProfileBullet">+ Add Bullet</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Work Experience</MudText>
+                            @for (var i = 0; i < state.Payload.WorkExperience.Count; i++)
+                            {
+                                var item = state.Payload.WorkExperience[i];
+                                var index = i;
+                                <MudCard Class="mb-2 workexp-item" Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2">
+                                            <MudTextField T="string" Label="Company" @bind-Value="item.CompanyName" Immediate="true" />
+                                            <MudTextField T="string" Label="Position" @bind-Value="item.Position" Immediate="true" />
+                                            <MudTextField T="string" Label="Start date" @bind-Value="item.StartDate" Immediate="true" />
+                                            <MudTextField T="string" Label="End date" @bind-Value="item.EndDate" Immediate="true" />
+                                        </MudStack>
+                                        <MudTextField T="string" Label="Note" @bind-Value="item.Note" Immediate="true" Class="mb-2" />
+
+                                        <MudText Typo="Typo.caption">Bullets</MudText>
+                                        @for (var b = 0; b < item.BulletList.Count; b++)
+                                        {
+                                            var bulletIndex = b;
+                                            <MudStack Row="true" Spacing="2" Class="mb-2 align-center">
+                                                <MudTextField T="string" Placeholder="Bullet point" @bind-Value="item.BulletList[bulletIndex]" Immediate="true" Class="flex-grow-1" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="workexp-bullet-remove-btn" OnClick="() => RemoveBullet(item, bulletIndex)" />
+                                            </MudStack>
+                                        }
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="workexp-bullet-add-btn mb-2" OnClick="() => AddBullet(item)">+ Add Bullet</MudButton>
+                                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="workexp-remove-btn" OnClick="() => RemoveWorkExperience(index)">Remove Entry</MudButton>
+                                        </MudStack>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="workexp-add-btn" OnClick="AddWorkExperience">+ Add Work Experience</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Education</MudText>
+                            @for (var i = 0; i < state.Payload.Education.Count; i++)
+                            {
+                                var item = state.Payload.Education[i];
+                                var index = i;
+                                <MudCard Class="mb-2 education-item" Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2">
+                                            <MudTextField T="string" Label="School name" @bind-Value="item.Name" Immediate="true" />
+                                            <MudTextField T="string" Label="Degree name" @bind-Value="item.DegreeName" Immediate="true" />
+                                            <MudTextField T="string" Label="Degree year" @bind-Value="item.DegreeYear" Immediate="true" />
+                                        </MudStack>
+                                        <MudCheckBox T="bool" Label="Degree earned" @bind-Value="item.Degree" Class="mb-2" />
+
+                                        <MudText Typo="Typo.caption">Areas of study</MudText>
+                                        @for (var a = 0; a < item.AreasOfStudy.Count; a++)
+                                        {
+                                            var areaIndex = a;
+                                            <MudStack Row="true" Spacing="2" Class="mb-2 align-center">
+                                                <MudTextField T="string" Placeholder="Area of study" @bind-Value="item.AreasOfStudy[areaIndex]" Immediate="true" Class="flex-grow-1" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="education-area-remove-btn" OnClick="() => RemoveAreaOfStudy(item, areaIndex)" />
+                                            </MudStack>
+                                        }
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="education-area-add-btn mb-2" OnClick="() => AddAreaOfStudy(item)">+ Add Area of Study</MudButton>
+                                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="education-remove-btn" OnClick="() => RemoveEducation(index)">Remove Entry</MudButton>
+                                        </MudStack>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="education-add-btn" OnClick="AddEducation">+ Add Education</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Contact</MudText>
+                            @for (var i = 0; i < state.Payload.Contact.Count; i++)
+                            {
+                                var item = state.Payload.Contact[i];
+                                var index = i;
+                                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2 align-center contact-item">
+                                    <MudSelect T="ContactTypeEnum?" Label="Type" @bind-Value="item.Type" Class="contact-type-select">
+                                        <MudSelectItem T="ContactTypeEnum?" Value="ContactTypeEnum.Phone">Phone</MudSelectItem>
+                                        <MudSelectItem T="ContactTypeEnum?" Value="ContactTypeEnum.Website">Website</MudSelectItem>
+                                        <MudSelectItem T="ContactTypeEnum?" Value="ContactTypeEnum.Email">Email</MudSelectItem>
+                                    </MudSelect>
+                                    <MudTextField T="string" Label="Display value" @bind-Value="item.DisplayValue" Immediate="true" />
+                                    <MudTextField T="string" Label="URL (optional)" @bind-Value="item.Url" Immediate="true" />
+                                    <MudTextField T="string" Label="Mail to (optional)" @bind-Value="item.MailTo" Immediate="true" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="contact-remove-btn" OnClick="() => RemoveContact(index)" />
+                                </MudStack>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="contact-add-btn" OnClick="AddContact">+ Add Contact</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Custom Sections</MudText>
+                            @for (var i = 0; i < state.Payload.CustomSections.Count; i++)
+                            {
+                                var section = state.Payload.CustomSections[i];
+                                var sectionIndex = i;
+                                <MudCard Class="mb-2 customsection-item" Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudTextField T="string" Label="Section name" @bind-Value="section.Name" Immediate="true" Class="mb-2" />
+                                        @for (var c = 0; c < section.CustomItems.Count; c++)
+                                        {
+                                            var citem = section.CustomItems[c];
+                                            var citemIndex = c;
+                                            <MudStack Row="true" Spacing="2" Class="mb-2 align-center customitem-row">
+                                                <MudTextField T="string" Placeholder="Value" @bind-Value="citem.Value" Immediate="true" Class="flex-grow-1" />
+                                                <MudSelect T="CustomTypeEmun?" Label="Type" @bind-Value="citem.Type" Class="customitem-type-select">
+                                                    @foreach (var t in Enum.GetValues<CustomTypeEmun>())
+                                                    {
+                                                        <MudSelectItem T="CustomTypeEmun?" Value="@((CustomTypeEmun?)t)">@t</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="customitem-remove-btn" OnClick="() => RemoveCustomItem(section, citemIndex)" />
+                                            </MudStack>
+                                        }
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="customitem-add-btn mb-2" OnClick="() => AddCustomItem(section)">+ Add Item</MudButton>
+                                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="customsection-remove-btn" OnClick="() => RemoveCustomSection(sectionIndex)">Remove Section</MudButton>
+                                        </MudStack>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="customsection-add-btn" OnClick="AddCustomSection">+ Add Custom Section</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Skill Assessments</MudText>
+                            @for (var i = 0; i < state.Payload.SkillAssessments.Count; i++)
+                            {
+                                var assessment = state.Payload.SkillAssessments[i];
+                                var assessmentIndex = i;
+                                <MudCard Class="mb-2 skillassessment-item" Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudTextField T="string" Label="Assessor name" @bind-Value="assessment.AssessorName" Immediate="true" Class="mb-2" />
+                                        @for (var s = 0; s < assessment.Skills.Count; s++)
+                                        {
+                                            var skill = assessment.Skills[s];
+                                            var skillIndex = s;
+                                            <MudStack Row="true" Spacing="2" Class="mb-2 align-center">
+                                                <MudTextField T="string" Placeholder="Skill name" @bind-Value="skill.Name" Immediate="true" Class="flex-grow-1" />
+                                                <MudNumericField T="int?" Label="Value" @bind-Value="skill.Value" Class="skill-value-input" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="skill-remove-btn" OnClick="() => RemoveSkill(assessment, skillIndex)" />
+                                            </MudStack>
+                                        }
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="skill-add-btn mb-2" OnClick="() => AddSkill(assessment)">+ Add Skill</MudButton>
+                                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="skillassessment-remove-btn" OnClick="() => RemoveSkillAssessment(assessmentIndex)">Remove Assessment</MudButton>
+                                        </MudStack>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="skillassessment-add-btn" OnClick="AddSkillAssessment">+ Add Skill Assessment</MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusy" Class="resume-save-btn">Save</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Secondary" Disabled="@isBusy" Class="resume-cancel-btn" OnClick="CancelEdit">Cancel</MudButton>
+                    </MudStack>
+                </EditForm>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <MudContainer MaxWidth="MaxWidth.Medium">
+            <MudText Typo="Typo.h5" Class="mt-4">Resume Admin access required.</MudText>
+        </MudContainer>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private const long MaxUploadSizeBytes = 10 * 1024 * 1024;
+
+    private List<ResumeDto>? resumes;
+    private ResumeEditState? editState;
+    private string? errorMessage;
+    private string? statusMessage;
+    private string? validationError;
+    private bool isBusy;
+    private bool uploadBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMineAsync();
+    }
+
+    private async Task LoadMineAsync()
+    {
+        errorMessage = null;
+        try
+        {
+            resumes = await Http.GetFromJsonAsync<List<ResumeDto>>("api/resumes/mine");
+        }
+        catch
+        {
+            errorMessage = "Could not load your resumes.";
+            resumes = new List<ResumeDto>();
+        }
+    }
+
+    private string ResumeDisplayName(ResumeDto resume)
+    {
+        var name = string.Join(" ", new[] { resume.Payload?.FName, resume.Payload?.LName }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        return string.IsNullOrWhiteSpace(name) ? "(untitled resume)" : name;
+    }
+
+    private void StartNew()
+    {
+        validationError = null;
+        editState = new ResumeEditState
+        {
+            Id = null,
+            IsFeatured = false,
+            Payload = new DigitalResumeModel(),
+        };
+    }
+
+    private void StartEdit(ResumeDto resume)
+    {
+        validationError = null;
+        var payload = resume.Payload ?? new DigitalResumeModel();
+        editState = new ResumeEditState
+        {
+            Id = resume.Id,
+            IsFeatured = resume.IsFeatured,
+            Payload = ClonePayload(payload),
+        };
+    }
+
+    private static DigitalResumeModel ClonePayload(DigitalResumeModel source) => new()
+    {
+        Id = source.Id,
+        FName = source.FName,
+        MName = source.MName,
+        LName = source.LName,
+        Position = source.Position,
+        Subtitle = source.Subtitle,
+        SimpleGoal = source.SimpleGoal,
+        LogoFile = source.LogoFile,
+        Profile = new List<string>(source.Profile ?? new()),
+        Contact = (source.Contact ?? new()).Select(c => new ContactItem { Type = c.Type, DisplayValue = c.DisplayValue, Url = c.Url, MailTo = c.MailTo }).ToList(),
+        Education = (source.Education ?? new()).Select(e => new EducationItem { Name = e.Name, Degree = e.Degree, DegreeName = e.DegreeName, DegreeYear = e.DegreeYear, AreasOfStudy = new List<string>(e.AreasOfStudy ?? new()) }).ToList(),
+        WorkExperience = (source.WorkExperience ?? new()).Select(w => new WorkExperienceItem { CompanyName = w.CompanyName, Position = w.Position, StartDate = w.StartDate, EndDate = w.EndDate, Note = w.Note, BulletList = new List<string>(w.BulletList ?? new()) }).ToList(),
+        CustomSections = (source.CustomSections ?? new()).Select(cs => new CustomSectionItem { Name = cs.Name, CustomItems = (cs.CustomItems ?? new()).Select(ci => new CustomItem { Value = ci.Value, Type = ci.Type }).ToList() }).ToList(),
+        SkillAssessments = (source.SkillAssessments ?? new()).Select(sa => new SkillAssessmentItem { AssessorName = sa.AssessorName, Skills = (sa.Skills ?? new()).Select(s => new SkillItem { Name = s.Name, Value = s.Value }).ToList() }).ToList(),
+    };
+
+    private void CancelEdit()
+    {
+        editState = null;
+        validationError = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (editState is null)
+        {
+            return;
+        }
+
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(editState.Payload, new ValidationContext(editState.Payload), validationResults, validateAllProperties: true))
+        {
+            validationError = string.Join(" ", validationResults.Select(r => r.ErrorMessage));
+            return;
+        }
+
+        validationError = null;
+        isBusy = true;
+        errorMessage = null;
+
+        var request = new CreateOrUpdateResumeRequest
+        {
+            IsFeatured = editState.IsFeatured,
+            Payload = editState.Payload,
+        };
+
+        var response = editState.Id is null
+            ? await Http.PostAsJsonAsync("api/resumes", request)
+            : await Http.PutAsJsonAsync($"api/resumes/{editState.Id}", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            editState = null;
+            statusMessage = "Resume saved.";
+            await LoadMineAsync();
+        }
+        else
+        {
+            errorMessage = "Could not save this resume. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private async Task DeleteAsync(string id)
+    {
+        isBusy = true;
+        errorMessage = null;
+
+        var response = await Http.DeleteAsync($"api/resumes/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadMineAsync();
+        }
+        else
+        {
+            errorMessage = "Could not delete this resume. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private async Task PublishAsync(string id)
+    {
+        isBusy = true;
+        errorMessage = null;
+
+        var response = await Http.PostAsync($"api/resumes/{id}/publish", null);
+        if (response.IsSuccessStatusCode)
+        {
+            statusMessage = "Resume published.";
+            await LoadMineAsync();
+        }
+        else
+        {
+            errorMessage = "Could not publish this resume. Please try again.";
+        }
+
+        isBusy = false;
+    }
+
+    private async Task ParseAsync(string id)
+    {
+        isBusy = true;
+        errorMessage = null;
+        statusMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsync($"api/resumes/{id}/parse", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ParseResumeResponse>();
+                statusMessage = result?.ParseSucceeded == true
+                    ? "Parsed successfully - review the fields below before publishing."
+                    : result?.Message ?? "Automatic parsing failed. You can enter the resume details manually.";
+                await LoadMineAsync();
+                if (result is not null)
+                {
+                    StartEdit(result.Resume);
+                }
+            }
+            else
+            {
+                errorMessage = "Could not parse this resume. Please try again.";
+            }
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task HandleFileChosen(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        uploadBusy = true;
+        errorMessage = null;
+        statusMessage = null;
+
+        try
+        {
+            await using var stream = file.OpenReadStream(MaxUploadSizeBytes);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+            buffer.Position = 0;
+
+            using var content = new StreamContent(buffer);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "api/resumes/upload") { Content = content };
+            request.Headers.Add("X-File-Name", file.Name);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                statusMessage = "Uploaded - starting AI parsing...";
+                var uploaded = await response.Content.ReadFromJsonAsync<ResumeDto>();
+                await LoadMineAsync();
+                if (uploaded is not null)
+                {
+                    await ParseAsync(uploaded.Id);
+                }
+            }
+            else
+            {
+                errorMessage = "Could not upload this PDF. Please try again.";
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Could not upload this PDF. Please try again.";
+        }
+        finally
+        {
+            uploadBusy = false;
+        }
+    }
+
+    private void AddProfileBullet() => editState!.Payload.Profile.Add(string.Empty);
+    private void RemoveProfileBullet(int index) => editState!.Payload.Profile.RemoveAt(index);
+
+    private void AddWorkExperience() => editState!.Payload.WorkExperience.Add(new WorkExperienceItem());
+    private void RemoveWorkExperience(int index) => editState!.Payload.WorkExperience.RemoveAt(index);
+    private void AddBullet(WorkExperienceItem item) => item.BulletList.Add(string.Empty);
+    private void RemoveBullet(WorkExperienceItem item, int index) => item.BulletList.RemoveAt(index);
+
+    private void AddEducation() => editState!.Payload.Education.Add(new EducationItem());
+    private void RemoveEducation(int index) => editState!.Payload.Education.RemoveAt(index);
+    private void AddAreaOfStudy(EducationItem item) => item.AreasOfStudy.Add(string.Empty);
+    private void RemoveAreaOfStudy(EducationItem item, int index) => item.AreasOfStudy.RemoveAt(index);
+
+    private void AddContact() => editState!.Payload.Contact.Add(new ContactItem());
+    private void RemoveContact(int index) => editState!.Payload.Contact.RemoveAt(index);
+
+    private void AddCustomSection() => editState!.Payload.CustomSections.Add(new CustomSectionItem());
+    private void RemoveCustomSection(int index) => editState!.Payload.CustomSections.RemoveAt(index);
+    private void AddCustomItem(CustomSectionItem section) => section.CustomItems.Add(new CustomItem());
+    private void RemoveCustomItem(CustomSectionItem section, int index) => section.CustomItems.RemoveAt(index);
+
+    private void AddSkillAssessment() => editState!.Payload.SkillAssessments.Add(new SkillAssessmentItem());
+    private void RemoveSkillAssessment(int index) => editState!.Payload.SkillAssessments.RemoveAt(index);
+    private void AddSkill(SkillAssessmentItem assessment) => assessment.Skills.Add(new SkillItem());
+    private void RemoveSkill(SkillAssessmentItem assessment, int index) => assessment.Skills.RemoveAt(index);
+
+    private class ResumeEditState
+    {
+        public string? Id { get; set; }
+        public bool IsFeatured { get; set; }
+        public DigitalResumeModel Payload { get; set; } = new();
+    }
+}

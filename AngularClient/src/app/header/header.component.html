@@ -20,6 +20,19 @@
             <a mat-button [routerLink]="['/resume-posters']" [routerLinkActive]="['active-link']" class="nav-item" (click)="closeMenu()">
                 Contact a Poster
             </a>
+
+            @if (authService.isAdmin()) {
+                <button mat-button class="nav-item admin-menu-trigger" [matMenuTriggerFor]="adminMenu">
+                    Admin
+                </button>
+                <mat-menu #adminMenu="matMenu">
+                    <a mat-menu-item [routerLink]="['/admin/resumes']" (click)="closeMenu()">Manage Resumes</a>
+                    @if (authService.isSuperAdmin()) {
+                        <a mat-menu-item [routerLink]="['/projects']" (click)="closeMenu()">Manage Project Listings</a>
+                    }
+                </mat-menu>
+            }
+
             @if (authService.isAuthenticated()) {
                 <span class="nav-item auth-status">
                     Hi, {{ authService.username() }}

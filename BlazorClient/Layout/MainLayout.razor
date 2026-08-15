@@ -12,6 +12,22 @@
                     <MudNavLink Href="/projects">Current Project(s)</MudNavLink>
                     <MudNavLink Href="/testimonials">Testimonials</MudNavLink>
                     <MudNavLink Href="/resume-posters">Contact a Poster</MudNavLink>
+
+                    @* SuperAdmin (#28) implies ResumeAdmin's "admin" permissions, mirroring the
+                       backend's FunctionContextAuthExtensions.IsInRoleOrHigher (#31). *@
+                    <AuthorizeView Roles="admin,superadmin">
+                        <Authorized>
+                            <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Class="jem-nav-admin-group">
+                                <MudNavLink Href="/admin/resumes">Manage Resumes</MudNavLink>
+                                <AuthorizeView Roles="superadmin" Context="superAdminContext">
+                                    <Authorized>
+                                        <MudNavLink Href="/projects">Manage Project Listings</MudNavLink>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </MudNavGroup>
+                        </Authorized>
+                    </AuthorizeView>
+
                     <AuthorizeView>
                         <Authorized>
                             <span class="auth-status">Hi, @context.User.Identity?.Name</span>
@@ -40,6 +56,20 @@
             <MudNavLink Href="/projects" OnClick="CloseDrawer">Current Project(s)</MudNavLink>
             <MudNavLink Href="/testimonials" OnClick="CloseDrawer">Testimonials</MudNavLink>
             <MudNavLink Href="/resume-posters" OnClick="CloseDrawer">Contact a Poster</MudNavLink>
+
+            <AuthorizeView Roles="admin,superadmin">
+                <Authorized>
+                    <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Class="jem-nav-admin-group">
+                        <MudNavLink Href="/admin/resumes" OnClick="CloseDrawer">Manage Resumes</MudNavLink>
+                        <AuthorizeView Roles="superadmin" Context="superAdminContext">
+                            <Authorized>
+                                <MudNavLink Href="/projects" OnClick="CloseDrawer">Manage Project Listings</MudNavLink>
+                            </Authorized>
+                        </AuthorizeView>
+                    </MudNavGroup>
+                </Authorized>
+            </AuthorizeView>
+
             <AuthorizeView>
                 <Authorized>
                     <MudText Class="auth-status px-4 py-2">Hi, @context.User.Identity?.Name</MudText>

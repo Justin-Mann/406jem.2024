@@ -37,6 +37,10 @@ export class AuthService {
     return role === 'admin' || role === 'superadmin';
   });
 
+  // Distinct from isAdmin (which is true for "admin" *or* "superadmin", i.e. ResumeAdmin-or-
+  // higher) - this is for nav/UI surfaces (#31) that should only appear for the top role.
+  readonly isSuperAdmin = computed(() => this.currentUser()?.role === 'superadmin');
+
   constructor() {
     this.http.get<MeResponse>(`${this.apiBaseUrl}/api/auth/me`).pipe(
       catchError(() => of(null))
