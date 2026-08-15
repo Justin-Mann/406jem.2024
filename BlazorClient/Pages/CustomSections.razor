@@ -6,7 +6,7 @@
     {
         @if ((!string.IsNullOrEmpty(@csi.Name)) && csi.CustomItems != null)
         {
-            <div class="sectionheader">@csi.Name</div>
+            <MudText Typo="Typo.h6" Class="sectionheader">@csi.Name</MudText>
             <div class="sectionbody">
                 <ul class="customList">
                     @foreach (var item in csi.CustomItems)

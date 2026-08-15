@@ -1,55 +1,80 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject BlazorApp.BlazorClient.Services.AuthenticationService AuthService
-<div class="page">
-    <main>
-        <div class="top-row px-4 top-menu-row">
+@inject NavigationManager NavigationManager
+
+<MudLayout>
+    <MudAppBar Elevation="0" Color="Color.Transparent" Class="jem-appbar">
+        <div class="top-menu-row jem-appbar-inner">
             <div class="top-menu">
-                <a href="/" class="@GetActive("*")">Home</a>
-                <a href="/digitalresume" class="@GetActive("digitalresume")">Digital Resume</a>
-                <a href="/projects" class="@GetActive("projects")">Current Project(s)</a>
-                <a href="/testimonials" class="@GetActive("testimonials")">Testimonials</a>
-                <a href="/resume-posters" class="@GetActive("resume-posters")">Contact a Poster</a>
-                <AuthorizeView>
-                    <Authorized>
-                        <span class="auth-status">Hi, @context.User.Identity?.Name</span>
-                        <a href="javascript:void(0)" @onclick="HandleLogoutAsync">Log Out</a>
-                    </Authorized>
-                    <NotAuthorized>
-                        <a href="/login" class="@GetActive("login")">Log In</a>
-                        <a href="/register" class="@GetActive("register")">Register</a>
-                    </NotAuthorized>
-                </AuthorizeView>
+                <MudNavMenu Class="jem-nav-desktop">
+                    <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+                    <MudNavLink Href="/digitalresume">Digital Resume</MudNavLink>
+                    <MudNavLink Href="/projects">Current Project(s)</MudNavLink>
+                    <MudNavLink Href="/testimonials">Testimonials</MudNavLink>
+                    <MudNavLink Href="/resume-posters">Contact a Poster</MudNavLink>
+                    <AuthorizeView>
+                        <Authorized>
+                            <span class="auth-status">Hi, @context.User.Identity?.Name</span>
+                            <MudNavLink OnClick="HandleLogoutAsync">Log Out</MudNavLink>
+                        </Authorized>
+                        <NotAuthorized>
+                            <MudNavLink Href="/login">Log In</MudNavLink>
+                            <MudNavLink Href="/register">Register</MudNavLink>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </MudNavMenu>
+
+                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                Color="Color.Primary"
+                                Class="jem-nav-mobile-btn"
+                                aria-label="Open navigation menu"
+                                OnClick="@(() => drawerOpen = true)" />
             </div>
         </div>
+    </MudAppBar>
 
-        <article class="content px-4">
-            @Body
-        </article>
-        <div class="row fixed-row-bottom">
+    <MudDrawer @bind-Open="drawerOpen" Anchor="Anchor.Top" Elevation="2" Variant="DrawerVariant.Temporary" Class="jem-nav-drawer">
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" OnClick="CloseDrawer">Home</MudNavLink>
+            <MudNavLink Href="/digitalresume" OnClick="CloseDrawer">Digital Resume</MudNavLink>
+            <MudNavLink Href="/projects" OnClick="CloseDrawer">Current Project(s)</MudNavLink>
+            <MudNavLink Href="/testimonials" OnClick="CloseDrawer">Testimonials</MudNavLink>
+            <MudNavLink Href="/resume-posters" OnClick="CloseDrawer">Contact a Poster</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudText Class="auth-status px-4 py-2">Hi, @context.User.Identity?.Name</MudText>
+                    <MudNavLink OnClick="HandleLogoutFromDrawerAsync">Log Out</MudNavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <MudNavLink Href="/login" OnClick="CloseDrawer">Log In</MudNavLink>
+                    <MudNavLink Href="/register" OnClick="CloseDrawer">Register</MudNavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="content px-4">
+        @Body
+        <div class="fixed-row-bottom">
             <img class="bojack-footer" src="img/bojack-samuri_bookends_780x100.png" />
         </div>
-    </main>
-</div>
+    </MudMainContent>
+</MudLayout>
+
 @code {
+    private bool drawerOpen;
 
-    [Inject]
-    NavigationManager NavigationManager { get; set; }
+    private void CloseDrawer() => drawerOpen = false;
 
-    protected override void OnInitialized() => NavigationManager.LocationChanged += (s, e) => StateHasChanged();
-
-    bool IsActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix)
-    {
-        if (href == "*" && NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Length == 0)
-            return true;
-        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToLower();
-        return navLinkMatch == NavLinkMatch.All ? relativePath == href.ToLower() : relativePath.StartsWith(href.ToLower());
-    }
-
-    string GetActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix) => IsActive(href, navLinkMatch) ? "active" : "";
-
-    async Task HandleLogoutAsync()
+    private async Task HandleLogoutAsync()
     {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/", forceLoad: false);
+    }
+
+    private async Task HandleLogoutFromDrawerAsync()
+    {
+        CloseDrawer();
+        await HandleLogoutAsync();
     }
 }
