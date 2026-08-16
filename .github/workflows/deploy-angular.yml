@@ -66,8 +66,11 @@ jobs:
           Please read the test failure output from the CI run above, find the root cause
           in the AngularClient code or tests, fix it, and open a pull request."
 
-  build_and_deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  # PR preview deploys — ungated, so the existing "check the live preview before
+  # merging" workflow (see CLAUDE.md's human-approval-gate note) keeps working exactly
+  # as before. Only the production-facing job below requires manual approval.
+  deploy_preview:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     needs: test
     name: Build and Deploy Angular Client
@@ -97,6 +100,45 @@ jobs:
       # (needs 22.22.3+, 24.15.0+, or 26.0.0+; Oryx currently tops out at 22.22.0
       # and 24.13.0). skip_app_build uploads the already-built dist/ output instead
       # of asking Azure to build it.
+      - name: Deploy to Azure Static Web Apps
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GENTLE_CLIFF_07E56211E }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "./AngularClient/dist/angular-client/browser"
+          skip_app_build: true
+
+  # Production deploy — gated behind the "production" GitHub Environment's required
+  # reviewer. Nothing here goes live until manually approved in the Actions UI.
+  deploy_production:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: test
+    name: Build and Deploy Angular Client (Production)
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: AngularClient/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./AngularClient
+
+      - name: Build
+        run: npx ng build
+        working-directory: ./AngularClient
+
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

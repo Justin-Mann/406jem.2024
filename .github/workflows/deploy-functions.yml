@@ -216,6 +216,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: integration-test
     name: Promote to Production
+    environment: production
 
     steps:
       - name: Login to Azure

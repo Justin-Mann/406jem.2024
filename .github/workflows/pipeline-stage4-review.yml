@@ -61,4 +61,9 @@ jobs:
                stage, and GitHub only fires a new "labeled" webhook event when a label
                transitions from absent to present. If "ready-for-review" is left in place,
                Stage 5's later re-add is a silent no-op and the pipeline stalls with no error.
-            7. Post a summary comment on the issue with your verdict.
+            7. Post a summary comment on the issue with your verdict. This comment MUST include
+               a direct link to your detailed PR review from step 4 (e.g.
+               `https://github.com/${{ github.repository }}/pull/<PR-number>#issuecomment-<id>`,
+               which `gh pr view <PR> --json comments` or the review API response gives you) —
+               the issue-side comment is a summary, not a substitute, and the reader must be able
+               to reach the full review from it in one click.

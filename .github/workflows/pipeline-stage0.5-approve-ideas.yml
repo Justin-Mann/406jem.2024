@@ -1,0 +1,63 @@
+name: Stage 0.5 - Approve Proposed Ideas
+
+# Polls issues labeled "proposed" (opened by Stage 0 - Ideate) for a 👍/👎 reaction
+# from the repo owner and promotes or declines them accordingly. Pure `gh api`/bash,
+# no Claude Code Action invocation — reactions have no native GitHub Actions trigger
+# event, so this has to poll rather than react to a webhook. Near-zero cost since
+# there's no LLM call in the common case of "nothing pending."
+#
+# Required GitHub secrets:
+#   CLAUDE_NOTIFY_PAT — same PAT used by every other pipeline stage. Must be a PAT
+#                        (not GITHUB_TOKEN): the "claude" label add here must trigger
+#                        Stage 1, and labels added by GITHUB_TOKEN don't trigger other
+#                        workflow runs (see CLAUDE.md's pipeline token note).
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+env:
+  APPROVER_LOGIN: Justin-Mann
+
+jobs:
+  check-reactions:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check proposed issues for an approve/decline reaction
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_NOTIFY_PAT }}
+        run: |
+          set -euo pipefail
+
+          issue_numbers=$(gh issue list --repo "${{ github.repository }}" --label proposed --state open --json number --jq '.[].number')
+
+          if [ -z "$issue_numbers" ]; then
+            echo "No proposed issues pending."
+            exit 0
+          fi
+
+          for n in $issue_numbers; do
+            echo "Checking issue #$n..."
+
+            reactions=$(gh api "repos/${{ github.repository }}/issues/$n/reactions" --jq '.')
+
+            approved=$(echo "$reactions" | jq -r --arg login "$APPROVER_LOGIN" \
+              '[.[] | select(.content == "+1" and .user.login == $login)] | length')
+            declined=$(echo "$reactions" | jq -r --arg login "$APPROVER_LOGIN" \
+              '[.[] | select(.content == "-1" and .user.login == $login)] | length')
+
+            if [ "$approved" -gt 0 ]; then
+              echo "Issue #$n approved by $APPROVER_LOGIN — promoting to the pipeline."
+              gh issue edit "$n" --repo "${{ github.repository }}" --remove-label proposed --add-label claude
+              gh issue comment "$n" --repo "${{ github.repository }}" --body "Approved via 👍 from @$APPROVER_LOGIN — labeled \`claude\` to start Stage 1."
+            elif [ "$declined" -gt 0 ]; then
+              echo "Issue #$n declined by $APPROVER_LOGIN — closing."
+              gh issue comment "$n" --repo "${{ github.repository }}" --body "Declined via 👎 from @$APPROVER_LOGIN — closing without implementation."
+              gh issue close "$n" --repo "${{ github.repository }}"
+            else
+              echo "Issue #$n still awaiting a decision."
+            fi
+          done

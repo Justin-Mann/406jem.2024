@@ -22,7 +22,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: read
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -45,30 +45,53 @@ jobs:
             Run `gh issue list --label claude --state open` and `gh pr list --state open`.
             If either returns any results, a previous cycle is still in flight — post nothing
             and end immediately. Do not queue up a second idea on top of an unfinished one.
+            (Issues labeled "proposed" awaiting approval do NOT count as backlog — it's fine to
+            propose a new idea while older ones are still awaiting a 👍/👎, since nothing is
+            actually in flight for those.)
 
-            Step 2 — Research (budget: at most 4 web searches total):
-            Look at the current resume/site content (StaticData/Resumes/JustinMann_062024.json,
-            the Blazor/Angular page components, Projects pages) to understand what's already
-            there. Then use a handful of web searches to find current, credible ideas for what
-            makes a strong developer portfolio/resume site — e.g. content gaps, presentation
-            patterns, accessibility, or small feature ideas. Stay tightly scoped to this site;
-            do not go on an open-ended research tangent.
+            Step 2 — Competitor research file (read first, refresh rarely):
+            Read `.github/ideate-data/competitor-resume-sites.md`. Check its "Last updated" date.
+            - If the file is missing, empty, or its date is more than ~60 days old: spend up to
+              3 of your 4 web searches researching 3-5 notable resume/portfolio/developer-portfolio
+              sites (well-known personal sites, template galleries, or sites explicitly praised in
+              career/dev-portfolio roundups) and what specific features make them effective. Rewrite
+              the file with a "Last updated" date and a ranked list (site name, URL, notable
+              features, why relevant). Commit and push it directly to `main` with message
+              "docs: refresh competitor resume-site research [automated]" (same direct-to-main
+              pattern `claude-maintain-md.yml` already uses for doc/data files — no PR needed).
+            - Otherwise: skip researching, just use the existing file's contents as-is. This keeps
+              routine runs cheap — most runs should only read this file, not re-research it.
 
-            Step 3 — Pick ONE idea:
+            Step 3 — Research current site + remaining budget:
+            Look at the current resume/site content (fetch `GET https://api.406jem.com/api/resumes/myresume`
+            for the live, current resume data — NOT the static
+            StaticData/Resumes/JustinMann_062024.json file, which is stale/superseded), the
+            Blazor/Angular page components, and Projects pages, to understand what's already
+            there. Use any remaining web-search budget (out of the 4 total) for anything not
+            already covered by the competitor research file. Stay tightly scoped to this site; do
+            not go on an open-ended research tangent.
+
+            Step 4 — Pick ONE idea:
             Choose a single change scoped to roughly one PR: a content addition, a small
-            feature, or a presentation improvement. Prefer concrete and verifiable over vague
-            ("add a testimonials section sourced from X" beats "improve the site's appeal").
-            It must be implementable by an autonomous coding agent working from the issue text
-            alone, and must respect the shared design language and conventions in CLAUDE.md.
+            feature, or a presentation improvement — draw on the competitor research file as a
+            primary source of inspiration, alongside your own read of the current site. Prefer
+            concrete and verifiable over vague ("add a testimonials section sourced from X" beats
+            "improve the site's appeal"). It must be implementable by an autonomous coding agent
+            working from the issue text alone, and must respect the shared design language and
+            conventions in CLAUDE.md.
 
-            Step 4 — Open the issue:
+            Step 5 — Open the issue (proposed, not yet approved):
             Use `gh issue create` to file it with:
             - A clear, specific title.
-            - A body with: the idea, why it's worth doing (cite what you found, if research-based),
-              which project(s) it touches (BlazorClient / AngularClient / ResumeFunctions), and
-              concrete acceptance criteria.
-            Then add the "claude" label (`gh issue edit <number> --add-label claude`) to trigger
-            Stage 1 of the pipeline.
+            - A body with: the idea, why it's worth doing (cite what you found — from the
+              competitor file and/or fresh research), which project(s) it touches (BlazorClient /
+              AngularClient / ResumeFunctions), concrete acceptance criteria, and this line
+              verbatim at the end: "👍 this issue to approve it for implementation, or 👎 (or
+              just ignore it) to decline."
+            Then add the "proposed" label (`gh issue edit <number> --add-label proposed`) —
+            NOT "claude". This issue is now a pending proposal; a separate scheduled workflow
+            watches for a 👍 reaction and promotes it into the pipeline. Do not add "claude"
+            yourself and do not implement anything.
 
             If you don't find anything genuinely worth doing, it is fine to open nothing — do
             not create a low-value issue just to produce output.
