@@ -212,11 +212,18 @@ jobs:
           in the ResumeFunctions code or tests, fix it, and open a pull request."
 
   # ── 5. Promote staging → production ───────────────────────────────────────
+  # Gated behind an explicit workflow_dispatch, not automatic on push: a push to
+  # main always deploys+tests staging, but production only updates when manually
+  # triggered (Actions tab → this workflow → "Run workflow"). GitHub's environment-
+  # protection "required reviewers" was tried first, but can_admins_bypass defaults
+  # to true and isn't overridable via the API for a personal-account (non-org) repo
+  # — the repo owner always bypasses it, which is every deploy here. This
+  # workflow_dispatch-only gate is a real pause point that doesn't depend on that.
   promote:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: integration-test
     name: Promote to Production
-    environment: production
 
     steps:
       - name: Login to Azure
