@@ -12,5 +12,6 @@ export const routes: Routes = [
     { path: 'testimonials', loadComponent: () => import('./testimonials/testimonials.component').then(m => m.TestimonialsComponent) },
     { path: 'resume-posters', loadComponent: () => import('./resume-posters/resume-posters.component').then(m => m.ResumePostersComponent) },
     { path: 'admin/resumes', loadComponent: () => import('./manage-resumes/manage-resumes.component').then(m => m.ManageResumesComponent) },
+    { path: 'admin/github-activity', loadComponent: () => import('./github-activity-settings/github-activity-settings.component').then(m => m.GitHubActivitySettingsComponent) },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];

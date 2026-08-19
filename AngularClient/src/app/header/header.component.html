@@ -27,6 +27,7 @@
                 </button>
                 <mat-menu #adminMenu="matMenu">
                     <a mat-menu-item [routerLink]="['/admin/resumes']" (click)="closeMenu()">Manage Resumes</a>
+                    <a mat-menu-item [routerLink]="['/admin/github-activity']" (click)="closeMenu()">GitHub Activity Settings</a>
                     @if (authService.isSuperAdmin()) {
                         <a mat-menu-item [routerLink]="['/projects']" (click)="closeMenu()">Manage Project Listings</a>
                     }

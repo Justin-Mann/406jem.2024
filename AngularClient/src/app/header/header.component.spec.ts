@@ -80,6 +80,7 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
 
     expect(document.body.textContent).toContain('Manage Resumes');
+    expect(document.body.textContent).toContain('GitHub Activity Settings');
     expect(document.body.textContent).not.toContain('Manage Project Listings');
   });
 });
