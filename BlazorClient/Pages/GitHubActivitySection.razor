@@ -1,0 +1,73 @@
+@using BlazorApp.Models
+@using BlazorApp.BlazorClient.Services
+@inject GitHubActivityService GitHubActivityService
+
+@if (state == LoadState.Loading)
+{
+    <MudGrid Justify="Justify.Center" Spacing="4" Class="mt-2">
+        <MudItem xs="12" sm="8" md="6">
+            <MudCard Class="jem-card" Elevation="0">
+                <MudCardHeader Class="card-header">
+                    <CardHeaderContent>GitHub Activity</CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="card-body">
+                    <MudText Align="Align.Center">Loading GitHub activity...</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+else if (state == LoadState.Ready)
+{
+    <MudGrid Justify="Justify.Center" Spacing="4" Class="mt-2">
+        <MudItem xs="12" sm="8" md="6">
+            <MudCard Class="jem-card" Elevation="0">
+                <MudCardHeader Class="card-header">
+                    <CardHeaderContent>GitHub Activity</CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="card-body">
+                    <ul class="github-activity-list">
+                        @foreach (var repo in repos)
+                        {
+                            <li class="github-activity-item">
+                                <MudLink Href="@repo.HtmlUrl" Target="_new" Class="github-activity-name">@repo.Name</MudLink>
+                                @if (!string.IsNullOrWhiteSpace(repo.Description))
+                                {
+                                    <p class="github-activity-description">@repo.Description</p>
+                                }
+                                <span class="github-activity-meta">
+                                    @if (!string.IsNullOrWhiteSpace(repo.Language))
+                                    {
+                                        <span class="github-activity-language">@repo.Language</span>
+                                    }
+                                    <span class="github-activity-stars">&#9733; @repo.StargazersCount</span>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private enum LoadState { Loading, Hidden, Ready }
+
+    private LoadState state = LoadState.Loading;
+    private IReadOnlyList<GitHubRepoModel> repos = Array.Empty<GitHubRepoModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await GitHubActivityService.GetActivityAsync();
+        if (result is null || result.Count == 0)
+        {
+            state = LoadState.Hidden;
+        }
+        else
+        {
+            repos = result;
+            state = LoadState.Ready;
+        }
+    }
+}

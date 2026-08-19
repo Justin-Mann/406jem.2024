@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using BlazorApp.BlazorClient.Pages;
+using BlazorApp.BlazorClient.Services;
 using BlazorClient.Tests.Helpers;
 using Bunit;
 using Bunit.TestDoubles;
@@ -34,7 +35,21 @@ public class ProjectsPageTests : MudBunitTestContext
 
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         Services.AddScoped(_ => client);
+        RegisterGitHubActivityService();
         return handler;
+    }
+
+    /// <summary>Projects_v2 renders GitHubActivitySection unconditionally (#68), which needs its
+    /// own GitHubActivityService in DI - unrelated to this page's own project-listing tests, so
+    /// it's stubbed to the "disabled/unconfigured" (render-nothing) case here.</summary>
+    private void RegisterGitHubActivityService()
+    {
+        var apiHttp = new HttpClient(new FakeHttpHandler("""{"enabled":false,"gitHubUsername":null,"repoCount":5,"pinnedRepoNames":[]}"""))
+        {
+            BaseAddress = new Uri("http://localhost"),
+        };
+        var gitHubHttp = new HttpClient(new FakeHttpHandler("[]")) { BaseAddress = new Uri("https://api.github.test/") };
+        Services.AddScoped(_ => new GitHubActivityService(apiHttp, gitHubHttp));
     }
 
     [Fact]

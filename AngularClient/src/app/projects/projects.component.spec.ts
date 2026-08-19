@@ -3,6 +3,7 @@ import { of, throwError } from 'rxjs';
 import { ProjectsComponent } from './projects.component';
 import { ProjectListingsDataService } from '../services/data/project-listings-data.service';
 import { AuthService } from '../services/auth/auth.service';
+import { GitHubActivityDataService } from '../services/data/github-activity-data.service';
 import { ProjectListing, ProjectListingDto } from '../interfaces/project-listing.interface';
 
 const publicListing: ProjectListing = {
@@ -29,11 +30,15 @@ describe('ProjectsComponent', () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'isAdmin']);
     authServiceSpy.isAdmin.and.returnValue(false);
 
+    const gitHubActivityDataServiceSpy = jasmine.createSpyObj('GitHubActivityDataService', ['getActivity']);
+    gitHubActivityDataServiceSpy.getActivity.and.returnValue(of(null));
+
     await TestBed.configureTestingModule({
       imports: [ProjectsComponent],
       providers: [
         { provide: ProjectListingsDataService, useValue: dataServiceSpy },
-        { provide: AuthService, useValue: authServiceSpy }
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: GitHubActivityDataService, useValue: gitHubActivityDataServiceSpy }
       ]
     }).compileComponents();
 
