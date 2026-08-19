@@ -47,6 +47,7 @@ var builder = new HostBuilder()
         services.AddSingleton<IResumeSnapshotStore, BlobResumeSnapshotStore>();
         services.AddSingleton<IProjectListingStore, TableProjectListingStore>();
         services.AddSingleton<ISiteConfigStore, TableSiteConfigStore>();
+        services.AddSingleton<IGitHubActivitySettingsStore, TableGitHubActivitySettingsStore>();
         services.AddSingleton<IPdfTextExtractor, PdfPigTextExtractor>();
         services.AddSingleton<IResumeAiClient, AnthropicResumeAiClient>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();

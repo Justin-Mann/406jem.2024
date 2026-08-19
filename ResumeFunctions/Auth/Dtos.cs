@@ -50,6 +50,13 @@ namespace ResumeFunctions.Auth.Dtos
 
     public record UpdateSiteConfigRequest(string? PublicResumeOwnerId, string? PublicProjectsOwnerId);
 
+    /// <summary>#69's per-owner GitHub Activity display configuration. No GitHub API calls
+    /// happen anywhere in this DTO's endpoints — purely storage for what an admin has
+    /// configured; the actual fetch/display of GitHub data is #68.</summary>
+    public record GitHubActivitySettingsDto(bool Enabled, string? GitHubUsername, int RepoCount, IReadOnlyList<string> PinnedRepoNames);
+
+    public record UpdateGitHubActivitySettingsRequest(bool Enabled, string? GitHubUsername, int? RepoCount, List<string>? PinnedRepoNames);
+
     /// <summary>#45's public resume-poster directory entry - name only, never an email address.</summary>
     public record ResumePosterDto(string Id, string DisplayName);
 
