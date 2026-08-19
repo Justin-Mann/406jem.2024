@@ -10,6 +10,13 @@ name: Stage 0 - Ideate Site Improvements
 #                             contents:read. Must be a PAT (not GITHUB_TOKEN): labels
 #                             added by the default GITHUB_TOKEN do not trigger other
 #                             workflow runs, so Stage 1 would never fire.
+#
+# --max-turns 35: bumped from 20 after the 2026-08-17 weekly run hit the old cap and
+# died with error_max_turns (a hard error, not a graceful stop -- $0.79 spent, nothing
+# committed or created) mid-way through a cold-start competitor-research file
+# refresh, which needs real budget for 3 web searches + a file write + commit on top
+# of the rest of the flow. Steady-state runs (file already fresh) need far less, but
+# the cap has to cover the worst case.
 
 on:
   schedule:
@@ -31,7 +38,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.CLAUDE_NOTIFY_PAT }}
-          claude_args: "--max-turns 20 --permission-mode bypassPermissions"
+          claude_args: "--max-turns 35 --permission-mode bypassPermissions"
           prompt: |
             You are Stage 0 of a multi-agent CI/CD pipeline for the 406jem.2026 repository —
             a personal portfolio/resume site (Blazor + Angular clients, Azure Functions API).
