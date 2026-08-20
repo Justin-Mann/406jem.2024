@@ -1,0 +1,17 @@
+.github-activity-settings-page {
+  padding-bottom: 2rem;
+}
+
+.github-activity-pinned-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.github-activity-pinned-item {
+  padding: 0.25rem 0;
+}
+
+.github-activity-access-required {
+  margin-top: 1rem;
+  font-weight: 600;
+}

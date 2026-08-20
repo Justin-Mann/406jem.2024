@@ -19,6 +19,7 @@
                         <Authorized>
                             <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Class="jem-nav-admin-group">
                                 <MudNavLink Href="/admin/resumes">Manage Resumes</MudNavLink>
+                                <MudNavLink Href="/admin/github-activity">GitHub Activity Settings</MudNavLink>
                                 <AuthorizeView Roles="superadmin" Context="superAdminContext">
                                     <Authorized>
                                         <MudNavLink Href="/projects">Manage Project Listings</MudNavLink>
@@ -61,6 +62,7 @@
                 <Authorized>
                     <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Class="jem-nav-admin-group">
                         <MudNavLink Href="/admin/resumes" OnClick="CloseDrawer">Manage Resumes</MudNavLink>
+                        <MudNavLink Href="/admin/github-activity" OnClick="CloseDrawer">GitHub Activity Settings</MudNavLink>
                         <AuthorizeView Roles="superadmin" Context="superAdminContext">
                             <Authorized>
                                 <MudNavLink Href="/projects" OnClick="CloseDrawer">Manage Project Listings</MudNavLink>

@@ -1,0 +1,141 @@
+@page "/admin/github-activity"
+@using BlazorApp.Models
+@inject HttpClient Http
+
+<PageTitle>GitHub Activity Settings</PageTitle>
+
+@* SuperAdmin (#28) implies ResumeAdmin's "admin" permissions, mirroring the backend's
+   FunctionContextAuthExtensions.IsInRoleOrHigher - see ManageResumes.razor. *@
+<AuthorizeView Roles="admin,superadmin" Context="authorizeContext">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="github-activity-settings-page">
+            <MudText Typo="Typo.h4" Class="mb-2">GitHub Activity Settings</MudText>
+            <MudText Class="mb-4">
+                Configure the GitHub Activity feature shown on your public resume - turn it on or
+                off, set the GitHub username to pull from, how many repos to show, and optionally
+                pin specific repos.
+            </MudText>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3 github-activity-error">@errorMessage</MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-3 github-activity-status">@statusMessage</MudAlert>
+            }
+
+            @if (settings is null)
+            {
+                <MudText>Loading your settings...</MudText>
+            }
+            else
+            {
+                <MudCard Class="mb-3" Elevation="0" Outlined="true">
+                    <MudCardContent>
+                        <MudSwitch T="bool" @bind-Value="settings.Enabled" Label="Enable GitHub Activity" Color="Color.Primary" Class="mb-2 github-activity-enabled-switch" />
+                        <MudTextField T="string" Label="GitHub username" Placeholder="GitHub username" @bind-Value="settings.GitHubUsername" Immediate="true" Class="mb-2 github-activity-username-input" />
+                        <MudNumericField T="int" Label="Repo count" Placeholder="Repo count" @bind-Value="settings.RepoCount" Min="1" Class="mb-2 github-activity-repocount-input" />
+
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">Pinned Repos</MudText>
+                        <MudStack Row="true" Spacing="2" Class="mb-2 align-center">
+                            <MudTextField T="string" Placeholder="Repo name" @bind-Value="newPinnedRepo" Immediate="true" Class="flex-grow-1 github-activity-pinned-input" />
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="github-activity-pinned-add-btn" OnClick="AddPinnedRepo">+ Add</MudButton>
+                        </MudStack>
+                        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2" Class="mb-2 github-activity-pinned-list">
+                            @for (var i = 0; i < settings.PinnedRepoNames.Count; i++)
+                            {
+                                var index = i;
+                                <MudChip T="string" Value="@settings.PinnedRepoNames[index]" Class="github-activity-pinned-chip" OnClose="() => RemovePinnedRepo(index)">@settings.PinnedRepoNames[index]</MudChip>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@isBusy" Class="github-activity-save-btn" OnClick="SaveAsync">Save</MudButton>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <MudContainer MaxWidth="MaxWidth.Medium">
+            <MudText Typo="Typo.h5" Class="mt-4">Resume Admin access required.</MudText>
+        </MudContainer>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private GitHubActivitySettingsDto? settings;
+    private string? errorMessage;
+    private string? statusMessage;
+    private string newPinnedRepo = string.Empty;
+    private bool isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        errorMessage = null;
+        try
+        {
+            settings = await Http.GetFromJsonAsync<GitHubActivitySettingsDto>("api/github-activity-settings/mine");
+        }
+        catch
+        {
+            errorMessage = "Could not load your GitHub Activity settings.";
+            settings = new GitHubActivitySettingsDto();
+        }
+    }
+
+    private void AddPinnedRepo()
+    {
+        var name = newPinnedRepo.Trim();
+        if (string.IsNullOrEmpty(name) || settings is null)
+        {
+            return;
+        }
+
+        settings.PinnedRepoNames.Add(name);
+        newPinnedRepo = string.Empty;
+    }
+
+    private void RemovePinnedRepo(int index)
+    {
+        settings?.PinnedRepoNames.RemoveAt(index);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (settings is null)
+        {
+            return;
+        }
+
+        isBusy = true;
+        errorMessage = null;
+        statusMessage = null;
+
+        var request = new UpdateGitHubActivitySettingsRequest
+        {
+            Enabled = settings.Enabled,
+            GitHubUsername = settings.GitHubUsername,
+            RepoCount = settings.RepoCount,
+            PinnedRepoNames = settings.PinnedRepoNames,
+        };
+
+        var response = await Http.PutAsJsonAsync("api/github-activity-settings/mine", request);
+        if (response.IsSuccessStatusCode)
+        {
+            settings = await response.Content.ReadFromJsonAsync<GitHubActivitySettingsDto>();
+            statusMessage = "GitHub Activity settings saved.";
+        }
+        else
+        {
+            errorMessage = "Could not save your GitHub Activity settings. Please try again.";
+        }
+
+        isBusy = false;
+    }
+}

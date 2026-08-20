@@ -30,6 +30,7 @@ public class MainLayoutTests : MudBunitTestContext
         var cut = RenderComponent<MainLayout>();
 
         Assert.DoesNotContain("Manage Resumes", cut.Markup);
+        Assert.DoesNotContain("GitHub Activity Settings", cut.Markup);
         Assert.DoesNotContain("Manage Project Listings", cut.Markup);
     }
 
@@ -44,6 +45,7 @@ public class MainLayoutTests : MudBunitTestContext
         var cut = RenderComponent<MainLayout>();
 
         Assert.Contains("Manage Resumes", cut.Markup);
+        Assert.Contains("GitHub Activity Settings", cut.Markup);
         Assert.DoesNotContain("Manage Project Listings", cut.Markup);
     }
 
@@ -58,6 +60,7 @@ public class MainLayoutTests : MudBunitTestContext
         var cut = RenderComponent<MainLayout>();
 
         Assert.Contains("Manage Resumes", cut.Markup);
+        Assert.Contains("GitHub Activity Settings", cut.Markup);
         Assert.Contains("Manage Project Listings", cut.Markup);
     }
 }
