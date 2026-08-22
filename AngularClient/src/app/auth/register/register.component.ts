@@ -41,7 +41,7 @@ export class RegisterComponent {
         if (loginError) {
           this.errorMessage.set(loginError);
         } else {
-          this.router.navigateByUrl('/testimonials');
+          this.router.navigateByUrl('/');
         }
       });
     });

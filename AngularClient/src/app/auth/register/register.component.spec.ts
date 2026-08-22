@@ -40,7 +40,7 @@ describe('RegisterComponent', () => {
 
     expect(authServiceSpy.register).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', password: 'password123' });
     expect(authServiceSpy.login).toHaveBeenCalledWith({ username: 'jane', password: 'password123' });
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/testimonials');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
   it('shows the error and does not attempt login when registration fails', () => {
