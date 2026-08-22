@@ -21,7 +21,8 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Pages:**
   - `Pages/Home.razor` — home/landing page (`/`)
   - `Pages/DigitalResume.razor` — resume view fetched from API (`/digitalresume`)
-  - `Pages/Projects.v2.razor` — links to projects and external resources (`/projects`)
+  - `Pages/Projects.v2.razor` — links to projects and external resources (`/projects`); renders `GitHubActivitySection` (see GitHub Activity display below)
+  - `Pages/GitHubActivitySection.razor` — GitHub Activity card rendered on the Projects page (#68/#69); loading/hidden/ready states, renders nothing (not an empty card) when hidden
   - `Pages/GeneralSection.razor` — reusable profile bullet list component
   - `Pages/WorkExperienceSection.razor` — reusable XP section component
   - `Pages/ContactSection.razor` — reusable contact list component
@@ -29,8 +30,9 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
   - `Pages/CustomSections.razor` — reusable custom skills/tech section component
   - `Pages/Auth/Login.razor` (`/login`), `Pages/Auth/Register.razor` (`/register`) — auth forms; register auto-logs-in on success
   - `Pages/Testimonials.razor` (`/testimonials`) — **the gated feature proving login works end-to-end** (see Auth section below): list is public, the post form only renders inside `<AuthorizeView><Authorized>`, delete button only for `<AuthorizeView Roles="admin">`
-- **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat); `Models/AuthModels.cs` — `AuthResponse`, `ErrorResponse`, `TestimonialItem`
+- **Models:** `Models/DigitalResumeModel.cs` — POCOs matching the API JSON shape; uses `System.Text.Json` serialization attributes; `ContactTypeEnum`, `CustomTypeEmun` (note typo in original preserved for compat); `Models/AuthModels.cs` — `AuthResponse`, `ErrorResponse`, `TestimonialItem`; `Models/GitHubActivityModels.cs` — `GitHubActivitySettingsDto`, `GitHubRepoModel` (see GitHub Activity display below)
 - **Auth (`Services/`):** see the shared "User Accounts (Phase 1)" and "Cross-client cookie session (#47)" sections below — `JwtAuthenticationStateProvider` (custom `AuthenticationStateProvider`; since #47 just holds whatever state `AuthenticationService` last told it, no token decoding), `AuthenticationService` (register/login/logout HTTP calls; hydrates on startup via `GET /api/auth/me`), `SessionCookieHandler` (`DelegatingHandler` that sets fetch credentials + the CSRF header on every request), all registered scoped in `Program.cs`
+- **GitHub Activity (`Services/GitHubActivityService.cs`):** see "GitHub Activity display (#68/#69)" below — registered in `Program.cs` with two `HttpClient`s (the DI-registered API client, plus a separate un-credentialed one pointed at `https://api.github.com/`)
 - **Static assets:** `wwwroot/` — `css/app.css`, fonts (CaviarDreams), images, PDFs (`jmResume.4.2025.pdf`, `jmResume.7.2024.pdf`), favicon
 - **Config:** `wwwroot/appsettings.Development.json` — `API_Prefix` for local dev; `staticwebapp.config.json` — SWA routing rules
 - **Backend URL:** `https://api.406jem.com` (hardcoded fallback in `Program.cs`; overridden by `appsettings.Development.json` locally) — custom domain in front of `406resumeapi`, required for #47's cross-subdomain cookie session (same registrable domain as `406jem.com`/`angular.406jem.com`); underlying `406resumeapi-gqa7cuczcudxdpg6.westus2-01.azurewebsites.net` still resolves too
@@ -52,7 +54,8 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
 - **Components (all standalone):**
   - `app/header/` — nav bar with mobile hamburger menu, logo display; also renders Log In/Register or "Hi {user}"/Log Out based on `AuthService` signals
   - `app/home/` — landing page
-  - `app/projects/` — projects/links page
+  - `app/projects/` — projects/links page; renders `app-github-activity` (see GitHub Activity display below)
+  - `app/github-activity/` — GitHub Activity card rendered on the Projects page (#68/#69); `loading`/`repos` signals, renders nothing (not an empty card) once loaded with no result
   - `app/digital-resume/` — main resume view, fetches data from API
     - `contact-section/` — contact list with Bootstrap Icons
     - `education-section/` — education list
@@ -62,8 +65,8 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
   - `app/spinner/` — loading overlay
   - `app/auth/login/`, `app/auth/register/` — template-driven (`FormsModule`/`ngModel`) auth forms; register auto-logs-in on success
   - `app/testimonials/` — **the gated feature proving login works end-to-end** (see Auth section below): list is public, the post form only renders when `authService.isAuthenticated()`, delete button only when `authService.isAdmin()`
-- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls ResumeFunctions API; `app/services/data/testimonials-data.service.ts` — list/create/delete for testimonials; `app/services/auth/auth.service.ts` — register/login/logout, exposes `isAuthenticated`/`isAdmin`/`username` as signals; since #47, session state is hydrated by calling `GET /api/auth/me` in the constructor (the session cookie itself is httpOnly/unreadable) rather than decoding a stored token; `app/services/auth/auth.interceptor.ts` — functional `HttpInterceptorFn` that sets `withCredentials: true` on every request and, on mutating requests, echoes the `XSRF-TOKEN` cookie into an `X-XSRF-TOKEN` header (registered via `withInterceptors` in `app.config.ts`)
-- **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models; `app/interfaces/auth.interface.ts` — auth/testimonial request/response shapes
+- **Services:** `app/services/data/resume-data.service.ts` — `HttpClient`-based, calls ResumeFunctions API; `app/services/data/testimonials-data.service.ts` — list/create/delete for testimonials; `app/services/auth/auth.service.ts` — register/login/logout, exposes `isAuthenticated`/`isAdmin`/`username` as signals; since #47, session state is hydrated by calling `GET /api/auth/me` in the constructor (the session cookie itself is httpOnly/unreadable) rather than decoding a stored token; `app/services/auth/auth.interceptor.ts` — functional `HttpInterceptorFn` that sets `withCredentials: true` on every request and, on mutating requests, echoes the `XSRF-TOKEN` cookie into an `X-XSRF-TOKEN` header (registered via `withInterceptors` in `app.config.ts`); `app/services/data/github-activity-data.service.ts` — see "GitHub Activity display (#68/#69)" below; deliberately uses native `fetch()` for the GitHub call, not `HttpClient`, to bypass `auth.interceptor.ts`'s blanket `withCredentials: true`
+- **Interfaces:** `app/interfaces/resume.interface.ts` — TypeScript interfaces mirroring the C# models; `app/interfaces/auth.interface.ts` — auth/testimonial request/response shapes; `app/interfaces/github-activity.interface.ts` — `GitHubActivitySettings`, `GitHubRepo`
 - **Styles:** `src/styles.css` — global; each component has its own `.css`
 - **Config:** `angular.json`, `tsconfig.json`
 - **Backend URL:** `https://api.406jem.com` (in `src/environments/environment.prod.ts`) — see BlazorClient's Backend URL note above; same custom domain, same reason
@@ -83,6 +86,7 @@ A personal portfolio/resume showcase with two frontend clients (Blazor WASM + An
   - `myResume` — `GET /api/resumes/myresume` (Anonymous auth) — **primary endpoint used by both clients, unaffected by the auth work below**
   - `resumes` — `GET /api/resumes` (Function auth) — returns full array
   - Constructor takes an optional `resumeDataPath` (defaults to `Path.Combine(AppContext.BaseDirectory, "StaticData", "Resumes", "JustinMann_062024.json")`), injectable for tests. **Never build this path from `Environment.CurrentDirectory`** — the Linux Functions host doesn't guarantee CWD equals the deployment folder, which previously caused the endpoint to 500 in staging/production.
+- **Functions:** `GitHubActivitySettingsApi.cs` — see "GitHub Activity display (#68/#69)" below
 - **Data:** `StaticData/Resumes/JustinMann_062024.json` — resume JSON source of truth (copied to output on build)
 - **Wire serialization:** The isolated worker's `WorkerOptions.Serializer` (used by `WriteAsJsonAsync`, i.e. the actual HTTP response) is set to `JsonSerializerDefaults.Web` (camelCase) in `Program.cs`. This is separate from `JsonFileReader`, which reads the static JSON file with its own serializer instance (Newtonsoft, PascalCase source data) — don't conflate the two when debugging casing issues. Blazor's `GetFromJsonAsync` deserializes case-insensitively so it's unaffected either way; Angular's typed `HttpClient` is not, so a casing mismatch here silently renders blank instead of erroring.
 - **CORS:** Configured (2026-08-11) for the cookie-based cross-client session (#47) — see "Cross-client cookie session (#47)" under the Auth section below.
@@ -107,6 +111,16 @@ Issue #25. Two account types — self-registered **visitor** accounts and one se
 - **Endpoints:** `AuthApi.cs` — `POST /api/auth/register` (Anonymous trigger, visitor role only), `POST /api/auth/login` (issues the JWT), `POST /api/auth/logout` (204 no-op — JWT is stateless; logout is a client-side token discard, bounded by the 2-hour expiry).
 - **The gated feature proving the chain works — Testimonials (`TestimonialsApi.cs`):** `GET /api/testimonials` is public; `POST /api/testimonials` requires any logged-in user; `DELETE /api/testimonials/{id}` requires the `admin` role. This is the minimal end-to-end proof the issue asked for — not a real comments product.
 - **Required app settings** (Azure Functions app settings / Key Vault references in prod, `local.settings.json` `Values` locally — `local.settings.json` is gitignored, never commit it): `Auth:JwtSigningKey` (≥32 bytes, `JwtAuthTokenService` throws on startup if missing/short), `Auth:AdminUsername` (defaults to `admin`), `Auth:AdminEmail`, `Auth:AdminPassword` (required for the admin account to be seeded at all), plus the cookie settings below.
+
+#### GitHub Activity display (#68/#69)
+
+A "GitHub Activity" card on the Projects page in both clients, showing recently-updated public repos for whichever admin owns the site's public Projects page — configurable per-admin, hidden entirely unless that admin has turned it on. Split across two issues landed together: #69 (settings storage/API) and #68 (public display). No GitHub API calls happen server-side — `ResumeFunctions` only stores/serves what an admin configured; the actual GitHub repo fetch happens client-side, direct to GitHub's public unauthenticated REST API.
+
+- **Settings storage:** `GitHubActivitySettingsEntity` in a dedicated `GitHubActivitySettings` Table Storage table (same storage account as everything else — see the User Accounts persistence note above), fixed `PartitionKey`, RowKey = normalized owner username, one row per owner. `TableGitHubActivitySettingsStore` implements `IGitHubActivitySettingsStore`.
+- **Endpoints (`GitHubActivitySettingsApi.cs`):** `GET`/`PUT /api/github-activity-settings/mine` (requires `AccountRoles.ResumeAdmin` or higher — own settings only); `GET /api/github-activity-settings/public` — resolves the current `SiteConfig.PublicProjectsOwnerId`, returns that owner's settings if `Enabled`, else 404. `GitHubActivitySettingsDto` has no GitHub-fetch fields — just `Enabled`, `GitHubUsername`, `RepoCount` (default 5), `PinnedRepoNames`.
+- **Client-side fetch, not a server proxy:** `BlazorClient/Services/GitHubActivityService.cs` and `AngularClient/src/app/services/data/github-activity-data.service.ts` both call `GET /api/github-activity-settings/public` first, then hit `https://api.github.com/users/{username}/repos?sort=pushed&per_page=100&type=owner` directly from the browser. **Both deliberately avoid their app's normal credentialed HTTP client for the GitHub call** — GitHub's API responds with a wildcard CORS origin, which the browser rejects outright on a credentialed request: Blazor constructs a second, separate `HttpClient` (no `SessionCookieHandler`) in `Program.cs`; Angular's service uses native `fetch()` instead of `HttpClient` specifically to bypass `auth.interceptor.ts`'s blanket `withCredentials: true`.
+- **Selection algorithm (`GitHubActivityService.SelectRepos` / `selectRepos()`, kept identical in both clients):** filter out forks, then pinned repos first (in pinned order, silently skipping pinned names that don't match any fetched repo), then fill remaining slots up to `RepoCount` by most-recently-pushed (`pushed_at`). Pinned repos count toward `RepoCount`, they don't add to it.
+- **Fail silently, not visibly:** any failure — settings fetch, GitHub fetch, feature disabled, no settings configured — resolves to `null`/no rendering. Both `GitHubActivitySection.razor` (Blazor) and `GitHubActivityComponent` (Angular) render nothing at all in that case, not an empty or broken-looking card. A loading state shows while the fetch is in flight.
 
 #### Cross-client cookie session (#47)
 

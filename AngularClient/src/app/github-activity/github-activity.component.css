@@ -1,0 +1,42 @@
+.github-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.github-activity-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--jem-border, #d0d8ea);
+}
+
+.github-activity-item:last-child {
+  border-bottom: none;
+}
+
+.github-activity-name {
+  font-weight: 700;
+  color: var(--jem-navy, #1e2d5a);
+  text-decoration: none;
+}
+
+.github-activity-name:hover {
+  color: var(--jem-blue, #245a8e);
+}
+
+.github-activity-description {
+  font-size: 0.8em;
+  font-weight: 500;
+  margin: 4px 0;
+  color: var(--jem-text-muted, #5a6070);
+}
+
+.github-activity-meta {
+  font-size: 0.75em;
+  font-weight: 500;
+  color: var(--jem-text-muted, #5a6070);
+}
+
+.github-activity-language {
+  margin-right: 12px;
+}

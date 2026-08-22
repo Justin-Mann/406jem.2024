@@ -10,6 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { ProjectListingsDataService } from '../services/data/project-listings-data.service';
 import { AuthService } from '../services/auth/auth.service';
 import { CreateOrUpdateProjectListingRequest, ProjectLink, ProjectListing, ProjectListingDto, ProjectSection } from '../interfaces/project-listing.interface';
+import { GitHubActivityComponent } from '../github-activity/github-activity.component';
 
 interface ListingEditState {
   id: string | null;
@@ -28,7 +29,8 @@ interface ListingEditState {
     MatFormFieldModule,
     MatInputModule,
     MatCheckboxModule,
-    MatDividerModule
+    MatDividerModule,
+    GitHubActivityComponent
   ],
   templateUrl: './projects.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

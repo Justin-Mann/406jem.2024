@@ -22,6 +22,15 @@ builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 builder.Services.AddScoped<AuthenticationService>();
 
+builder.Services.AddScoped(sp =>
+{
+    var apiHttp = sp.GetRequiredService<HttpClient>();
+    var gitHubHttp = new HttpClient { BaseAddress = new Uri("https://api.github.com/") };
+    gitHubHttp.DefaultRequestHeaders.UserAgent.ParseAdd("406jem-portfolio");
+    gitHubHttp.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+    return new GitHubActivityService(apiHttp, gitHubHttp);
+});
+
 builder.Services.AddMudServices();
 
 var host = builder.Build();
