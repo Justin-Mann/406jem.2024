@@ -48,21 +48,32 @@ jobs:
                check). If ANY check failed, that is an automatic "changes needed" regardless of
                how good the code looks — do not approve a PR with a red check. Quote the
                specific failing check name and the relevant error from its log in your review.
-            3. Only if all checks are green (or there are none configured), review all changed
+            3. Check whether the PR is stale relative to main: run
+               `gh pr view <PR> --json mergeStateStatus,mergeable` and `git log --merges <PR-branch>`.
+               If mergeStateStatus is not CLEAN, or the branch's history shows it merged in another
+               feature/issue-* branch instead of being rebased onto today's main after that branch
+               landed, this is a hard block regardless of code quality — request changes asking for
+               a rebase (or fresh merge) onto current main and a green re-run of CI, do not approve.
+               This exact failure mode broke main once already (#74/#75: two PRs each independently
+               defined an identical class because one was reviewed and merged against a stale
+               pre-merge snapshot of the other) — branch protection now requires the PR be
+               up-to-date with main before GitHub will even allow the merge button to be used, but
+               you should still catch and flag it here rather than relying on that alone.
+            4. Only if all checks are green and the PR is up to date with main, review all changed
                files thoroughly against the criteria above.
-            4. Post a detailed review on the PR with specific inline comments where applicable.
-            5. If checks are green AND the code is acceptable: approve the PR, add label
-               "review-approved", and mark the PR ready for review (undraft).
-            6. If checks failed OR changes are needed: request changes on the PR, then update
-               the issue's labels by REMOVING "ready-for-review" AND adding "needs-revision"
-               in the same command (`gh issue edit <issue> --remove-label ready-for-review
-               --add-label needs-revision`) to trigger Stage 5. Removing "ready-for-review"
-               here is required, not optional: Stage 5 re-adds it later to loop back to this
-               stage, and GitHub only fires a new "labeled" webhook event when a label
-               transitions from absent to present. If "ready-for-review" is left in place,
-               Stage 5's later re-add is a silent no-op and the pipeline stalls with no error.
-            7. Post a summary comment on the issue with your verdict. This comment MUST include
-               a direct link to your detailed PR review from step 4 (e.g.
+            5. Post a detailed review on the PR with specific inline comments where applicable.
+            6. If checks are green, the PR is up to date, AND the code is acceptable: approve the
+               PR, add label "review-approved", and mark the PR ready for review (undraft).
+            7. If checks failed, the PR is stale, OR changes are needed: request changes on the PR,
+               then update the issue's labels by REMOVING "ready-for-review" AND adding
+               "needs-revision" in the same command (`gh issue edit <issue> --remove-label
+               ready-for-review --add-label needs-revision`) to trigger Stage 5. Removing
+               "ready-for-review" here is required, not optional: Stage 5 re-adds it later to loop
+               back to this stage, and GitHub only fires a new "labeled" webhook event when a label
+               transitions from absent to present. If "ready-for-review" is left in place, Stage
+               5's later re-add is a silent no-op and the pipeline stalls with no error.
+            8. Post a summary comment on the issue with your verdict. This comment MUST include
+               a direct link to your detailed PR review from step 5 (e.g.
                `https://github.com/${{ github.repository }}/pull/<PR-number>#issuecomment-<id>`,
                which `gh pr view <PR> --json comments` or the review API response gives you) —
                the issue-side comment is a summary, not a substitute, and the reader must be able
