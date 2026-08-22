@@ -28,7 +28,7 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('navigates to /testimonials on successful login', () => {
+  it('navigates to / on successful login', () => {
     spyOn(router, 'navigateByUrl');
     authServiceSpy.login.and.returnValue(of(null));
     component.username = 'jane';
@@ -37,7 +37,7 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(authServiceSpy.login).toHaveBeenCalledWith({ username: 'jane', password: 'password123' });
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/testimonials');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
   it('shows the error message and does not navigate on failed login', () => {

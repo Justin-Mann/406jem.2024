@@ -33,7 +33,7 @@ export class LoginComponent {
       if (error) {
         this.errorMessage.set(error);
       } else {
-        this.router.navigateByUrl('/testimonials');
+        this.router.navigateByUrl('/');
       }
     });
   }
